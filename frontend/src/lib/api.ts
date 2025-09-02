@@ -11,3 +11,17 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
+export async function signup(email: string, password: string, region_code?: string, referrer_code?: string) {
+  return api<{access:string}>("/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ email, password, region_code, referrer_code }),
+  });
+}
+
+export async function login(email: string, password: string) {
+  return api<{access:string}>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}

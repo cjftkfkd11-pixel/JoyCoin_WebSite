@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { signup } from "@/lib/api";
 
 export default function SignupPage() {
   const [email, setEmail] = useState(""); 
@@ -7,6 +8,21 @@ export default function SignupPage() {
   const [confirm, setConfirm] = useState("");
   const [region, setRegion] = useState("");
   const [ref, setRef] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const onSignup = async () => {
+    if (password.length < 12) { setMsg("비밀번호는 12자 이상이어야 합니다."); return; }
+    if (password !== confirm) { setMsg("비밀번호가 일치하지 않습니다."); return; }
+    setLoading(true); setMsg(null);
+    try {
+      const res = await signup(email, password, region || undefined, ref || undefined);
+      localStorage.setItem("access", res.access);
+      setMsg("회원가입 성공!");
+    } catch (e:any) {
+      setMsg(e.message);
+    } finally { setLoading(false); }
+  };
 
   return (
     <div className="max-w-md mx-auto bg-white border rounded-xl p-6">
@@ -27,7 +43,10 @@ export default function SignupPage() {
           <input className="w-full border rounded p-2" value={ref} onChange={e=>setRef(e.target.value)} />
         </div>
       </div>
-      <button className="w-full mt-4 px-4 py-2 rounded bg-violet-600 text-white">회원가입(더미)</button>
+      <button disabled={loading} onClick={onSignup} className="w-full mt-4 px-4 py-2 rounded bg-violet-600 text-white">
+        {loading ? "회원가입 중..." : "회원가입"}
+      </button>
+      {msg && <p className="text-sm mt-3">{msg}</p>}
     </div>
   );
 }
