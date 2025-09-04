@@ -1,0 +1,709 @@
+2025-07-12 16:58:45,794 - INFO - 🏭 자가매매 마켓 메이커 시스템 V5 초기화 완료
+2025-07-12 16:58:45,795 - INFO - 📊 거래 페어: spsi_usdt
+2025-07-12 16:58:45,795 - INFO - 📈 스프레드: 0.2%
+2025-07-12 16:58:45,795 - INFO - 🎯 호가창 레이어: 3개씩 양쪽
+2025-07-12 16:58:45,795 - INFO - 💰 호가창 주문량: 500 ~ 1,500 SPSI
+2025-07-12 16:58:45,795 - INFO - 🔄 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-12 16:58:45,795 - INFO - 💰 예상 월 비용: 약 9만원 (수수료만)
+2025-07-12 16:58:45,795 - INFO - ✅ 자가매매 마켓 메이커 초기화 완료
+2025-07-12 16:58:49,956 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 16:58:50,230 - DEBUG - https://api.lbank.info:443 "POST /v2/orders_info_no_deal.do HTTP/1.1" 200 None
+2025-07-12 16:58:50,232 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 16:58:53,469 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 16:58:53,499 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 16:58:53,621 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 16:58:53,622 - INFO - 📍 기준 가격 설정: $0.000153
+2025-07-12 16:59:43,864 - INFO - 🧪 자가매매 설정 테스트 시작 (월 9만원 목표)
+2025-07-12 16:59:43,864 - INFO - 1️⃣ API 연결 테스트...
+2025-07-12 16:59:43,865 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 16:59:44,048 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 16:59:44,048 - INFO - ✅ 티커 조회 성공
+2025-07-12 16:59:44,050 - INFO - 2️⃣ 잔고 확인...
+2025-07-12 16:59:44,051 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 16:59:45,059 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 16:59:45,996 - INFO - ✅ 잔고 조회 성공
+2025-07-12 16:59:45,996 - INFO - 3️⃣ 기준 가격 설정...
+2025-07-12 16:59:45,997 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 16:59:46,110 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 16:59:46,112 - INFO - ✅ 기준 가격: $0.000153
+2025-07-12 16:59:46,112 - INFO - 4️⃣ 자가매매 시뮬레이션...
+2025-07-12 16:59:46,112 - DEBUG - 🎲 자가매매 거래량: 145 SPSI
+2025-07-12 16:59:46,112 - INFO -    - 테스트 거래량: 145 SPSI
+2025-07-12 16:59:46,112 - INFO -    - 테스트 거래금액: $0.02
+2025-07-12 16:59:46,112 - INFO -    - 예상 수수료: $0.0000
+2025-07-12 16:59:46,112 - INFO - 5️⃣ 최소 자금 확인...
+2025-07-12 16:59:46,112 - INFO -    - 권장 USDT: $0.04 (보유: $10.49)
+2025-07-12 16:59:46,112 - INFO -    - 권장 SPSI: 290 (보유: 4,881)
+2025-07-12 16:59:46,112 - INFO - ✅ 자금 충분 - 자가매매 준비 완료!
+2025-07-12 16:59:46,112 - INFO - ✅ 모든 테스트 완료 - 자가매매 시스템 준비됨!
+2025-07-12 16:59:46,112 - INFO - 🎯 예상 일일 거래량: 276,000 SPSI
+2025-07-12 16:59:46,112 - INFO - 💰 예상 월 수수료: 약 9만원
+2025-07-12 17:00:12,971 - INFO - 🏭 자가매매 마켓 메이킹 시작!
+2025-07-12 17:00:12,971 - INFO - ⚙️ 설정:
+2025-07-12 17:00:12,971 - INFO -    - 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-12 17:00:12,971 - INFO -    - 자가매매 간격: 60초
+2025-07-12 17:00:12,971 - INFO -    - 호가창 갱신: 300초
+2025-07-12 17:00:12,971 - INFO -    - 예상 월 수수료: 약 9만원
+2025-07-12 17:00:12,973 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:13,088 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:00:13,089 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:13,227 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:00:13,465 - DEBUG - 🎲 자가매매 거래량: 177 SPSI
+2025-07-12 17:00:13,466 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:13,580 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:00:13,581 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:00:43,583 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:43,726 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:00:43,728 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:44,146 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:00:46,424 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:46,571 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:00:46,573 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:46,701 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:00:46,703 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:46,865 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:00:46,867 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:46,981 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:00:46,982 - INFO - 📋 최소 호가창 주문 완료: 매수 0개, 매도 0개
+2025-07-12 17:00:46,983 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:47,138 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:00:57,140 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:57,668 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:00:57,670 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:57,792 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:00:57,824 - DEBUG - 🎲 자가매매 거래량: 181 SPSI
+2025-07-12 17:00:57,825 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:00:58,218 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:00:58,218 - WARNING - ⚠️ 매도 주문 실패
+2025-07-12 17:01:38,219 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:01:38,336 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:01:38,338 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:01:38,490 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:01:40,635 - DEBUG - 🎲 자가매매 거래량: 266 SPSI
+2025-07-12 17:01:40,636 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:01:40,757 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:01:40,758 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:02:02,969 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:03,145 - DEBUG - https://api.lbank.info:443 "POST /v2/orders_info_no_deal.do HTTP/1.1" 200 None
+2025-07-12 17:02:03,148 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:03,513 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:02:03,544 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:03,662 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:02:15,816 - INFO - 🔍 API 디버깅: /ticker.do
+2025-07-12 17:02:15,817 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:15,954 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:02:15,954 - DEBUG - 📡 GET /ticker.do - Status: 200
+2025-07-12 17:02:20,759 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:20,862 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:02:20,864 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:21,441 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:02:21,668 - DEBUG - 🎲 자가매매 거래량: 191 SPSI
+2025-07-12 17:02:21,669 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:22,417 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:02:22,418 - WARNING - ⚠️ 매도 주문 실패
+2025-07-12 17:02:51,185 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:51,588 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:02:51,589 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:52,160 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:02:53,871 - DEBUG - 🎲 자가매매 거래량: 146 SPSI
+2025-07-12 17:02:53,872 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:02:54,017 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:02:54,018 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:03:02,418 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:03:02,536 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:03:02,537 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:03:03,069 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:03:03,078 - DEBUG - 🎲 자가매매 거래량: 159 SPSI
+2025-07-12 17:03:03,079 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:03:03,220 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:03:03,221 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:03:42,886 - INFO - ⏹️ 마켓 메이킹 중지 요청됨
+2025-07-12 17:03:43,221 - INFO - ✅ 마켓 메이킹 완전 중지됨
+2025-07-12 17:03:43,221 - INFO - 📊 최종 통계: 거래량 0 SPSI, 수수료 $0.00
+2025-07-12 17:04:19,740 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:04:19,956 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:04:19,958 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:04:20,112 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:04:20,128 - DEBUG - 🎲 자가매매 거래량: 142 SPSI
+2025-07-12 17:04:20,129 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:04:20,278 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:04:20,279 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:04:22,810 - WARNING - ⚠️ 마켓 메이킹이 실행되고 있지 않습니다
+2025-07-12 17:04:25,495 - INFO - 🏭 자가매매 마켓 메이커 시스템 V5 초기화 완료
+2025-07-12 17:04:25,495 - INFO - 📊 거래 페어: spsi_usdt
+2025-07-12 17:04:25,495 - INFO - 📈 스프레드: 0.2%
+2025-07-12 17:04:25,495 - INFO - 🎯 호가창 레이어: 3개씩 양쪽
+2025-07-12 17:04:25,495 - INFO - 💰 호가창 주문량: 500 ~ 1,500 SPSI
+2025-07-12 17:04:25,495 - INFO - 🔄 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-12 17:04:25,495 - INFO - 💰 예상 월 비용: 약 9만원 (수수료만)
+2025-07-12 17:04:25,495 - INFO - ✅ 자가매매 마켓 메이커 초기화 완료
+2025-07-12 17:04:30,320 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:04:30,464 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:04:30,465 - INFO - 📍 기준 가격 설정: $0.000153
+2025-07-12 17:04:30,466 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:04:30,853 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:04:31,725 - DEBUG - 🎲 자가매매 거래량: 161 SPSI
+2025-07-12 17:04:31,727 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:04:31,834 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:04:31,835 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-12 17:04:31,836 - INFO - 🔍 주문 응답 디버깅:
+2025-07-12 17:04:31,836 - INFO -    - 성공여부: True
+2025-07-12 17:04:31,836 - INFO -    - 에러: None
+2025-07-12 17:04:31,836 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752307471757}
+2025-07-12 17:04:31,836 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752307471757}
+2025-07-12 17:04:31,836 - INFO -    - 에러코드: 10010
+2025-07-12 17:04:31,836 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:05:43,542 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:05:43,689 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:05:43,692 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:05:44,985 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:05:48,149 - DEBUG - 🎲 자가매매 거래량: 1,257 SPSI
+2025-07-12 17:05:48,151 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:05:48,313 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:05:48,314 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-12 17:05:48,315 - INFO - 🔍 주문 응답 디버깅:
+2025-07-12 17:05:48,315 - INFO -    - 성공여부: True
+2025-07-12 17:05:48,315 - INFO -    - 에러: None
+2025-07-12 17:05:48,315 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': '0dba048a-2e98-4861-918a-a20ac0d5fd6d'}, 'error_code': 0, 'ts': 1752307548223}
+2025-07-12 17:05:48,315 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': '0dba048a-2e98-4861-918a-a20ac0d5fd6d'}, 'error_code': 0, 'ts': 1752307548223}
+2025-07-12 17:05:48,315 - INFO -    - 에러코드: 0
+2025-07-12 17:05:48,315 - INFO -    - 주문ID: None
+2025-07-12 17:05:48,315 - WARNING - ⚠️ 매도 주문 실패
+2025-07-12 17:06:45,167 - WARNING - ⚠️ 마켓 메이킹이 실행되고 있지 않습니다
+2025-07-12 17:07:48,030 - INFO - 🏭 자가매매 마켓 메이커 시스템 V5 초기화 완료
+2025-07-12 17:07:48,030 - INFO - 📊 거래 페어: spsi_usdt
+2025-07-12 17:07:48,030 - INFO - 📈 스프레드: 0.2%
+2025-07-12 17:07:48,030 - INFO - 🎯 호가창 레이어: 3개씩 양쪽
+2025-07-12 17:07:48,031 - INFO - 💰 호가창 주문량: 500 ~ 1,500 SPSI
+2025-07-12 17:07:48,031 - INFO - 🔄 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-12 17:07:48,031 - INFO - 💰 예상 월 비용: 약 9만원 (수수료만)
+2025-07-12 17:07:48,031 - INFO - ✅ 자가매매 마켓 메이커 초기화 완료
+2025-07-12 17:07:51,129 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:07:51,279 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:07:51,281 - INFO - 📍 기준 가격 설정: $0.000153
+2025-07-12 17:07:51,281 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:07:52,041 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:07:53,481 - DEBUG - 🎲 자가매매 거래량: 269 SPSI
+2025-07-12 17:07:53,482 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:07:53,607 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-12 17:07:53,608 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-12 17:07:53,608 - INFO - 🔍 주문 응답 디버깅:
+2025-07-12 17:07:53,608 - INFO -    - 성공여부: True
+2025-07-12 17:07:53,608 - INFO -    - 에러: None
+2025-07-12 17:07:53,608 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752307673532}
+2025-07-12 17:07:53,608 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752307673532}
+2025-07-12 17:07:53,608 - INFO -    - 에러코드: 10010
+2025-07-12 17:07:53,608 - WARNING - ⚠️ 매수 주문 실패
+2025-07-12 17:08:14,755 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:08:14,954 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-12 17:08:14,956 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-12 17:08:15,302 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-12 17:08:17,446 - DEBUG - 🎲 자가매매 거래량: 2,213 SPSI
+2025-07-12 17:08:17,447 - WARNING - ⚠️ SPSI 부족: 1331.00 < 2213.45
+2025-07-14 19:51:44,542 - INFO - 🏭 자가매매 마켓 메이킹 시작!
+2025-07-14 19:51:44,543 - INFO - ⚙️ 설정:
+2025-07-14 19:51:44,543 - INFO -    - 목표 거래량: 100,000 ~ 200,000 SPSI/시간
+2025-07-14 19:51:44,543 - INFO -    - 자가매매 간격: 60초
+2025-07-14 19:51:44,544 - INFO -    - 호가창 갱신: 300초
+2025-07-14 19:51:44,544 - INFO -    - 예상 월 수수료: 약 9만원
+2025-07-14 19:51:44,553 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:51:44,774 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:51:44,777 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:51:44,920 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 19:51:45,139 - DEBUG - 🎲 자가매매 거래량: 2,878 SPSI
+2025-07-14 19:51:45,139 - WARNING - ⚠️ SPSI 부족: 1331.00 < 2878.32
+2025-07-14 19:52:15,139 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:15,251 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:52:15,253 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:15,395 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 19:52:17,476 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:17,627 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 19:52:17,629 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:17,768 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 19:52:17,769 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:17,912 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 19:52:17,914 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:18,071 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 19:52:18,072 - INFO - 📋 최소 호가창 주문 완료: 매수 0개, 매도 0개
+2025-07-14 19:52:18,073 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:18,187 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:52:28,189 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:28,292 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:52:28,294 - INFO - 📍 기준 가격 업데이트: $0.000153 → $0.000229
+2025-07-14 19:52:28,294 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:52:28,455 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 19:52:28,487 - DEBUG - 🎲 자가매매 거래량: 3,111 SPSI
+2025-07-14 19:52:28,487 - WARNING - ⚠️ SPSI 부족: 1331.00 < 3111.46
+2025-07-14 19:53:08,488 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:53:08,603 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:53:08,605 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:53:09,574 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 19:53:11,470 - DEBUG - 🎲 자가매매 거래량: 2,499 SPSI
+2025-07-14 19:53:11,470 - WARNING - ⚠️ SPSI 부족: 1331.00 < 2498.91
+2025-07-14 19:53:51,471 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:53:51,569 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:53:51,571 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:53:51,937 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 19:53:52,204 - DEBUG - 🎲 자가매매 거래량: 3,146 SPSI
+2025-07-14 19:53:52,205 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:53:52,337 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 19:53:52,339 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 19:53:52,339 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 19:53:52,339 - INFO -    - 성공여부: True
+2025-07-14 19:53:52,339 - INFO -    - 에러: None
+2025-07-14 19:53:52,339 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752490432221}
+2025-07-14 19:53:52,339 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752490432221}
+2025-07-14 19:53:52,339 - INFO -    - 에러코드: 10010
+2025-07-14 19:53:52,339 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 19:54:32,339 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:54:32,451 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 19:54:32,453 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:54:32,597 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 19:54:33,055 - DEBUG - 🎲 자가매매 거래량: 2,557 SPSI
+2025-07-14 19:54:33,056 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 19:54:33,176 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 19:54:33,176 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 19:54:33,176 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 19:54:33,176 - INFO -    - 성공여부: True
+2025-07-14 19:54:33,176 - INFO -    - 에러: None
+2025-07-14 19:54:33,178 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752490473072}
+2025-07-14 19:54:33,178 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752490473072}
+2025-07-14 19:54:33,178 - INFO -    - 에러코드: 10010
+2025-07-14 19:54:33,178 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 19:54:36,559 - INFO - ⏹️ 사용자 중단 요청
+2025-07-14 19:54:36,559 - INFO - ⏹️ 마켓 메이킹 중지 요청됨
+2025-07-14 19:54:41,560 - INFO - ✅ 마켓 메이킹 완전 중지됨
+2025-07-14 19:54:41,560 - INFO - 📊 최종 통계: 거래량 0 SPSI, 수수료 $0.00
+2025-07-14 19:55:44,443 - INFO - 🏭 자가매매 마켓 메이커 시스템 V5 초기화 완료
+2025-07-14 19:55:44,443 - INFO - 📊 거래 페어: spsi_usdt
+2025-07-14 19:55:44,443 - INFO - 📈 스프레드: 0.2%
+2025-07-14 19:55:44,443 - INFO - 🎯 호가창 레이어: 3개씩 양쪽
+2025-07-14 19:55:44,444 - INFO - 💰 호가창 주문량: 500 ~ 1,500 SPSI
+2025-07-14 19:55:44,444 - INFO - 🔄 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-14 19:55:44,444 - INFO - 💰 예상 월 비용: 약 9만원 (수수료만)
+2025-07-14 19:55:44,444 - INFO - ✅ 자가매매 마켓 메이커 초기화 완료
+2025-07-14 20:14:34,342 - INFO - 🏭 자가매매 마켓 메이킹 시작!
+2025-07-14 20:14:34,343 - INFO - ⚙️ 설정:
+2025-07-14 20:14:34,343 - INFO -    - 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-14 20:14:34,343 - INFO -    - 자가매매 간격: 60초
+2025-07-14 20:14:34,343 - INFO -    - 호가창 갱신: 300초
+2025-07-14 20:14:34,343 - INFO -    - 예상 월 수수료: 약 9만원
+2025-07-14 20:14:34,349 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:14:34,665 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:14:34,666 - INFO - 📍 기준 가격 설정: $0.000229
+2025-07-14 20:14:34,666 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:14:35,457 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:14:36,083 - DEBUG - 🎲 자가매매 거래량: 207 SPSI
+2025-07-14 20:14:36,084 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:14:36,208 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:14:36,208 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:14:36,209 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:14:36,209 - INFO -    - 성공여부: True
+2025-07-14 20:14:36,209 - INFO -    - 에러: None
+2025-07-14 20:14:36,209 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': '9fa89f8d-96d3-44dc-87a0-92ee67704b0c'}, 'error_code': 0, 'ts': 1752491676101}
+2025-07-14 20:14:36,209 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': '9fa89f8d-96d3-44dc-87a0-92ee67704b0c'}, 'error_code': 0, 'ts': 1752491676101}
+2025-07-14 20:14:36,209 - INFO -    - 에러코드: 0
+2025-07-14 20:14:36,209 - INFO -    - 주문ID: 9fa89f8d-96d3-44dc-87a0-92ee67704b0c
+2025-07-14 20:14:38,211 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:14:38,325 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:14:38,326 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:14:38,327 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:14:38,327 - INFO -    - 성공여부: True
+2025-07-14 20:14:38,327 - INFO -    - 에러: None
+2025-07-14 20:14:38,327 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491678216}
+2025-07-14 20:14:38,327 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491678216}
+2025-07-14 20:14:38,327 - INFO -    - 에러코드: 10010
+2025-07-14 20:14:38,327 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:15:08,328 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:08,436 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:15:08,437 - INFO - 📍 기준 가격 업데이트: $0.000229 → $0.000153
+2025-07-14 20:15:08,438 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:08,804 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:15:10,878 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:10,988 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:15:10,990 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:11,119 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:15:11,122 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:11,250 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:15:11,252 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:11,378 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:15:11,379 - INFO - 📋 최소 호가창 주문 완료: 매수 0개, 매도 0개
+2025-07-14 20:15:11,380 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:11,506 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:15:21,507 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:21,714 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:15:21,716 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:22,091 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:15:22,336 - DEBUG - 🎲 자가매매 거래량: 213 SPSI
+2025-07-14 20:15:22,338 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:15:22,438 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:15:22,440 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:15:22,440 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:15:22,440 - INFO -    - 성공여부: True
+2025-07-14 20:15:22,440 - INFO -    - 에러: None
+2025-07-14 20:15:22,440 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491722335}
+2025-07-14 20:15:22,440 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491722335}
+2025-07-14 20:15:22,440 - INFO -    - 에러코드: 10010
+2025-07-14 20:15:22,440 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:16:02,441 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:02,676 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:16:02,677 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:02,834 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:16:03,268 - DEBUG - 🎲 자가매매 거래량: 168 SPSI
+2025-07-14 20:16:03,268 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:03,371 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:16:03,372 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:16:03,373 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:16:03,373 - INFO -    - 성공여부: True
+2025-07-14 20:16:03,373 - INFO -    - 에러: None
+2025-07-14 20:16:03,373 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491763262}
+2025-07-14 20:16:03,373 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491763262}
+2025-07-14 20:16:03,373 - INFO -    - 에러코드: 10010
+2025-07-14 20:16:03,373 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:16:43,375 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:43,469 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:16:43,471 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:43,606 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:16:44,073 - DEBUG - 🎲 자가매매 거래량: 199 SPSI
+2025-07-14 20:16:44,075 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:44,437 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:16:44,438 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:16:44,439 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:16:44,439 - INFO -    - 성공여부: True
+2025-07-14 20:16:44,439 - INFO -    - 에러: None
+2025-07-14 20:16:44,439 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': '3acb028a-d184-4235-be62-d969e82993f6'}, 'error_code': 0, 'ts': 1752491804115}
+2025-07-14 20:16:44,439 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': '3acb028a-d184-4235-be62-d969e82993f6'}, 'error_code': 0, 'ts': 1752491804115}
+2025-07-14 20:16:44,440 - INFO -    - 에러코드: 0
+2025-07-14 20:16:44,440 - INFO -    - 주문ID: 3acb028a-d184-4235-be62-d969e82993f6
+2025-07-14 20:16:46,442 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:16:46,544 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:16:46,546 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:16:46,546 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:16:46,546 - INFO -    - 성공여부: True
+2025-07-14 20:16:46,546 - INFO -    - 에러: None
+2025-07-14 20:16:46,546 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491806437}
+2025-07-14 20:16:46,546 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491806437}
+2025-07-14 20:16:46,547 - INFO -    - 에러코드: 10010
+2025-07-14 20:16:46,547 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:17:26,548 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:17:26,657 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:17:26,659 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:17:28,464 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:17:29,923 - DEBUG - 🎲 자가매매 거래량: 170 SPSI
+2025-07-14 20:17:29,924 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:17:30,059 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:17:30,059 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:17:30,061 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:17:30,061 - INFO -    - 성공여부: True
+2025-07-14 20:17:30,061 - INFO -    - 에러: None
+2025-07-14 20:17:30,061 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': '6a134a72-c7d3-4975-a33b-6546afbd699f'}, 'error_code': 0, 'ts': 1752491849951}
+2025-07-14 20:17:30,061 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': '6a134a72-c7d3-4975-a33b-6546afbd699f'}, 'error_code': 0, 'ts': 1752491849951}
+2025-07-14 20:17:30,061 - INFO -    - 에러코드: 0
+2025-07-14 20:17:30,062 - INFO -    - 주문ID: 6a134a72-c7d3-4975-a33b-6546afbd699f
+2025-07-14 20:17:32,063 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:17:32,180 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:17:32,180 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:17:32,181 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:17:32,181 - INFO -    - 성공여부: True
+2025-07-14 20:17:32,181 - INFO -    - 에러: None
+2025-07-14 20:17:32,181 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491852059}
+2025-07-14 20:17:32,181 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491852059}
+2025-07-14 20:17:32,181 - INFO -    - 에러코드: 10010
+2025-07-14 20:17:32,182 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:18:12,183 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:18:12,307 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:18:12,308 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:18:12,643 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:18:13,084 - DEBUG - 🎲 자가매매 거래량: 270 SPSI
+2025-07-14 20:18:13,086 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:18:13,186 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:18:13,187 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:18:13,187 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:18:13,187 - INFO -    - 성공여부: True
+2025-07-14 20:18:13,188 - INFO -    - 에러: None
+2025-07-14 20:18:13,188 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491893075}
+2025-07-14 20:18:13,188 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491893075}
+2025-07-14 20:18:13,189 - INFO -    - 에러코드: 10010
+2025-07-14 20:18:13,189 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:18:53,189 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:18:53,293 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:18:53,295 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:18:53,634 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:18:54,921 - DEBUG - 🎲 자가매매 거래량: 247 SPSI
+2025-07-14 20:18:54,922 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:18:55,249 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:18:55,249 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:18:55,250 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:18:55,250 - INFO -    - 성공여부: True
+2025-07-14 20:18:55,250 - INFO -    - 에러: None
+2025-07-14 20:18:55,250 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491934925}
+2025-07-14 20:18:55,251 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491934925}
+2025-07-14 20:18:55,251 - INFO -    - 에러코드: 10010
+2025-07-14 20:18:55,251 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:19:35,252 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:19:35,519 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:19:35,521 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:19:36,076 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:19:36,718 - DEBUG - 🎲 자가매매 거래량: 239 SPSI
+2025-07-14 20:19:36,718 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:19:36,825 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:19:36,826 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:19:36,826 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:19:36,826 - INFO -    - 성공여부: True
+2025-07-14 20:19:36,826 - INFO -    - 에러: None
+2025-07-14 20:19:36,826 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491976718}
+2025-07-14 20:19:36,827 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752491976718}
+2025-07-14 20:19:36,827 - INFO -    - 에러코드: 10010
+2025-07-14 20:19:36,827 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:20:06,828 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:06,947 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:20:06,949 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:07,096 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:20:07,125 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:07,278 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:20:07,280 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:07,403 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:20:07,405 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:07,523 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:20:07,525 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:07,648 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:20:07,649 - INFO - 📋 최소 호가창 주문 완료: 매수 0개, 매도 0개
+2025-07-14 20:20:17,651 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:17,776 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:20:17,777 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:17,912 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:20:18,582 - DEBUG - 🎲 자가매매 거래량: 168 SPSI
+2025-07-14 20:20:18,583 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:18,704 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:20:18,705 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:20:18,705 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:20:18,706 - INFO -    - 성공여부: True
+2025-07-14 20:20:18,706 - INFO -    - 에러: None
+2025-07-14 20:20:18,706 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': 'e6370f0f-ef9d-441e-913e-a37270e66cbf'}, 'error_code': 0, 'ts': 1752492018592}
+2025-07-14 20:20:18,706 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': 'e6370f0f-ef9d-441e-913e-a37270e66cbf'}, 'error_code': 0, 'ts': 1752492018592}
+2025-07-14 20:20:18,706 - INFO -    - 에러코드: 0
+2025-07-14 20:20:18,706 - INFO -    - 주문ID: e6370f0f-ef9d-441e-913e-a37270e66cbf
+2025-07-14 20:20:20,708 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:20:20,928 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:20:20,930 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:20:20,930 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:20:20,930 - INFO -    - 성공여부: True
+2025-07-14 20:20:20,930 - INFO -    - 에러: None
+2025-07-14 20:20:20,930 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492020818}
+2025-07-14 20:20:20,931 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492020818}
+2025-07-14 20:20:20,931 - INFO -    - 에러코드: 10010
+2025-07-14 20:20:20,931 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:21:00,932 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:01,073 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:21:01,075 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:01,203 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:21:03,315 - DEBUG - 🎲 자가매매 거래량: 252 SPSI
+2025-07-14 20:21:03,316 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:03,426 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:21:03,427 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:21:03,427 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:21:03,427 - INFO -    - 성공여부: True
+2025-07-14 20:21:03,427 - INFO -    - 에러: None
+2025-07-14 20:21:03,427 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': 'bc0423b9-8f79-4dbc-8ed6-9c7bc594e044'}, 'error_code': 0, 'ts': 1752492063321}
+2025-07-14 20:21:03,428 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': 'bc0423b9-8f79-4dbc-8ed6-9c7bc594e044'}, 'error_code': 0, 'ts': 1752492063321}
+2025-07-14 20:21:03,428 - INFO -    - 에러코드: 0
+2025-07-14 20:21:03,428 - INFO -    - 주문ID: bc0423b9-8f79-4dbc-8ed6-9c7bc594e044
+2025-07-14 20:21:05,429 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:05,534 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:21:05,536 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:21:05,536 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:21:05,536 - INFO -    - 성공여부: True
+2025-07-14 20:21:05,536 - INFO -    - 에러: None
+2025-07-14 20:21:05,536 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492065423}
+2025-07-14 20:21:05,536 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492065423}
+2025-07-14 20:21:05,536 - INFO -    - 에러코드: 10010
+2025-07-14 20:21:05,536 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:21:45,538 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:45,655 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:21:45,657 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:46,018 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:21:46,656 - DEBUG - 🎲 자가매매 거래량: 114 SPSI
+2025-07-14 20:21:46,658 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:46,795 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:21:46,795 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:21:46,796 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:21:46,796 - INFO -    - 성공여부: True
+2025-07-14 20:21:46,796 - INFO -    - 에러: None
+2025-07-14 20:21:46,796 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': '6d1930ba-d7b6-4b6e-be36-1680b29bb0ee'}, 'error_code': 0, 'ts': 1752492106684}
+2025-07-14 20:21:46,796 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': '6d1930ba-d7b6-4b6e-be36-1680b29bb0ee'}, 'error_code': 0, 'ts': 1752492106684}
+2025-07-14 20:21:46,796 - INFO -    - 에러코드: 0
+2025-07-14 20:21:46,797 - INFO -    - 주문ID: 6d1930ba-d7b6-4b6e-be36-1680b29bb0ee
+2025-07-14 20:21:48,798 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:21:48,916 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:21:48,917 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:21:48,917 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:21:48,917 - INFO -    - 성공여부: True
+2025-07-14 20:21:48,918 - INFO -    - 에러: None
+2025-07-14 20:21:48,918 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492108810}
+2025-07-14 20:21:48,918 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492108810}
+2025-07-14 20:21:48,918 - INFO -    - 에러코드: 10010
+2025-07-14 20:21:48,918 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:22:28,919 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:22:29,035 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:22:29,037 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:22:29,175 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:22:29,854 - DEBUG - 🎲 자가매매 거래량: 129 SPSI
+2025-07-14 20:22:29,856 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:22:29,991 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:22:29,992 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:22:29,992 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:22:29,992 - INFO -    - 성공여부: True
+2025-07-14 20:22:29,992 - INFO -    - 에러: None
+2025-07-14 20:22:29,992 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': 'cd49b502-b4f9-48b1-bb8e-00b44024efde'}, 'error_code': 0, 'ts': 1752492149881}
+2025-07-14 20:22:29,993 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': 'cd49b502-b4f9-48b1-bb8e-00b44024efde'}, 'error_code': 0, 'ts': 1752492149881}
+2025-07-14 20:22:29,993 - INFO -    - 에러코드: 0
+2025-07-14 20:22:29,993 - INFO -    - 주문ID: cd49b502-b4f9-48b1-bb8e-00b44024efde
+2025-07-14 20:22:31,994 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:22:32,188 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:22:32,189 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:22:32,189 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:22:32,189 - INFO -    - 성공여부: True
+2025-07-14 20:22:32,189 - INFO -    - 에러: None
+2025-07-14 20:22:32,189 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492152036}
+2025-07-14 20:22:32,190 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492152036}
+2025-07-14 20:22:32,190 - INFO -    - 에러코드: 10010
+2025-07-14 20:22:32,190 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:23:12,190 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:12,346 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:23:12,348 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:13,149 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:23:13,830 - DEBUG - 🎲 자가매매 거래량: 281 SPSI
+2025-07-14 20:23:13,832 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:14,190 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:23:14,191 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:23:14,191 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:23:14,191 - INFO -    - 성공여부: True
+2025-07-14 20:23:14,192 - INFO -    - 에러: None
+2025-07-14 20:23:14,192 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': 'b8a12816-78db-4d5c-95d1-edebc1d90b13'}, 'error_code': 0, 'ts': 1752492193860}
+2025-07-14 20:23:14,192 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': 'b8a12816-78db-4d5c-95d1-edebc1d90b13'}, 'error_code': 0, 'ts': 1752492193860}
+2025-07-14 20:23:14,192 - INFO -    - 에러코드: 0
+2025-07-14 20:23:14,192 - INFO -    - 주문ID: b8a12816-78db-4d5c-95d1-edebc1d90b13
+2025-07-14 20:23:16,195 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:16,319 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:23:16,320 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:23:16,320 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:23:16,320 - INFO -    - 성공여부: True
+2025-07-14 20:23:16,321 - INFO -    - 에러: None
+2025-07-14 20:23:16,321 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492196212}
+2025-07-14 20:23:16,321 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492196212}
+2025-07-14 20:23:16,321 - INFO -    - 에러코드: 10010
+2025-07-14 20:23:16,321 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:23:56,322 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:56,479 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-14 20:23:56,480 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:57,455 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-14 20:23:57,499 - DEBUG - 🎲 자가매매 거래량: 130 SPSI
+2025-07-14 20:23:57,500 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-14 20:23:57,625 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-14 20:23:57,626 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-14 20:23:57,626 - INFO - 🔍 주문 응답 디버깅:
+2025-07-14 20:23:57,627 - INFO -    - 성공여부: True
+2025-07-14 20:23:57,627 - INFO -    - 에러: None
+2025-07-14 20:23:57,627 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492237500}
+2025-07-14 20:23:57,627 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752492237500}
+2025-07-14 20:23:57,627 - INFO -    - 에러코드: 10010
+2025-07-14 20:23:57,627 - WARNING - ⚠️ 매수 주문 실패
+2025-07-14 20:24:25,934 - INFO - ⏹️ 사용자 중단 요청
+2025-07-14 20:24:25,934 - INFO - ⏹️ 마켓 메이킹 중지 요청됨
+2025-07-14 20:24:30,945 - INFO - ✅ 마켓 메이킹 완전 중지됨
+2025-07-14 20:24:30,945 - INFO - 📊 최종 통계: 거래량 0 SPSI, 수수료 $0.00
+2025-07-15 20:31:32,899 - INFO - 🏭 자가매매 마켓 메이커 시스템 V5 초기화 완료
+2025-07-15 20:31:32,902 - INFO - 📊 거래 페어: spsi_usdt
+2025-07-15 20:31:32,902 - INFO - 📈 스프레드: 0.2%
+2025-07-15 20:31:32,902 - INFO - 🎯 호가창 레이어: 3개씩 양쪽
+2025-07-15 20:31:32,902 - INFO - 💰 호가창 주문량: 500 ~ 1,500 SPSI
+2025-07-15 20:31:32,902 - INFO - 🔄 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-15 20:31:32,902 - INFO - 💰 예상 월 비용: 약 9만원 (수수료만)
+2025-07-15 20:31:32,904 - INFO - ✅ 자가매매 마켓 메이커 초기화 완료
+2025-07-15 20:31:34,313 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:31:34,583 - DEBUG - https://api.lbank.info:443 "POST /v2/orders_info_no_deal.do HTTP/1.1" 200 None
+2025-07-15 20:31:34,587 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:31:34,732 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-15 20:31:34,751 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:31:36,336 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-15 20:31:36,338 - INFO - 📍 기준 가격 설정: $0.000145
+2025-07-15 20:31:48,088 - INFO - 🏭 자가매매 마켓 메이킹 시작!
+2025-07-15 20:31:48,088 - INFO - ⚙️ 설정:
+2025-07-15 20:31:48,088 - INFO -    - 목표 거래량: 8,000 ~ 15,000 SPSI/시간
+2025-07-15 20:31:48,088 - INFO -    - 자가매매 간격: 60초
+2025-07-15 20:31:48,088 - INFO -    - 호가창 갱신: 300초
+2025-07-15 20:31:48,088 - INFO -    - 예상 월 수수료: 약 9만원
+2025-07-15 20:31:48,088 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:31:48,247 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-15 20:31:48,249 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:31:48,410 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-15 20:31:48,427 - DEBUG - 🎲 자가매매 거래량: 230 SPSI
+2025-07-15 20:31:48,429 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:31:48,564 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:31:48,564 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-15 20:31:48,564 - INFO - 🔍 주문 응답 디버깅:
+2025-07-15 20:31:48,566 - INFO -    - 성공여부: True
+2025-07-15 20:31:48,566 - INFO -    - 에러: None
+2025-07-15 20:31:48,566 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752579108451}
+2025-07-15 20:31:48,566 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752579108451}
+2025-07-15 20:31:48,566 - INFO -    - 에러코드: 10010
+2025-07-15 20:31:48,566 - WARNING - ⚠️ 매수 주문 실패
+2025-07-15 20:32:18,567 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:18,687 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-15 20:32:18,689 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:18,837 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-15 20:32:18,854 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:18,996 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:32:18,998 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:19,161 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:32:19,163 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:19,313 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:32:19,315 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:19,448 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:32:19,450 - INFO - 📋 최소 호가창 주문 완료: 매수 0개, 매도 0개
+2025-07-15 20:32:19,451 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:19,847 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-15 20:32:29,848 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:29,977 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-15 20:32:29,979 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:31,045 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-15 20:32:32,014 - DEBUG - 🎲 자가매매 거래량: 204 SPSI
+2025-07-15 20:32:32,015 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:32,138 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:32:32,139 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-15 20:32:32,139 - INFO - 🔍 주문 응답 디버깅:
+2025-07-15 20:32:32,139 - INFO -    - 성공여부: True
+2025-07-15 20:32:32,139 - INFO -    - 에러: None
+2025-07-15 20:32:32,139 - INFO -    - 원본응답: {'msg': 'Success', 'result': True, 'data': {'order_id': 'f1e73c15-cdc9-4e63-b8b9-088c0af21b29'}, 'error_code': 0, 'ts': 1752579152025}
+2025-07-15 20:32:32,140 - INFO -    - 데이터: {'msg': 'Success', 'result': True, 'data': {'order_id': 'f1e73c15-cdc9-4e63-b8b9-088c0af21b29'}, 'error_code': 0, 'ts': 1752579152025}
+2025-07-15 20:32:32,140 - INFO -    - 에러코드: 0
+2025-07-15 20:32:32,140 - INFO -    - 주문ID: f1e73c15-cdc9-4e63-b8b9-088c0af21b29
+2025-07-15 20:32:34,140 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:32:34,241 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:32:34,241 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-15 20:32:34,243 - INFO - 🔍 주문 응답 디버깅:
+2025-07-15 20:32:34,243 - INFO -    - 성공여부: True
+2025-07-15 20:32:34,243 - INFO -    - 에러: None
+2025-07-15 20:32:34,243 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752579154126}
+2025-07-15 20:32:34,243 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752579154126}
+2025-07-15 20:32:34,243 - INFO -    - 에러코드: 10010
+2025-07-15 20:32:34,243 - WARNING - ⚠️ 매수 주문 실패
+2025-07-15 20:33:14,245 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:33:14,352 - DEBUG - https://api.lbank.info:443 "GET /v2/ticker.do?symbol=spsi_usdt HTTP/1.1" 200 None
+2025-07-15 20:33:14,354 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:33:14,505 - DEBUG - https://api.lbank.info:443 "POST /v2/user_info.do HTTP/1.1" 200 None
+2025-07-15 20:33:15,588 - DEBUG - 🎲 자가매매 거래량: 289 SPSI
+2025-07-15 20:33:15,589 - DEBUG - Starting new HTTPS connection (1): api.lbank.info:443
+2025-07-15 20:33:15,726 - DEBUG - https://api.lbank.info:443 "POST /v2/create_order.do HTTP/1.1" 200 None
+2025-07-15 20:33:15,727 - DEBUG - 📡 POST /create_order.do - Status: 200
+2025-07-15 20:33:15,727 - INFO - 🔍 주문 응답 디버깅:
+2025-07-15 20:33:15,727 - INFO -    - 성공여부: True
+2025-07-15 20:33:15,728 - INFO -    - 에러: None
+2025-07-15 20:33:15,728 - INFO -    - 원본응답: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752579195613}
+2025-07-15 20:33:15,728 - INFO -    - 데이터: {'msg': 'The order price or order quantity must be greater than the minimum value', 'result': False, 'error_code': 10010, 'ts': 1752579195613}
+2025-07-15 20:33:15,728 - INFO -    - 에러코드: 10010
+2025-07-15 20:33:15,728 - WARNING - ⚠️ 매수 주문 실패
+2025-07-15 20:33:53,821 - INFO - ⏹️ 사용자 중단 요청
+2025-07-15 20:33:53,821 - INFO - ⏹️ 마켓 메이킹 중지 요청됨
+2025-07-15 20:33:55,728 - INFO - ✅ 마켓 메이킹 완전 중지됨
+2025-07-15 20:33:55,728 - INFO - 📊 최종 통계: 거래량 0 SPSI, 수수료 $0.00
