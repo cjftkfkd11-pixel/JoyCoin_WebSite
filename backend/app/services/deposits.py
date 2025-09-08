@@ -39,3 +39,8 @@ def get_user_deposits(db: Session, user: User):
         .order_by(DepositRequest.id.desc())
         .all()
     )
+
+
+admin_addr = settings.USDT_ADMIN_ADDRESS
+if not admin_addr:
+    raise HTTPException(status_code=500, detail="USDT_ADMIN_ADDRESS is not configured")

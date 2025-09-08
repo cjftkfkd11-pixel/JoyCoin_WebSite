@@ -19,15 +19,14 @@ from app.api.admin_users import router as admin_users_router
 
 app = FastAPI(title="JoyCoin Website API")
 
-origins = [
-    o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-]
+origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_list,
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],     # ✅ 모든 메서드 허용
+    allow_headers=["*"],     # ✅ 모든 헤더 허용
 )
 
 static_dir = "app/static"
