@@ -86,6 +86,14 @@ jspm_packages/
 # TernJS port file
 .tern-port
 
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Extracted archives (should not be in repo)
+joycoin-dashboard/
+
 # Backend / Python
 backend/.venv
 backend/__pycache__/
