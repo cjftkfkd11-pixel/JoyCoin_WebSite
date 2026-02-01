@@ -40,7 +40,7 @@ export default function LoginPage() {
 
         {registeredMsg && (
           <p className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm text-center">
-            회원가입이 완료되었습니다. 이메일 인증 링크를 확인한 뒤 로그인해 주세요.
+            회원가입이 완료되었습니다. 로그인해 주세요.
           </p>
         )}
 

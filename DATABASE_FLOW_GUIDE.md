@@ -65,9 +65,9 @@
 ### 4.1 흐름 개요
 
 ```
-[회원가입] → [이메일 인증] → [로그인] → [입금 요청] → [내 입금 조회]
-     │              │             │            │              │
-   /auth/signup   메일 링크    /auth/login   /deposits/request  /deposits/my
+[회원가입] → [로그인] → [입금 요청] → [내 입금 조회]
+     │            │            │              │
+   /auth/signup  /auth/login  /deposits/request  /deposits/my
 ```
 
 - **로그인 전**: 센터·상품 목록만 조회 가능 (`/centers`, `/products`).
@@ -109,7 +109,7 @@
 }
 ```
 
-- **JWT는 주지 않습니다.** 로그인하려면 다음 단계(이메일 인증 후 로그인)가 필요합니다.
+- **JWT는 주지 않습니다.** 가입 직후 로그인하려면 `POST /auth/login` 호출.
 - `referral_code`는 **본인 추천인 코드**이므로, 나를 추천한 사람에게 알려줄 때 사용합니다.
 
 **백엔드에서 하는 일**
@@ -117,40 +117,14 @@
 1. 이메일 중복 검사  
 2. `referral_code` 있으면 해당 유저 조회 → 없으면 400  
 3. `center_id` 있으면 센터 존재 여부 확인 → 없으면 400  
-4. User 생성, `referred_by` / `center_id` 설정  
+4. User 생성, `referred_by` / `center_id` 설정, `is_email_verified=True` (이메일 인증 없음)  
 5. 추천인 있으면 Referral 1건 + 추천인에게 Point 100 지급  
-6. 이메일 인증 링크 발송 (15분 유효)
 
 ---
 
-### 4.3 2단계: 이메일 인증
+### 4.3 2단계: 로그인 (POST /auth/login)
 
-**언제**: 가입 시 발송된 메일의 링크를 클릭했을 때.
-
-**사용 방법**
-
-- 브라우저에서 아래 주소로 접속 (또는 프론트에서 리다이렉트).
-
-```
-GET /auth/verify-email?token=발송된_토큰_문자열
-```
-
-**응답 예시**
-
-```json
-{
-  "message": "이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다."
-}
-```
-
-- 인증 전에는 **로그인이 막혀 있습니다** (403: 이메일 인증 필요).
-- 인증 메일 재발송: `POST /auth/request-email-verify` (body에 `email` 전달).
-
----
-
-### 4.4 3단계: 로그인 (POST /auth/login)
-
-**언제**: 이메일 인증 후, 로그인 화면에서 이메일·비밀번호 입력 후 요청.
+**언제**: 회원가입 후, 로그인 화면에서 이메일·비밀번호 입력 후 요청.
 
 **요청 예시**
 
@@ -174,7 +148,7 @@ GET /auth/verify-email?token=발송된_토큰_문자열
 
 ---
 
-### 4.5 4단계: 입금 요청 (POST /deposits/request) — 로그인 필요
+### 4.4 3단계: 입금 요청 (POST /deposits/request) — 로그인 필요
 
 **언제**: USDT를 입금할 예정일 때. 네트워크(체인)와 금액만 보내면, 입금할 주소와 예상 금액을 받습니다.
 
@@ -221,7 +195,7 @@ Body:
 
 ---
 
-### 4.6 5단계: 내 입금 목록 조회 (GET /deposits/my) — 로그인 필요
+### 4.5 4단계: 내 입금 목록 조회 (GET /deposits/my) — 로그인 필요
 
 **언제**: 마이페이지·입금 내역 화면에서 “내가 요청한 입금” 목록을 볼 때.
 
@@ -332,8 +306,6 @@ Body:
 | GET | /products | 상품 목록 (구매 페이지용) |
 | POST | /auth/signup | 회원가입 |
 | POST | /auth/login | 로그인 |
-| GET | /auth/verify-email?token=... | 이메일 인증 |
-| POST | /auth/request-email-verify | 인증 메일 재발송 |
 
 ---
 
@@ -355,9 +327,8 @@ Body:
 
 ```
 [회원가입]
-  → users 1건
+  → users 1건 (is_email_verified=True, 이메일 인증 없음)
   → (선택) referrals 1건 + points 1건(추천인)
-  → 이메일 발송 (verify 링크)
 
 [로그인]
   → users 조회 + JWT 발급 (DB 쓰기 없음)
@@ -382,15 +353,13 @@ Body:
    - `GET /centers`, `GET /products` 로 목록 확인.
 3. **회원가입**  
    - `POST /auth/signup` (username 필수, referral_code·center_id 선택).
-4. **이메일 인증**  
-   - 메일의 `GET /auth/verify-email?token=...` 링크 클릭.
-5. **로그인**  
+4. **로그인**  
    - `POST /auth/login` → `access` 토큰 저장.
-6. **입금 요청**  
+5. **입금 요청**  
    - `POST /deposits/request` (Authorization: Bearer + chain, amount_usdt).
-7. **내 입금 보기**  
+6. **내 입금 보기**  
    - `GET /deposits/my` 로 status(pending/approved/rejected) 확인.
-8. **관리자**  
+7. **관리자**  
    - 관리자 계정으로 로그인 → `GET /admin/deposits`, `POST .../approve` 또는 `.../reject`.
 
 이 순서대로 사용하면, 현재 데이터베이스와 API 흐름을 그대로 따를 수 있습니다.

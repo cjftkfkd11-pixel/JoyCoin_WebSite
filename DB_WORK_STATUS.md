@@ -23,7 +23,7 @@
 |--------|------|------|
 | /centers | `api/centers.py` | GET 목록 (is_active=True) |
 | /products | `api/products.py` | GET 목록 (가격, 할인율, sort_order) |
-| /auth | `api/auth.py` | signup(추천인·센터·포인트), login, verify-email |
+| /auth | `api/auth.py` | signup(추천인·센터·포인트), login (이메일 인증 없음) |
 | /deposits | `api/deposits.py` | POST /request, GET /my |
 | /admin/deposits | `api/admin_deposits.py` | GET 목록, POST /{id}/approve, /{id}/reject |
 | /admin/users | `api/admin_users.py` | GET 목록, POST /{id}/promote |
