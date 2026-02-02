@@ -1,9 +1,12 @@
 "use client";
-import { useState } from "react";
-import { signup } from "@/lib/api";
-import { useRouter } from "next/navigation";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
+  const router = useRouter();
+
+  // 1. 모든 필드 상태 통합
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -11,13 +14,14 @@ export default function SignupPage() {
   const [centerId, setCenterId] = useState("");
   const [ref, setRef] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSignup = async (e: React.FormEvent) => {
+  // 2. 회원가입 처리 로직 (보안 검증 + API 연동)
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    // [보안 검증] 윤성 님의 로직 유지
     if (password.length < 12) {
       setError("비밀번호는 12자 이상이어야 합니다.");
       return;
@@ -31,127 +35,112 @@ export default function SignupPage() {
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
+
     try {
-      await signup({
-        email,
-        password,
-        username: username.trim(),
-        referral_code: ref.trim() || undefined,
-        center_id: centerId ? Number(centerId) : undefined,
+      // [성진 형님 백엔드 규격] 필드명 일치화
+      const response = await fetch('http://localhost:8000/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: email,        // 서버 규격: 이메일을 username으로 사용
+          password: password,
+          nickname: username.trim(), // 추가 필드: 이름/닉네임
+          center_id: centerId ? Number(centerId) : null, // 숫자 변환
+          referral_code: ref.trim() || null // 추천인 코드
+        }),
       });
-      // 백엔드는 JWT를 주지 않음 → 이메일 인증 후 로그인 필요
-      router.push("/auth/login?registered=1");
-    } catch (e: any) {
-      setError(e.message || "회원가입 실패");
+
+      if (response.ok) {
+        alert("회원가입 성공! 이제 로그인을 해주세요.");
+        router.push('/auth/login?registered=1'); // 로그인 페이지로 이동
+      } else {
+        const data = await response.json();
+        setError(data.detail || "가입 실패. 입력 정보를 확인하세요.");
+      }
+    } catch (err) {
+      setError("서버 연결 실패! 백엔드 서버가 켜져 있는지 확인하세요.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="glass p-8 md:p-12 rounded-3xl w-full max-w-md shadow-2xl border border-slate-700/50">
-        <h2 className="text-3xl font-black mb-8 text-center text-white">회원가입</h2>
-        
-        <form onSubmit={onSignup} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">이메일</label>
+    <div className="min-h-screen flex items-center justify-center bg-[#020617] p-6 text-white font-sans">
+      <div className="glass p-10 rounded-[2.5rem] w-full max-w-md border border-blue-500/10 shadow-2xl relative">
+        <div className="text-center mb-8">
+          <h2 className="text-blue-500 text-xs font-black uppercase tracking-[0.4em] mb-2 text-glow">Join JoyCoin</h2>
+          <h1 className="text-3xl font-black italic">SIGN UP</h1>
+        </div>
+
+        <form onSubmit={handleSignup} className="space-y-4">
+          {/* Email / Username */}
+          <div className="space-y-1">
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Email Address</label>
             <input 
-              type="email"
-              value={email} 
-              onChange={e => setEmail(e.target.value)}
-              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition text-white"
-              placeholder="이메일을 입력하세요"
-              required
+              type="email" placeholder="example@joy.com" required value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">비밀번호</label>
+          {/* Nickname */}
+          <div className="space-y-1">
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Display Name</label>
             <input 
-              type="password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)}
-              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition text-white"
-              placeholder="12자 이상 입력하세요"
-              required
+              type="text" placeholder="2자 이상 닉네임" required value={username} onChange={(e) => setUsername(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">비밀번호 확인</label>
-            <input 
-              type="password" 
-              value={confirm} 
-              onChange={e => setConfirm(e.target.value)}
-              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition text-white"
-              placeholder="비밀번호를 다시 입력하세요"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">이름 / 닉네임</label>
-            <input
-              type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition text-white"
-              placeholder="2자 이상"
-              minLength={2}
-              required
-            />
-          </div>
+          
+          {/* Password & Confirm */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">센터 ID</label>
-              <input
-                type="number"
-                min={1}
-                value={centerId}
-                onChange={e => setCenterId(e.target.value)}
-                className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition text-white"
-                placeholder="선택 (1,2,3…)"
+            <div className="space-y-1">
+              <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Password</label>
+              <input 
+                type="password" placeholder="12자 이상" required value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-sm focus:border-blue-500 outline-none"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">추천인 코드</label>
-              <input
-                type="text"
-                value={ref}
-                onChange={e => setRef(e.target.value)}
-                className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition text-white"
-                placeholder="선택 (JOY…)"
+            <div className="space-y-1">
+              <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Confirm</label>
+              <input 
+                type="password" placeholder="비밀번호 확인" required value={confirm} onChange={(e) => setConfirm(e.target.value)}
+                className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-sm focus:border-blue-500 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Center & Referral */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Center ID</label>
+              <input 
+                type="number" placeholder="ID (1, 2...)" value={centerId} onChange={(e) => setCenterId(e.target.value)}
+                className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-sm outline-none"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Referral</label>
+              <input 
+                type="text" placeholder="Code (JOY...)" value={ref} onChange={(e) => setRef(e.target.value)}
+                className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-sm outline-none"
               />
             </div>
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm text-center font-bold bg-red-500/10 py-3 rounded-xl border border-red-500/20">
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-[10px] font-bold text-center">
               {error}
-            </p>
+            </div>
           )}
 
           <button 
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-black text-lg rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+            type="submit" disabled={isLoading}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-xl shadow-blue-900/20 active:scale-95 transition-all mt-4"
           >
-            {loading ? "회원가입 중..." : "회원가입"}
+            {isLoading ? "PROCESSING..." : "REGISTER NOW"}
           </button>
         </form>
-
-        <div className="mt-10 pt-6 border-t border-slate-800 text-center">
-          <div className="flex flex-wrap justify-center gap-6 text-sm font-bold uppercase tracking-widest">
-            <a href="/auth/login" className="text-slate-500 hover:text-white transition">
-              로그인
-            </a>
-            <a href="/" className="text-slate-500 hover:text-white transition">
-              홈으로
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   );

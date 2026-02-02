@@ -1,23 +1,23 @@
 services:
-  frontend:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.frontend
-    container_name: joycoin-frontend
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./env/.env
-    environment:
-      - NEXT_PUBLIC_API_BASE=http://localhost:8000
-      - NODE_ENV=development
-    volumes:
-      - ../frontend:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - web
-    restart: unless-stopped
+#  frontend:
+#    build:
+#      context: ..
+#      dockerfile: deploy/Dockerfile.frontend
+#    container_name: joycoin-frontend
+#    ports:
+#      - "3000:3000"
+#    env_file:
+#      - ./env/.env
+#    environment:
+#      - NEXT_PUBLIC_API_BASE=http://localhost:8000
+#      - NODE_ENV=development
+#    volumes:
+#      - ../frontend:/app
+#      - /app/node_modules
+#      - /app/.next
+#    depends_on:
+#      - web
+#    restart: unless-stopped
 
   web:
     build:

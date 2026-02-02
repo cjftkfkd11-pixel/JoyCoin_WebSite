@@ -16,7 +16,7 @@
     "react-qr-code": "^2.0.18"
   },
   "devDependencies": {
-    "@types/node": "20.11.30",
+    "@types/node": "^20.11.30",
     "@types/react": "18.2.79",
     "autoprefixer": "10.4.19",
     "eslint": "8.57.0",

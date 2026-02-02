@@ -1,0 +1,16 @@
+# frontend
+frontend/.next
+
+# backend
+backend/__pycache__
+backend/.venv
+backend/.pytest_cache
+
+# common
+.git
+.gitignore
+.env
+.env.*
+node_modules
+__pycache__
+.DS_Store
