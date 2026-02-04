@@ -10,15 +10,7 @@ const maskEmail = (email: string) => {
   return `${name.substring(0, 2)}***@${domain}`;
 };
 
-const getCookie = (name: string) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-};
-
-const deleteCookie = (name: string) => {
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-};
+// HttpOnly 쿠키를 사용하므로 getCookie, deleteCookie 함수는 불필요
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -45,9 +37,6 @@ export default function AdminDashboard() {
         setIsLoading(true);
         const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
         const response = await fetch(`${API_BASE_URL}/admin/requests`, {
-          headers: {
-            'Authorization': `Bearer ${getCookie('accessToken')}`
-          },
           credentials: 'include'
         });
 
@@ -95,10 +84,19 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    deleteCookie('accessToken');
-    alert("로그아웃 되었습니다.");
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      alert("로그아웃 되었습니다.");
+      router.push('/admin/login');
+    } catch (err) {
+      console.error("로그아웃 실패:", err);
+      router.push('/admin/login');
+    }
   };
 
   // --- [Render Conditions] ---

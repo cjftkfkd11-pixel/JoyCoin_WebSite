@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 
 export default function MyPage() {
   const router = useRouter();
-  
+
   // 상태 관리
-  const [user, setUser] = useState<any>(null); // 유저 정보
-  const [deposits, setDeposits] = useState<any[]>([]); // 입금 내역 목록
+  const [user, setUser] = useState<any>(null);
+  const [deposits, setDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -18,7 +18,7 @@ export default function MyPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // 1. 내 정보와 입금 내역을 동시에 요청
         const [userRes, depositRes] = await Promise.all([
           fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
@@ -30,14 +30,13 @@ export default function MyPage() {
           const userData = await userRes.json();
           setUser(userData);
         } else if (userRes.status === 401) {
-          router.push('/auth/login'); // 로그인 안됐으면 튕기기
+          router.push('/auth/login');
           return;
         }
 
-        // 3. 입금 내역 처리 (동료분이 요청한 GET /deposits/my)
+        // 3. 입금 내역 처리
         if (depositRes.ok) {
           const depositData = await depositRes.json();
-          // 백엔드 응답이 { items: [...] } 형태일 경우 처리
           setDeposits(depositData.items || depositData);
         }
 
@@ -62,22 +61,42 @@ export default function MyPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      router.push('/auth/login');
+    } catch (err) {
+      console.error("로그아웃 실패:", err);
+      router.push('/auth/login');
+    }
+  };
+
   if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic">LOADING DASHBOARD...</div>;
 
   return (
     <div className="min-h-screen bg-[#020617] text-white p-8 font-sans">
       <div className="max-w-4xl mx-auto">
-        
+
         {/* 헤더 */}
         <div className="flex justify-between items-center mb-12">
-          <h1 className="text-4xl font-black italic text-blue-500 uppercase tracking-tighter italic">My Joy</h1>
-          <button 
-            onClick={() => router.push('/auth/login')} 
+          <h1 className="text-4xl font-black italic text-blue-500 uppercase tracking-tighter">My Joy</h1>
+          <button
+            onClick={handleLogout}
             className="text-xs font-bold text-red-500 hover:text-red-400 transition-all underline underline-offset-8"
           >
             LOGOUT
           </button>
         </div>
+
+        {/* 에러 메시지 */}
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center rounded-2xl font-bold">
+            {errorMessage}
+          </div>
+        )}
 
         {/* 상단 카드: 잔액 및 정보 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -85,12 +104,15 @@ export default function MyPage() {
             <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Account Profile</h2>
             <p className="text-2xl font-black mb-2">{user?.username || 'User'}</p>
             <p className="text-xs text-slate-500">{user?.email}</p>
+            {user?.center && (
+              <p className="text-xs text-slate-600 mt-2">센터: {user.center.name}</p>
+            )}
           </div>
 
           <div className="glass p-8 rounded-[2rem] border border-blue-500/10 shadow-xl bg-gradient-to-br from-blue-600/20 to-transparent">
             <h2 className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-4">Current Balance</h2>
             <p className="text-4xl font-black text-blue-400 mb-6">{user?.balance?.toLocaleString() || '0'} <span className="text-xs">JOY</span></p>
-            <button 
+            <button
               onClick={() => router.push('/buy')}
               className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-black text-sm transition-all shadow-lg shadow-blue-900/30"
             >
@@ -99,10 +121,10 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* 동료형 숙제: 내 입금 내역 목록 (GET /deposits/my) */}
+        {/* 입금 내역 목록 */}
         <div className="glass p-8 rounded-[2.5rem] border border-slate-800/50 bg-slate-900/20 shadow-2xl">
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] mb-8">Deposit History</h2>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>

@@ -1,5 +1,44 @@
 # JoyCoin Project - Development Notes
 
+## 최근 작업 (2026-02-04)
+
+### 페이지 구조 정리 완료
+1. **통합 및 개선**
+   - `/mypage` 페이지를 완전한 마이페이지로 개선
+   - 유저 정보, 잔액, 입금 내역 모두 통합
+   - 로그아웃 기능 추가 (API 연동)
+
+2. **중복 페이지 제거**
+   - `/deposits` 폴더 삭제 (mypage와 중복)
+   - `/purchase` 폴더 삭제 (buy로 통합)
+
+3. **라우팅 일관성 확보**
+   - 마이페이지: `/mypage` (통일)
+   - 구매 페이지: `/buy` (통일)
+
+4. **인증 방식 통일**
+   - `admin/dashboard` 인증을 HttpOnly 쿠키로 변경
+   - 모든 페이지에서 `credentials: 'include'` 사용
+   - `getCookie`, `deleteCookie` 함수 제거 (불필요)
+
+### 현재 페이지 구조
+```
+frontend/src/app/
+  ├── auth/
+  │   ├── login/        - 사용자 로그인
+  │   └── signup/       - 사용자 회원가입
+  ├── admin/
+  │   ├── login/        - 관리자 로그인
+  │   ├── signup/       - 관리자 회원가입
+  │   ├── dashboard/    - 관리자 대시보드
+  │   └── referrers/    - 추천인 관리
+  ├── buy/              - 패키지 구매 (API 연동)
+  ├── mypage/           - 마이페이지 (유저 정보 + 잔액 + 입금 내역)
+  └── page.tsx          - 메인 페이지
+```
+
+---
+
 ## API Schemas
 
 ### Backend Centers API Response
@@ -34,6 +73,10 @@
    - **수정됨 (2026-02-03)**: admin/signup/page.tsx에서 email/username 필드 수정
 
 3. **HttpOnly 쿠키 사용시**: `credentials: 'include'` 필수
+   - **수정됨 (2026-02-04)**: admin/dashboard에서 getCookie 제거, credentials: 'include'로 통일
+
+4. **페이지 중복 금지**: 비슷한 기능의 페이지는 하나로 통합
+   - **수정됨 (2026-02-04)**: /deposits와 /mypage 통합, /purchase와 /buy 통합
 
 ### Backend
 1. **SQLAlchemy 관계**: foreign_keys 명시 필요한 경우 양쪽 모두 설정

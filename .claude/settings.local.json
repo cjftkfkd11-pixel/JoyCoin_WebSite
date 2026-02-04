@@ -10,7 +10,9 @@
       "Bash(npm i:*)",
       "Bash(npm run build:*)",
       "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:8000/healthz\")",
-      "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:8000/centers | ConvertTo-Json\")"
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:8000/centers | ConvertTo-Json\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
