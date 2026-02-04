@@ -6,9 +6,7 @@ from typing import Optional
 
 class DepositRequestIn(BaseModel):
     chain: str = Field(..., pattern="^(TRC20|ERC20|BSC|Polygon)$")
-    amount_usdt: float
-    joy_amount: int = Field(..., gt=0)
-    sender_name: str = Field(..., min_length=1, max_length=100)
+    amount_usdt: float = Field(..., gt=0, le=1_000_000, description="USDT 금액 (0 초과, 100만 이하)")
 
 
 class DepositRequestOut(BaseModel):
@@ -17,9 +15,7 @@ class DepositRequestOut(BaseModel):
     purchase_id: Optional[int] = None
     chain: str
     assigned_address: str
-    sender_name: str
     expected_amount: float
-    joy_amount: int
     actual_amount: Optional[float] = None
     status: str
     admin_id: Optional[int] = None
@@ -28,8 +24,3 @@ class DepositRequestOut(BaseModel):
     created_at: datetime
 
     model_config = dict(from_attributes=True)
-
-
-class DepositApproveIn(BaseModel):
-    actual_amount: Optional[float] = None
-    admin_notes: Optional[str] = None

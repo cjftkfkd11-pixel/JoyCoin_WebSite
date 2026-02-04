@@ -1,10 +1,19 @@
 # backend/app/models/user.py
 from datetime import datetime
 from sqlalchemy import String, Integer, DateTime, Boolean, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from app.core.db import Base
+from app.core.enums import UserRole
 import secrets
 import string
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.center import Center
+    from app.models.purchase import Purchase
+    from app.models.deposit_request import DepositRequest
+    from app.models.point import Point
+    from app.models.referral import Referral
 
 
 def generate_referral_code() -> str:
@@ -51,7 +60,7 @@ class User(Base):
     )
     
     # 권한 및 상태
-    role: Mapped[str] = mapped_column(String(16), default="user", nullable=False)
+    role: Mapped[str] = mapped_column(String(16), default=UserRole.USER.value, nullable=False)
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
@@ -113,6 +122,14 @@ class User(Base):
         foreign_keys="[Referral.referred_id]",
         back_populates="referred"
     )
+
+    @validates('role')
+    def validate_role(self, key, value):
+        """C4: Role 값이 유효한지 검증"""
+        valid_roles = [r.value for r in UserRole]
+        if value not in valid_roles:
+            raise ValueError(f"유효하지 않은 role 값입니다: {value}. 허용값: {valid_roles}")
+        return value
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, referral_code={self.referral_code})>"

@@ -1,5 +1,5 @@
 // frontend/src/lib/api.ts
-const BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 // fetch wrapper
 type ApiOptions = { method?: string; headers?: Record<string, string>; body?: any };

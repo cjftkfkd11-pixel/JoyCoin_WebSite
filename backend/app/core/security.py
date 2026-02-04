@@ -1,11 +1,6 @@
-import os
 from passlib.hash import argon2
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
-
-JWT_SECRET = os.getenv("JWT_SECRET", "change_me")
-JWT_EXPIRE_MIN = int(os.getenv("JWT_EXPIRE_MIN", "20"))
-ALGO = "HS256"
 
 
 def hash_password(plain: str) -> str:
@@ -20,10 +15,11 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(*, user_id: int, minutes: int, secret: str) -> str:
-    now = datetime.utcnow()
+    """JWT 액세스 토큰 생성 (H1: 통합된 유일한 토큰 생성 함수)"""
+    now = datetime.now(timezone.utc)
     payload = {
-        "sub": str(user_id),  # ✅ 항상 문자열 형태의 정수 id
-        "iat": now,
-        "exp": now + timedelta(minutes=minutes),
+        "sub": str(user_id),
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(minutes=minutes)).timestamp()),
     }
     return jwt.encode(payload, secret, algorithm="HS256")

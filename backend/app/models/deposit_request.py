@@ -1,8 +1,11 @@
 # backend/app/models/deposit_request.py
 from datetime import datetime
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Numeric, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from app.core.db import Base
+from app.core.enums import DepositStatus, BlockchainNetwork
+from app.models.purchase import Purchase
+from app.models.user import User
 
 
 class DepositRequest(Base):
@@ -50,10 +53,10 @@ class DepositRequest(Base):
     # 상태
     status: Mapped[str] = mapped_column(
         String(20),
-        default="pending",
+        default=DepositStatus.PENDING.value,
         nullable=False,
         index=True
-    )  # pending, approved, rejected
+    )
     
     # 처리한 관리자
     admin_id: Mapped[int | None] = mapped_column(
@@ -76,7 +79,15 @@ class DepositRequest(Base):
         server_default=func.now(),
         nullable=False
     )
-    
+
+    # M1: 감사 추적용 업데이트 시각
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
+
     # Relationships
     user: Mapped["User"] = relationship(
         "User",
@@ -89,6 +100,22 @@ class DepositRequest(Base):
         foreign_keys=[admin_id],
         backref="processed_deposits"
     )
+
+    @validates('status')
+    def validate_status(self, key, value):
+        """C5: Status 값이 유효한지 검증"""
+        valid_statuses = [s.value for s in DepositStatus]
+        if value not in valid_statuses:
+            raise ValueError(f"유효하지 않은 status 값입니다: {value}. 허용값: {valid_statuses}")
+        return value
+
+    @validates('chain')
+    def validate_chain(self, key, value):
+        """블록체인 네트워크 값이 유효한지 검증"""
+        valid_chains = [c.value for c in BlockchainNetwork]
+        if value not in valid_chains:
+            raise ValueError(f"유효하지 않은 chain 값입니다: {value}. 허용값: {valid_chains}")
+        return value
 
     def __repr__(self):
         return f"<DepositRequest(id={self.id}, user_id={self.user_id}, status={self.status})>"

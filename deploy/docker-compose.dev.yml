@@ -1,23 +1,23 @@
 services:
-  frontend:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.frontend
-    container_name: joycoin-frontend
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./env/.env
-    environment:
-      - NEXT_PUBLIC_API_BASE=http://localhost:8000
-      - NODE_ENV=development
-    volumes:
-      - ../frontend:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - web
-    restart: unless-stopped
+#  frontend:
+#    build:
+#      context: ..
+#      dockerfile: deploy/Dockerfile.frontend
+#    container_name: joycoin-frontend
+#    ports:
+#      - "3000:3000"
+#    env_file:
+#      - ./env/.env
+#    environment:
+#      - NEXT_PUBLIC_API_BASE=http://localhost:8000
+#      - NODE_ENV=development
+#    volumes:
+#      - ../frontend:/app
+#      - /app/node_modules
+#      - /app/.next
+#    depends_on:
+#      - web
+#    restart: unless-stopped
 
   web:
     build:
@@ -33,8 +33,10 @@ services:
     volumes:
       - ../backend:/app
     depends_on:
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   redis:
     image: redis:7-alpine
@@ -52,4 +54,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./docker-data/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  postgres_data:

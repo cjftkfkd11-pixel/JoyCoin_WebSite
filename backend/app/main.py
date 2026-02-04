@@ -12,6 +12,7 @@ from app.api.auth import router as auth_router
 from app.api.deposits import router as deposits_router
 from app.api.admin_deposits import router as admin_deposits_router
 from app.api.admin_users import router as admin_users_router
+from app.api.admin_settings import router as admin_settings_router
 from app.api.centers import router as centers_router
 from app.api.products import router as products_router
 from app.api.notifications import router as notifications_router
@@ -19,6 +20,7 @@ from app.api.notifications import router as notifications_router
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.security import hash_password
+from app.core.enums import UserRole
 
 # 새로운 모델 import
 from app.models import (
@@ -99,8 +101,8 @@ def seed_super_admin():
     with next(get_db()) as db:
         exists = db.query(User).filter(User.email == settings.SUPER_ADMIN_EMAIL).first()
         if exists:
-            if exists.role != "admin":
-                exists.role = "admin"
+            if exists.role != UserRole.ADMIN.value:
+                exists.role = UserRole.ADMIN.value
                 db.commit()
             return
 
@@ -108,7 +110,7 @@ def seed_super_admin():
             email=settings.SUPER_ADMIN_EMAIL,
             password_hash=hash_password(settings.SUPER_ADMIN_PASSWORD),
             username="SuperAdmin",
-            role="admin",
+            role=UserRole.ADMIN.value,
             is_email_verified=True,
         )
         db.add(admin)
@@ -183,6 +185,7 @@ app.include_router(auth_router)
 app.include_router(deposits_router)
 app.include_router(admin_deposits_router)
 app.include_router(admin_users_router)
+app.include_router(admin_settings_router)
 app.include_router(centers_router)
 app.include_router(products_router)
 app.include_router(notifications_router)

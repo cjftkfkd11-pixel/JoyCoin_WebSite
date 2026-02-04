@@ -7,15 +7,14 @@
       "Bash(dir:*)",
       "Bash(findstr:*)",
       "Bash(docker compose:*)",
-      "Bash(python -m uvicorn:*)",
-      "Bash(npm run dev:*)",
-      "Bash(npm install:*)",
-      "Bash(pip install:*)",
-      "Bash(docker ps:*)",
-      "Bash(docker restart:*)",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzcwMjE0NjUwLCJleHAiOjE3NzAyMTU4NTB9.8k-HYkd3kpek2OstANrT3L7DD7-PLQcxe8ydQZRNTi0\")",
-      "Bash(ADMIN_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzcwMjE0ODIzLCJleHAiOjE3NzAyMTYwMjN9.jdgXyDcC29lHQ2xcOGKa1NsaMXFW3HElqnLebYe_aAk\")",
-      "Bash(xargs -I {} curl -s http://localhost:8000/auth/me -H \"Authorization: Bearer {}\")"
+      "Bash(npm i:*)",
+      "Bash(npm run build:*)",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:8000/healthz\")",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:8000/centers | ConvertTo-Json\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(python:*)"
     ]
   }
 }
