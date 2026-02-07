@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -44,6 +45,12 @@ function LoginForm() {
             {isLoading ? "AUTHENTICATING..." : "SIGN IN"}
           </button>
         </form>
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          계정이 없으신가요?{' '}
+          <Link href="/auth/signup" className="text-blue-500 hover:text-blue-400 font-semibold">
+            회원가입
+          </Link>
+        </p>
       </div>
     </div>
   );

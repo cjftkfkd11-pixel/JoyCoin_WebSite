@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -108,11 +109,17 @@ export default function SignupPage() {
 
           {error && <p className="text-red-400 text-xs text-center font-bold animate-pulse">{error}</p>}
 
-          <button type="submit" disabled={loading} 
+          <button type="submit" disabled={loading}
             className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black transition-all active:scale-95">
             {loading ? "PROCESSING..." : "JOIN JOYCOIN"}
           </button>
         </form>
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          이미 계정이 있으신가요?{' '}
+          <Link href="/auth/login" className="text-blue-500 hover:text-blue-400 font-semibold">
+            로그인
+          </Link>
+        </p>
       </div>
     </div>
   );
