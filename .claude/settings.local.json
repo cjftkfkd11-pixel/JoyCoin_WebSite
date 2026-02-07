@@ -16,7 +16,9 @@
       "Bash(python -m py_compile:*)",
       "Bash(python:*)",
       "Bash(git rebase:*)",
-      "Bash(GIT_EDITOR=true git rebase:*)"
+      "Bash(GIT_EDITOR=true git rebase:*)",
+      "Bash(taskkill:*)",
+      "Bash(docker restart:*)"
     ]
   }
 }
