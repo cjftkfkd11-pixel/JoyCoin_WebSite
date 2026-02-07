@@ -18,7 +18,12 @@
       "Bash(git rebase:*)",
       "Bash(GIT_EDITOR=true git rebase:*)",
       "Bash(taskkill:*)",
-      "Bash(docker restart:*)"
+      "Bash(docker restart:*)",
+      "Bash(git push:*)",
+      "Bash(docker inspect:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(docker exec:*)"
     ]
   }
 }
