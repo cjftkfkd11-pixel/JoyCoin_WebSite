@@ -157,3 +157,33 @@ async def get_me(current_user: User = Depends(get_current_user)):
 def logout(response: Response):
     response.delete_cookie("accessToken", path="/")
     return {"message": "로그아웃 성공"}
+
+
+# ---------------------------------------------------------
+# 5. 비밀번호 변경
+# ---------------------------------------------------------
+from pydantic import BaseModel, Field
+
+class ChangePasswordIn(BaseModel):
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=12)
+
+@router.post("/change-password")
+async def change_password(
+    data: ChangePasswordIn,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 현재 비밀번호 확인
+    if not verify_password(data.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="현재 비밀번호가 올바르지 않습니다.")
+
+    # 새 비밀번호가 현재 비밀번호와 같은지 확인
+    if data.current_password == data.new_password:
+        raise HTTPException(status_code=400, detail="새 비밀번호는 현재 비밀번호와 달라야 합니다.")
+
+    # 비밀번호 변경
+    current_user.password_hash = hash_password(data.new_password)
+    db.commit()
+
+    return {"message": "비밀번호가 성공적으로 변경되었습니다."}

@@ -14,6 +14,18 @@ export default function MyPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // 비밀번호 변경 상태
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
+
+  // 알림 상태
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
   useEffect(() => {
@@ -29,7 +41,19 @@ export default function MyPage() {
         const depositRes = await fetch(`${API_BASE_URL}/deposits/my`, { credentials: 'include' });
         if (depositRes.ok) {
           const depositData = await depositRes.json();
-          setDeposits(depositData.items || depositData);
+          const items = depositData.items || depositData;
+          setDeposits(items);
+
+          // 알림 확인: 최근 승인/거절된 내역 중 아직 확인하지 않은 것
+          const seenNotifs = JSON.parse(localStorage.getItem('seenNotifications') || '[]');
+          const newNotifs = items.filter((dep: any) =>
+            (dep.status === 'approved' || dep.status === 'rejected') &&
+            !seenNotifs.includes(dep.id)
+          );
+          setNotifications(newNotifs);
+          if (newNotifs.length > 0) {
+            setShowNotifications(true);
+          }
         }
       } catch (err) {
         console.error("데이터 로드 실패:", err);
@@ -56,10 +80,166 @@ export default function MyPage() {
     window.location.href = '/';
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: 'error', text: locale === 'ko' ? '새 비밀번호가 일치하지 않습니다.' : 'New passwords do not match.' });
+      return;
+    }
+    if (newPassword.length < 12) {
+      setPasswordMessage({ type: 'error', text: locale === 'ko' ? '비밀번호는 12자 이상이어야 합니다.' : 'Password must be at least 12 characters.' });
+      return;
+    }
+
+    setPasswordLoading(true);
+    setPasswordMessage({ type: '', text: '' });
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+
+      if (res.ok) {
+        setPasswordMessage({ type: 'success', text: locale === 'ko' ? '비밀번호가 변경되었습니다.' : 'Password changed successfully.' });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setTimeout(() => setShowPasswordModal(false), 1500);
+      } else {
+        const error = await res.json();
+        setPasswordMessage({ type: 'error', text: error.detail || (locale === 'ko' ? '비밀번호 변경 실패' : 'Failed to change password') });
+      }
+    } catch {
+      setPasswordMessage({ type: 'error', text: locale === 'ko' ? '서버 연결 실패' : 'Server connection failed' });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   if (authLoading || loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic">{t("loading").toUpperCase()}</div>;
 
   return (
     <div className="min-h-screen bg-[#020617] text-white p-8 font-sans">
+      {/* 알림 모달 */}
+      {showNotifications && notifications.length > 0 && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+          <div className="glass p-8 rounded-[2rem] w-full max-w-md border border-blue-500/20 shadow-2xl relative">
+            <h2 className="text-xl font-black text-blue-500 mb-6 flex items-center gap-2">
+              <span className="text-2xl">🔔</span>
+              {locale === 'ko' ? '알림' : 'Notifications'}
+            </h2>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {notifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  className={`p-4 rounded-xl border ${
+                    notif.status === 'approved'
+                      ? 'bg-green-500/10 border-green-500/20'
+                      : 'bg-red-500/10 border-red-500/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">{notif.status === 'approved' ? '✅' : '❌'}</span>
+                    <span className={`text-sm font-black ${notif.status === 'approved' ? 'text-green-400' : 'text-red-400'}`}>
+                      {notif.status === 'approved'
+                        ? (locale === 'ko' ? '입금 승인됨' : 'Deposit Approved')
+                        : (locale === 'ko' ? '입금 거절됨' : 'Deposit Rejected')
+                      }
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    {notif.expected_amount} USDT → {(notif.joy_amount || 0).toLocaleString()} JOY
+                  </p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                const seenNotifs = JSON.parse(localStorage.getItem('seenNotifications') || '[]');
+                const newSeen = [...seenNotifs, ...notifications.map((n: any) => n.id)];
+                localStorage.setItem('seenNotifications', JSON.stringify(newSeen));
+                setShowNotifications(false);
+                setNotifications([]);
+              }}
+              className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-black transition-all"
+            >
+              {locale === 'ko' ? '확인' : 'OK'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 비밀번호 변경 모달 */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+          <div className="glass p-8 rounded-[2rem] w-full max-w-md border border-blue-500/20 shadow-2xl relative">
+            <button
+              onClick={() => { setShowPasswordModal(false); setPasswordMessage({ type: '', text: '' }); }}
+              className="absolute top-4 right-4 text-slate-500 hover:text-white text-xl font-bold"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-black text-blue-500 mb-6">
+              {locale === 'ko' ? '비밀번호 변경' : 'Change Password'}
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
+                  {locale === 'ko' ? '현재 비밀번호' : 'Current Password'}
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
+                  {locale === 'ko' ? '새 비밀번호 (12자 이상)' : 'New Password (min 12 chars)'}
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
+                  {locale === 'ko' ? '새 비밀번호 확인' : 'Confirm New Password'}
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
+              {passwordMessage.text && (
+                <div className={`p-3 rounded-xl text-xs font-bold text-center ${
+                  passwordMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                }`}>
+                  {passwordMessage.text}
+                </div>
+              )}
+              <button
+                onClick={handleChangePassword}
+                disabled={passwordLoading}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 rounded-xl font-black transition-all"
+              >
+                {passwordLoading ? t("loading") : (locale === 'ko' ? '변경하기' : 'Change')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto">
 
         {/* 헤더 */}
@@ -87,8 +267,28 @@ export default function MyPage() {
             <p className="text-2xl font-black mb-2">{user?.username || 'User'}</p>
             <p className="text-xs text-slate-500">{user?.email}</p>
             {user?.referral_code && (
-              <p className="text-xs text-slate-600 mt-2">{t("myReferralCode")}: {user.referral_code}</p>
+              <div className="mt-4 p-3 bg-slate-800/50 rounded-xl">
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{t("myReferralCode")}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-mono font-bold text-blue-400">{user.referral_code}</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(user.referral_code || '');
+                      alert(locale === 'ko' ? '복사되었습니다!' : 'Copied!');
+                    }}
+                    className="text-[10px] font-bold text-blue-400 hover:text-blue-300 px-3 py-1 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 transition-all"
+                  >
+                    {locale === 'ko' ? '복사' : 'COPY'}
+                  </button>
+                </div>
+              </div>
             )}
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="mt-4 w-full py-2 text-xs font-bold text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 rounded-xl transition-all"
+            >
+              {locale === 'ko' ? '비밀번호 변경' : 'Change Password'}
+            </button>
           </div>
 
           <div className="glass p-8 rounded-[2rem] border border-blue-500/10 shadow-xl bg-gradient-to-br from-blue-600/20 to-transparent">
@@ -129,7 +329,13 @@ export default function MyPage() {
                       <td className="py-4 text-slate-400">{dep.chain}</td>
                       <td className="py-4">{getStatusBadge(dep.status)}</td>
                       <td className="py-4 text-right text-slate-500">
-                        {new Date(dep.created_at).toLocaleDateString()}
+                        {new Date(dep.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </td>
                     </tr>
                   ))
