@@ -143,7 +143,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "id": current_user.id,
         "email": current_user.email,
         "username": current_user.username,
-        "balance": float(current_user.balance or 0),
+        "total_joy": int(current_user.total_joy or 0),
         "role": current_user.role,
         "referral_code": current_user.referral_code,
         "center": center_data,
