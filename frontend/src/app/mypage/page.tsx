@@ -3,12 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function MyPage() {
   const router = useRouter();
   const { t, locale } = useLanguage();
+  const { user, isLoggedIn, isLoading: authLoading, logout } = useAuth();
 
-  const [user, setUser] = useState<any>(null);
   const [deposits, setDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -16,28 +17,20 @@ export default function MyPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (authLoading) return;
+    if (!isLoggedIn) {
+      router.push('/auth/login');
+      return;
+    }
+
+    const fetchDeposits = async () => {
       try {
         setLoading(true);
-
-        const [userRes, depositRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/deposits/my`, { credentials: 'include' })
-        ]);
-
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          setUser(userData);
-        } else if (userRes.status === 401) {
-          router.push('/auth/login');
-          return;
-        }
-
+        const depositRes = await fetch(`${API_BASE_URL}/deposits/my`, { credentials: 'include' });
         if (depositRes.ok) {
           const depositData = await depositRes.json();
           setDeposits(depositData.items || depositData);
         }
-
       } catch (err) {
         console.error("데이터 로드 실패:", err);
         setErrorMessage(locale === 'ko' ? "서버와 통신하는 중 문제가 발생했습니다." : "Failed to communicate with server.");
@@ -46,8 +39,8 @@ export default function MyPage() {
       }
     };
 
-    fetchData();
-  }, [router, locale]);
+    fetchDeposits();
+  }, [authLoading, isLoggedIn, router, locale]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -59,19 +52,11 @@ export default function MyPage() {
   };
 
   const handleLogout = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      router.push('/auth/login');
-    } catch (err) {
-      console.error("로그아웃 실패:", err);
-      router.push('/auth/login');
-    }
+    await logout();
+    router.push('/auth/login');
   };
 
-  if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic">{t("loading").toUpperCase()}</div>;
+  if (authLoading || loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic">{t("loading").toUpperCase()}</div>;
 
   return (
     <div className="min-h-screen bg-[#020617] text-white p-8 font-sans">

@@ -1,19 +1,47 @@
 "use client";
 
 import { useLanguage } from "@/lib/LanguageContext";
+import { useAuth } from "@/lib/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function HeaderNav() {
   const { locale, setLocale, t } = useLanguage();
+  const { isLoggedIn, isLoading, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <div className="flex items-center space-x-4 pointer-events-auto">
       <nav className="hidden lg:flex items-center space-x-8 text-base font-bold text-white/80 mr-4">
-        <a href="/mypage" className="hover:text-blue-400 transition-colors">
-          {t("myPage")}
-        </a>
-        <a href="/buy" className="hover:text-blue-400 transition-colors">
-          {t("buy")}
-        </a>
+        {isLoading ? null : isLoggedIn ? (
+          <>
+            <a href="/mypage" className="hover:text-blue-400 transition-colors">
+              {t("myPage")}
+            </a>
+            <a href="/buy" className="hover:text-blue-400 transition-colors">
+              {t("buy")}
+            </a>
+            <button onClick={handleLogout} className="hover:text-red-400 transition-colors">
+              {t("logout")}
+            </button>
+          </>
+        ) : (
+          <>
+            <a href="/auth/signup" className="hover:text-blue-400 transition-colors">
+              {t("signup")}
+            </a>
+            <a href="/auth/login" className="hover:text-blue-400 transition-colors">
+              {t("login")}
+            </a>
+            <a href="/buy" className="hover:text-blue-400 transition-colors">
+              {t("buy")}
+            </a>
+          </>
+        )}
       </nav>
 
       {/* 언어 선택 토글 */}
