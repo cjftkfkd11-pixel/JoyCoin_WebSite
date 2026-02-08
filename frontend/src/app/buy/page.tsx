@@ -5,14 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useAuth } from '@/lib/AuthContext';
 
-// 패키지 다국어 매핑
-const packageNames: Record<string, { ko: string; en: string }> = {
-  'Starter': { ko: '스타터', en: 'Starter' },
-  'Basic': { ko: '베이직', en: 'Basic' },
-  'Standard': { ko: '스탠다드', en: 'Standard' },
-  'Premium': { ko: '프리미엄', en: 'Premium' },
-  'Pro': { ko: '프로', en: 'Pro' },
-  'Enterprise': { ko: '엔터프라이즈', en: 'Enterprise' },
+// 패키지 다국어 매핑 (joy_amount 기준)
+const packageNamesByJoy: Record<number, { ko: string; en: string }> = {
+  1000: { ko: 'JOY 1,000개 패키지', en: 'JOY 1,000 Package' },
+  2000: { ko: 'JOY 2,000개 패키지', en: 'JOY 2,000 Package' },
+  5000: { ko: 'JOY 5,000개 패키지', en: 'JOY 5,000 Package' },
+  10000: { ko: 'JOY 10,000개 패키지', en: 'JOY 10,000 Package' },
+  50000: { ko: 'JOY 50,000개 패키지', en: 'JOY 50,000 Package' },
 };
 
 export default function BuyPage() {
@@ -61,10 +60,12 @@ export default function BuyPage() {
     setMessage({ type: '', text: '' });
   };
 
-  const getPackageName = (name: string) => {
-    const mapped = packageNames[name];
+  const getPackageName = (product: any) => {
+    const mapped = packageNamesByJoy[product.joy_amount];
     if (mapped) return locale === 'ko' ? mapped.ko : mapped.en;
-    return name;
+    // 매핑에 없는 경우 자동 생성
+    if (locale === 'ko') return product.name;
+    return `JOY ${product.joy_amount.toLocaleString()} Package`;
   };
 
   const handleDepositRequest = async () => {
@@ -208,7 +209,7 @@ export default function BuyPage() {
                 {products.map((product) => (
                   <div key={product.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-1">{getPackageName(product.name)}</h3>
+                      <h3 className="text-xl font-bold text-white mb-1">{getPackageName(product)}</h3>
                       <p className="text-sm text-slate-400 mb-2">{product.description}</p>
                       <div className="flex items-center gap-3">
                         <span className="text-2xl font-bold">{product.price_usdt} USDT</span>
@@ -252,7 +253,7 @@ export default function BuyPage() {
               <div className="space-y-2 mb-6 max-h-40 overflow-y-auto">
                 {products.filter(p => quantities[p.id] > 0).map(p => (
                   <div key={p.id} className="flex justify-between text-sm">
-                    <span className="text-slate-400">{getPackageName(p.name)} × {quantities[p.id]}</span>
+                    <span className="text-slate-400">{getPackageName(p)} × {quantities[p.id]}</span>
                     <span className="text-white">{(p.price_usdt * quantities[p.id]).toLocaleString()} USDT</span>
                   </div>
                 ))}
