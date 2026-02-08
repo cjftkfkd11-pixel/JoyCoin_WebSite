@@ -70,6 +70,8 @@ export default function AdminDashboard() {
   const [showProductForm, setShowProductForm] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', joy_amount: 0, price_usdt: 0, price_krw: 0, discount_rate: 0, description: '', sort_order: 0 });
   const [referralBonus, setReferralBonus] = useState(100);
+  const [joyPerUsdt, setJoyPerUsdt] = useState(5.0);
+  const [joyPerUsdtInput, setJoyPerUsdtInput] = useState('5.0');
   const [stats, setStats] = useState<Stats | null>(null);
   const [sectorFilter, setSectorFilter] = useState<string>('all');
 
@@ -112,6 +114,10 @@ export default function AdminDashboard() {
       if (res.ok) {
         const data = await res.json();
         setReferralBonus(data.referral_bonus_points);
+        if (data.joy_per_usdt) {
+          setJoyPerUsdt(data.joy_per_usdt);
+          setJoyPerUsdtInput(String(data.joy_per_usdt));
+        }
       }
     } catch {}
   };
@@ -125,6 +131,22 @@ export default function AdminDashboard() {
       if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
       setReferralBonus(points);
       alert(`추천인 보너스가 ${points} 포인트로 변경되었습니다.`);
+    } catch (err: any) { alert(err.message); }
+  };
+
+  const handleExchangeRateChange = async () => {
+    const val = parseFloat(joyPerUsdtInput);
+    if (isNaN(val) || val <= 0) { alert('올바른 값을 입력하세요'); return; }
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/settings/exchange-rate`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ joy_per_usdt: val })
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
+      const data = await res.json();
+      setJoyPerUsdt(data.joy_per_usdt);
+      setJoyPerUsdtInput(String(data.joy_per_usdt));
+      alert(`JOY 시세가 변경되었습니다.\n1 USDT = ${data.joy_per_usdt} JOY\n1 JOY = ${data.joy_to_krw} KRW`);
     } catch (err: any) { alert(err.message); }
   };
 
@@ -698,6 +720,53 @@ export default function AdminDashboard() {
           ) : (
             /* 섹터 Fee 설정 탭 */
             <div className="space-y-8">
+              {/* JOY 시세 설정 */}
+              <div className="space-y-4">
+                <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] italic">JOY 시세 설정</h2>
+                <div className="p-6 rounded-2xl border border-cyan-500/10 bg-cyan-500/5">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-black text-white">JOY / USDT 환율</h3>
+                      <p className="text-xs text-slate-500 mt-1">1 USDT = ? JOY (거래소 상장 전까지 수동 조정)</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-3xl font-black italic text-cyan-400">{joyPerUsdt}</span>
+                      <p className="text-xs text-slate-500 mt-1">1 JOY = ${(1 / joyPerUsdt).toFixed(4)} USDT</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-center">
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.1"
+                      value={joyPerUsdtInput}
+                      onChange={e => setJoyPerUsdtInput(e.target.value)}
+                      className="flex-1 bg-slate-900/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500/50"
+                    />
+                    <button
+                      onClick={handleExchangeRateChange}
+                      className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-sm font-black text-white transition-all"
+                    >
+                      변경
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-4 gap-2">
+                    {[3, 4, 5, 10].map(v => (
+                      <button
+                        key={v}
+                        onClick={() => { setJoyPerUsdtInput(String(v)); }}
+                        className={`py-2 rounded-lg text-xs font-black transition-all ${joyPerUsdt === v
+                          ? 'bg-cyan-600 text-white'
+                          : 'bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white'
+                        }`}
+                      >
+                        1 USDT = {v} JOY
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* 추천인 보너스 설정 */}
               <div className="space-y-4">
                 <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] italic">추천인 보너스 설정</h2>

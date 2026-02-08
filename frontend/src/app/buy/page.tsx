@@ -25,18 +25,22 @@ export default function BuyPage() {
   const [requesting, setRequesting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [depositInfo, setDepositInfo] = useState<{ id: number; address: string; amount: number; joyAmount: number } | null>(null);
+  const [joyPerUsdt, setJoyPerUsdt] = useState(5.0);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/products`)
-      .then(res => res.json())
-      .then(data => {
-        setProducts(data);
-        // 초기 수량 0으로 설정
+    // 상품 + 환율 동시 로드
+    Promise.all([
+      fetch(`${API_BASE_URL}/products`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/exchange-rate`).then(res => res.json()),
+    ])
+      .then(([productData, rateData]) => {
+        setProducts(productData);
         const initQty: Record<number, number> = {};
-        data.forEach((p: any) => { initQty[p.id] = 0; });
+        productData.forEach((p: any) => { initQty[p.id] = 0; });
         setQuantities(initQty);
+        if (rateData.joy_per_usdt) setJoyPerUsdt(rateData.joy_per_usdt);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -51,7 +55,7 @@ export default function BuyPage() {
   };
 
   const totalUsdt = products.reduce((sum, p) => sum + (p.price_usdt * (quantities[p.id] || 0)), 0);
-  const totalJoy = totalUsdt * 5;
+  const totalJoy = totalUsdt * joyPerUsdt;
 
   const resetSelection = () => {
     const resetQty: Record<number, number> = {};
@@ -93,7 +97,7 @@ export default function BuyPage() {
           id: result.id,
           address: result.assigned_address,
           amount: totalUsdt,
-          joyAmount: result.joy_amount || totalUsdt * 5
+          joyAmount: result.joy_amount || totalUsdt * joyPerUsdt
         });
         setMessage({
           type: 'success',
@@ -213,7 +217,7 @@ export default function BuyPage() {
                       <p className="text-sm text-slate-400 mb-2">{product.description}</p>
                       <div className="flex items-center gap-3">
                         <span className="text-2xl font-bold">{product.price_usdt} USDT</span>
-                        <span className="text-blue-400">= {(product.price_usdt * 5).toLocaleString()} JOY</span>
+                        <span className="text-blue-400">= {(product.price_usdt * joyPerUsdt).toLocaleString()} JOY</span>
                       </div>
                     </div>
 

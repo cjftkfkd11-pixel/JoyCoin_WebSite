@@ -220,6 +220,19 @@ def healthz():
     return {"status": "ok"}
 
 
+@app.get("/exchange-rate", tags=["exchange"])
+def get_exchange_rate(db: Session = Depends(get_db)):
+    """현재 JOY/USDT 환율 조회 (공개)"""
+    rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
+    if not rate:
+        return {"joy_per_usdt": 5.0, "joy_to_krw": 260.0, "usdt_to_krw": 1300.0}
+    return {
+        "joy_per_usdt": float(rate.joy_per_usdt),
+        "joy_to_krw": float(rate.joy_to_krw),
+        "usdt_to_krw": float(rate.usdt_to_krw),
+    }
+
+
 @app.get("/sectors", tags=["sectors"])
 def get_sectors_public(db: Session = Depends(get_db)):
     """회원가입 시 섹터 선택용 공개 API"""

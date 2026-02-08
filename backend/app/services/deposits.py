@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from decimal import Decimal
 
-from app.models import User, DepositRequest
+from app.models import User, DepositRequest, ExchangeRate
 from app.core.config import settings
 from app.services.telegram import notify_new_deposit_request
 
@@ -14,8 +14,10 @@ def create_deposit_request(db: Session, user: User, data):
     # USDT 금액
     amt = Decimal(str(data.amount_usdt))
 
-    # JOY 수량 계산 (1 JOY = $0.2, 즉 USDT * 5 = JOY)
-    joy_amount = int(float(amt) * 5)
+    # DB에서 현재 환율 조회 (관리자가 설정)
+    rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
+    joy_per_usdt = float(rate.joy_per_usdt) if rate else 5.0
+    joy_amount = int(float(amt) * joy_per_usdt)
 
     req = DepositRequest(
         user_id=user.id,
