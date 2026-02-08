@@ -96,6 +96,16 @@ def on_startup():
     logger.info("Generating recovery codes for existing users...")
     generate_recovery_codes()
 
+    # 지갑 모니터링 백그라운드 스레드 시작
+    if settings.USDT_ADMIN_ADDRESS and settings.POLYGONSCAN_API_KEY:
+        import threading
+        from app.services.wallet_monitor import wallet_monitor_loop
+        monitor_thread = threading.Thread(target=wallet_monitor_loop, daemon=True)
+        monitor_thread.start()
+        logger.info("Wallet monitor thread started.")
+    else:
+        logger.warning("Wallet monitor NOT started - missing USDT_ADMIN_ADDRESS or POLYGONSCAN_API_KEY")
+
     logger.info("Application startup complete.")
 
 

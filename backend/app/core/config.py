@@ -23,5 +23,9 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None
 
+    # Polygonscan API 설정
+    POLYGONSCAN_API_KEY: str | None = None
+    WALLET_POLL_INTERVAL_SECONDS: int = 60
+
 
 settings = Settings()

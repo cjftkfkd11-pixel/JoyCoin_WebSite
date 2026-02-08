@@ -81,7 +81,7 @@ export default function BuyPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          chain: 'TRC20',
+          chain: 'Polygon',
           amount_usdt: totalUsdt
         }),
       });
@@ -150,7 +150,7 @@ export default function BuyPage() {
             <div className="space-y-3">
               <div className="bg-slate-800 p-4 rounded-xl">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-slate-400">{locale === 'ko' ? 'USDT 입금 주소 (TRC20)' : 'USDT Address (TRC20)'}</span>
+                  <span className="text-xs text-slate-400">{locale === 'ko' ? 'USDT 입금 주소 (Polygon)' : 'USDT Address (Polygon)'}</span>
                   <button onClick={copyAddress} className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 bg-blue-500/10 rounded">
                     {locale === 'ko' ? '복사' : 'Copy'}
                   </button>
@@ -172,7 +172,7 @@ export default function BuyPage() {
               <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-xl text-xs text-yellow-400">
                 <p className="font-semibold mb-1">{locale === 'ko' ? '⚠️ 주의사항' : '⚠️ Important'}</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>{locale === 'ko' ? '반드시 TRC20 네트워크로 입금해주세요' : 'Send via TRC20 network only'}</li>
+                  <li>{locale === 'ko' ? '반드시 Polygon 네트워크로 입금해주세요' : 'Send via Polygon network only'}</li>
                   <li>{locale === 'ko' ? '정확한 금액을 입금해주세요' : 'Send the exact amount'}</li>
                 </ul>
               </div>

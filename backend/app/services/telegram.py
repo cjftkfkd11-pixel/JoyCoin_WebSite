@@ -69,3 +69,22 @@ def notify_deposit_approved(user_email: str, amount: float, joy_amount: int, dep
 사용자에게 JOY 코인을 전송하세요!
 """
     return send_telegram_notification(message)
+
+
+def notify_deposit_detected(amount: float, sender: str, tx_hash: str):
+    """
+    블록체인에서 USDT 입금이 감지되었을 때 알림
+    """
+    explorer_url = f"https://polygonscan.com/tx/{tx_hash}"
+    message = f"""
+💰 <b>USDT 입금 감지!</b>
+
+📥 금액: {amount} USDT
+📤 보낸 주소: <code>{sender}</code>
+🔗 TX: <a href="{explorer_url}">{tx_hash[:16]}...</a>
+
+⏰ 감지 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+👉 관리자 대시보드에서 확인 후 승인해주세요.
+"""
+    return send_telegram_notification(message)
