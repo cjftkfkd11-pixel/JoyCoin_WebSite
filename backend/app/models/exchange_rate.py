@@ -19,8 +19,8 @@ class ExchangeRate(Base):
     # 1 USDT = ? JOY (관리자 조정 가능, 나중에 거래소 상장 시 실시간으로 전환)
     joy_per_usdt: Mapped[float] = mapped_column(Numeric(10, 2), default=5.0, nullable=False)
 
-    # 추천인 보너스 포인트
-    referral_bonus_points: Mapped[int] = mapped_column(Integer, default=100, nullable=False)
+    # 추천인 보너스 퍼센트 (구매 USDT의 ?% 포인트 적립)
+    referral_bonus_percent: Mapped[int] = mapped_column(Integer, default=10, nullable=False)
 
     # 현재 활성화된 환율인지
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

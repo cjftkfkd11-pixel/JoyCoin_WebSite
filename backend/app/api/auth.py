@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from app.core.db import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import SignupIn, LoginIn, Tokens
-from app.models import User, Center, Referral, Point, Sector, ExchangeRate
+from app.models import User, Center, Referral, Sector
 from app.core.config import settings
 from jose import jwt, JWTError # 토큰 해독을 위해 필요
 
@@ -71,27 +70,16 @@ def signup(data: SignupIn, db: Session = Depends(get_db)):
     db.flush()
 
     if referrer:
-        # DB에서 추천인 보너스 포인트 조회 (관리자가 설정 가능)
-        rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
-        bonus_points = rate.referral_bonus_points if rate else 100
-
+        # 추천 기록 생성
         referral = Referral(
             referrer_id=referrer.id,
             referred_id=user.id,
-            reward_points=bonus_points
+            reward_points=0  # 가입 시 즉시 지급 없음 (구매 시 10% 적립)
         )
         db.add(referral)
-        referrer_current_balance = db.query(func.coalesce(func.sum(Point.amount), 0)).filter(
-            Point.user_id == referrer.id
-        ).scalar()
-        referrer_point = Point(
-            user_id=referrer.id,
-            amount=bonus_points,
-            balance_after=referrer_current_balance + bonus_points,
-            type="referral_bonus",
-            description=f"{user.username}님 추천 보너스"
-        )
-        db.add(referrer_point)
+
+        # 추천인의 남은 보상 횟수 +1 (구매 시 1회 사용됨)
+        referrer.referral_reward_remaining = int(referrer.referral_reward_remaining or 0) + 1
 
     db.commit()
     return {"message": "회원가입 성공", "user_id": user.id, "referral_code": user.referral_code}
@@ -148,6 +136,8 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "email": current_user.email,
         "username": current_user.username,
         "total_joy": int(current_user.total_joy or 0),
+        "total_points": int(current_user.total_points or 0),
+        "referral_reward_remaining": int(current_user.referral_reward_remaining or 0),
         "role": current_user.role,
         "referral_code": current_user.referral_code,
         "recovery_code": current_user.recovery_code,

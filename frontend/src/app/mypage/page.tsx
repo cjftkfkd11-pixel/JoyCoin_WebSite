@@ -316,7 +316,25 @@ export default function MyPage() {
 
           <div className="glass p-8 rounded-[2rem] border border-blue-500/10 shadow-xl bg-gradient-to-br from-blue-600/20 to-transparent">
             <h2 className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-4">{t("totalJoy")}</h2>
-            <p className="text-4xl font-black text-blue-400 mb-6">{user?.total_joy?.toLocaleString() || '0'} <span className="text-xs">JOY</span></p>
+            <p className="text-4xl font-black text-blue-400 mb-2">{user?.total_joy?.toLocaleString() || '0'} <span className="text-xs">JOY</span></p>
+
+            {/* 포인트 잔액 */}
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider">{t("totalPoints")}</span>
+              <span className="text-sm font-black text-green-400">{user?.total_points?.toLocaleString() || '0'} P</span>
+            </div>
+
+            {/* 남은 추천 보상 횟수 */}
+            {(user?.referral_reward_remaining ?? 0) > 0 && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-green-400 uppercase tracking-wider">{t("referralRewardRemaining")}</span>
+                  <span className="text-sm font-black text-green-400">{user?.referral_reward_remaining}{locale === 'ko' ? '회' : 'x'}</span>
+                </div>
+                <p className="text-[9px] text-green-600 mt-1">{t("referralRewardDesc")}</p>
+              </div>
+            )}
+
             <button
               onClick={() => router.push('/buy')}
               className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-black text-sm transition-all shadow-lg shadow-blue-900/30"

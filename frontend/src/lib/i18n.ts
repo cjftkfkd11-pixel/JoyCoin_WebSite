@@ -82,6 +82,8 @@ export const translations = {
     myReferralCode: "My Referral Code",
     totalJoy: "Total JOY",
     totalPoints: "Total Points",
+    referralRewardRemaining: "Referral Rewards Left",
+    referralRewardDesc: "10% bonus points on your next purchase",
     quickMenu: "Quick Menu",
 
     // Notifications
@@ -180,6 +182,8 @@ export const translations = {
     myReferralCode: "내 추천인 코드",
     totalJoy: "보유 JOY",
     totalPoints: "보유 포인트",
+    referralRewardRemaining: "남은 추천 보상",
+    referralRewardDesc: "다음 구매 시 결제금액의 10% 포인트 적립",
     quickMenu: "빠른 메뉴",
 
     // Notifications

@@ -7,6 +7,8 @@ interface User {
   email: string;
   username: string;
   total_joy: number;
+  total_points: number;
+  referral_reward_remaining: number;
   referral_code?: string;
   recovery_code?: string;
   role?: string;

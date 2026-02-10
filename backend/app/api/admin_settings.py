@@ -14,7 +14,7 @@ router = APIRouter(prefix="/admin/settings", tags=["admin:settings"])
 class SettingsResponse(BaseModel):
     usdt_address: str
     telegram_enabled: bool
-    referral_bonus_points: int
+    referral_bonus_percent: int
     joy_per_usdt: float
 
 
@@ -27,13 +27,13 @@ def get_settings(
     return SettingsResponse(
         usdt_address=settings.USDT_ADMIN_ADDRESS or "설정되지 않음",
         telegram_enabled=bool(settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID),
-        referral_bonus_points=rate.referral_bonus_points if rate else 100,
+        referral_bonus_percent=rate.referral_bonus_percent if rate else 10,
         joy_per_usdt=float(rate.joy_per_usdt) if rate else 5.0,
     )
 
 
 class ReferralBonusUpdate(BaseModel):
-    referral_bonus_points: int
+    referral_bonus_percent: int
 
 
 @router.put("/referral-bonus")
@@ -42,14 +42,14 @@ def update_referral_bonus(
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
 ):
-    if data.referral_bonus_points < 0:
-        raise HTTPException(400, "포인트는 0 이상이어야 합니다")
+    if data.referral_bonus_percent < 0 or data.referral_bonus_percent > 100:
+        raise HTTPException(400, "퍼센트는 0~100 사이여야 합니다")
     rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
     if not rate:
         raise HTTPException(404, "환율 설정을 찾을 수 없습니다")
-    rate.referral_bonus_points = data.referral_bonus_points
+    rate.referral_bonus_percent = data.referral_bonus_percent
     db.commit()
-    return {"ok": True, "referral_bonus_points": rate.referral_bonus_points}
+    return {"ok": True, "referral_bonus_percent": rate.referral_bonus_percent}
 
 
 class ExchangeRateUpdate(BaseModel):

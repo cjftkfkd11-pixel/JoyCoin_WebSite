@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [showProductForm, setShowProductForm] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', joy_amount: 0, price_usdt: 0, price_krw: 0, discount_rate: 0, description: '', sort_order: 0 });
-  const [referralBonus, setReferralBonus] = useState(100);
+  const [referralBonus, setReferralBonus] = useState(10);
   const [joyPerUsdt, setJoyPerUsdt] = useState(5.0);
   const [joyPerUsdtInput, setJoyPerUsdtInput] = useState('5.0');
   const [stats, setStats] = useState<Stats | null>(null);
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
       const res = await fetch(`${API_BASE_URL}/admin/settings`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setReferralBonus(data.referral_bonus_points);
+        setReferralBonus(data.referral_bonus_percent);
         if (data.joy_per_usdt) {
           setJoyPerUsdt(data.joy_per_usdt);
           setJoyPerUsdtInput(String(data.joy_per_usdt));
@@ -126,11 +126,11 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/settings/referral-bonus`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ referral_bonus_points: points })
+        body: JSON.stringify({ referral_bonus_percent: points })
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
       setReferralBonus(points);
-      alert(`추천인 보너스가 ${points} 포인트로 변경되었습니다.`);
+      alert(`추천인 보너스가 ${points}%로 변경되었습니다.`);
     } catch (err: any) { alert(err.message); }
   };
 
@@ -773,22 +773,22 @@ export default function AdminDashboard() {
                 <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/40">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-lg font-black text-white">추천인 보너스 포인트</h3>
-                      <p className="text-xs text-slate-500 mt-1">신규 회원 가입 시 추천인에게 지급되는 포인트</p>
+                      <h3 className="text-lg font-black text-white">추천 보너스 퍼센트</h3>
+                      <p className="text-xs text-slate-500 mt-1">추천인이 JOY 구매 시 결제 USDT의 N% 포인트 적립</p>
                     </div>
-                    <span className="text-3xl font-black italic text-green-400">{referralBonus}P</span>
+                    <span className="text-3xl font-black italic text-green-400">{referralBonus}%</span>
                   </div>
                   <div className="grid grid-cols-5 gap-2">
-                    {[50, 100, 150, 200, 500].map(pts => (
+                    {[5, 10, 15, 20, 30].map(pct => (
                       <button
-                        key={pts}
-                        onClick={() => handleReferralBonusChange(pts)}
-                        className={`py-3 rounded-xl text-sm font-black transition-all ${referralBonus === pts
+                        key={pct}
+                        onClick={() => handleReferralBonusChange(pct)}
+                        className={`py-3 rounded-xl text-sm font-black transition-all ${referralBonus === pct
                           ? 'bg-green-600 text-white'
                           : 'bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white'
                         }`}
                       >
-                        {pts}P
+                        {pct}%
                       </button>
                     ))}
                   </div>
