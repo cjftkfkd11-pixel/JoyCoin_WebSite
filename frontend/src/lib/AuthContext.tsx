@@ -32,8 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
   const refreshUser = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        credentials: 'include',
+        signal: controller.signal,
+      });
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
@@ -43,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       setUser(null);
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
