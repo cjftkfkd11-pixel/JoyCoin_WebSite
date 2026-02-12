@@ -58,14 +58,14 @@ export default function Header() {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[60] px-4 md:px-10 py-5 flex justify-between items-center pointer-events-none">
-        <div className="flex items-center space-x-4 pointer-events-auto">
+      <header className="fixed top-0 left-0 right-0 z-[60] px-4 md:px-10 py-4 flex justify-between items-center bg-[#020617]/95 backdrop-blur-md border-b border-slate-800/50" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
+        <div className="flex items-center space-x-4">
           <a href="/" className="text-2xl md:text-3xl font-black tracking-tighter text-blue-500 cursor-pointer drop-shadow-lg">
             JOYCOIN
           </a>
         </div>
 
-        <div className="flex items-center space-x-3 pointer-events-auto">
+        <div className="flex items-center space-x-3">
           {/* Language Toggle */}
           <button
             type="button"
@@ -172,7 +172,7 @@ export default function Header() {
             <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1' : ''}`} />
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (

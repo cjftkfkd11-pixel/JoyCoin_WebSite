@@ -18,6 +18,9 @@ ETHERSCAN_V2_BASE = "https://api.etherscan.io/v2/api"
 # 이미 알림 보낸 tx_hash (체인별 분리)
 _notified_txs: set[str] = set()
 
+# 유효하지 않은 주소로 반복 에러 방지
+_disabled_chains: set[str] = set()
+
 
 # ──────────────────────────────────────────────
 # EVM 체인 (Polygon / Ethereum) - Etherscan V2
@@ -104,10 +107,16 @@ def fetch_tron_usdt_transfers(admin_address: str) -> list[dict]:
 
     try:
         resp = requests.get(url, params=params, headers=headers, timeout=15)
+        if resp.status_code == 400:
+            body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+            err_msg = body.get("error", resp.text[:200])
+            logger.error(f"TronGrid 400 Bad Request: {err_msg} — disabling TRON polling")
+            _disabled_chains.add("TRON")
+            return []
         resp.raise_for_status()
         data = resp.json()
         return data.get("data", [])
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         logger.error(f"TronGrid API error: {e}")
         return []
 
@@ -171,7 +180,7 @@ def _init_known_txs():
             logger.error(f"Ethereum init error: {e}")
 
     # TRON
-    if tron_addr:
+    if tron_addr and "TRON" not in _disabled_chains:
         try:
             txs = fetch_tron_usdt_transfers(tron_addr)
             for tx in txs:
@@ -197,7 +206,7 @@ def poll_wallet_once():
         _process_evm_txs(txs, "Ethereum")
 
     # TRON
-    if tron_addr:
+    if tron_addr and "TRON" not in _disabled_chains:
         txs = fetch_tron_usdt_transfers(tron_addr)
         _process_tron_txs(txs)
 

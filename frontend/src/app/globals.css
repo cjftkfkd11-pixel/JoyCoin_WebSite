@@ -24,6 +24,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   z-index: -1;
+  pointer-events: none;
   background: radial-gradient(circle at 20% 20%, #1e3a8a 0%, transparent 40%),
               radial-gradient(circle at 80% 80%, #4c1d95 0%, transparent 40%),
               radial-gradient(circle at 50% 50%, #030712 0%, #000 100%);
@@ -46,12 +47,15 @@ html, body {
   100% { transform: translate(10%, 10%) scale(1.2); }
 }
 
-.glass { 
-  background: var(--glass-bg); 
-  backdrop-filter: blur(25px); 
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid var(--glass-border); 
+  border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  position: relative;
 }
 
 @layer utilities {
