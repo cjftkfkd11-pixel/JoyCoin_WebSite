@@ -33,8 +33,15 @@ export async function signup(body: {
   email: string;
   password: string;
   username: string;
+  wallet_address: string;
   referral_code?: string;
   center_id?: number;
+  sector_id?: number;
+  terms_accepted?: boolean;
+  risk_accepted?: boolean;
+  privacy_accepted?: boolean;
+  legal_version?: string;
+  locale?: "ko" | "en";
 }) {
   return api<{ message: string; user_id: number; referral_code: string }>("/auth/signup", {
     method: "POST",

@@ -31,6 +31,7 @@ class UserBrief(BaseModel):
     id: int
     email: str
     username: str
+    wallet_address: Optional[str] = None
     sector_id: Optional[int] = None
 
     model_config = dict(from_attributes=True)

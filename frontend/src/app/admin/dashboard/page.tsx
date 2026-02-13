@@ -8,7 +8,7 @@ import { getApiBaseUrl } from '@/lib/apiBase';
 // --- [Types] ---
 interface DepositRequest {
   id: number;
-  user: { id: number; email: string; username: string; sector_id: number | null };
+  user: { id: number; email: string; username: string; wallet_address?: string | null; sector_id: number | null };
   chain: string;
   expected_amount: number;
   joy_amount: number;
@@ -279,6 +279,19 @@ export default function AdminDashboard() {
     } catch (err) { router.push('/admin/login'); }
   };
 
+  const copyToClipboard = async (value: string, successMessage: string) => {
+    if (!value) {
+      toast('복사할 주소가 없습니다.', 'warning');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(value);
+      toast(successMessage, 'success');
+    } catch {
+      toast('복사에 실패했습니다.', 'error');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -486,6 +499,18 @@ export default function AdminDashboard() {
                             <td className="p-5">
                               <div className="font-mono text-xs text-blue-300">{req.user.email}</div>
                               <div className="text-[9px] text-slate-600 mt-1">{req.user.username}</div>
+                              <div className="mt-2 flex items-center gap-2">
+                                <code className="text-[10px] text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded px-2 py-1 max-w-[210px] truncate">
+                                  {req.user.wallet_address || '-'}
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(req.user.wallet_address || '', '지갑주소를 복사했습니다.')}
+                                  className="px-2 py-1 text-[10px] font-black rounded border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 transition-all"
+                                >
+                                  복사
+                                </button>
+                              </div>
                             </td>
                             <td className="p-5">
                               {req.user.sector_id ? (

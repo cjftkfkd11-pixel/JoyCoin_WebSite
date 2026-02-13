@@ -1,86 +1,81 @@
 # backend/app/services/telegram.py
+from datetime import datetime, timedelta, timezone
+
 import requests
-from datetime import datetime, timezone, timedelta
+
 from app.core.config import settings
 
 KST = timezone(timedelta(hours=9))
 
 
 def now_kst() -> str:
-    return datetime.now(KST).strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def send_telegram_notification(message: str) -> bool:
-    """
-    텔레그램 봇으로 알림 전송
-
-    Args:
-        message: 전송할 메시지
-
-    Returns:
-        bool: 전송 성공 여부
-    """
+    """Send a Telegram bot notification."""
     if not settings.TELEGRAM_BOT_TOKEN or not settings.TELEGRAM_CHAT_ID:
-        print("⚠️ 텔레그램 설정이 없습니다. 알림을 전송하지 않습니다.")
+        print("Telegram bot settings are missing. Skipping notification.")
         return False
 
     url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
-
     payload = {
         "chat_id": settings.TELEGRAM_CHAT_ID,
         "text": message,
-        "parse_mode": "HTML"
+        "parse_mode": "HTML",
     }
 
     try:
         response = requests.post(url, json=payload, timeout=10)
         response.raise_for_status()
-        print(f"✅ 텔레그램 알림 전송 성공")
+        print("Telegram notification sent")
         return True
     except Exception as e:
-        print(f"❌ 텔레그램 알림 전송 실패: {e}")
+        print(f"Telegram notification failed: {e}")
         return False
 
 
-def notify_new_deposit_request(user_email: str, amount: float, joy_amount: int, chain: str, deposit_id: int):
-    """
-    새로운 입금 요청 알림
-    """
+def notify_new_deposit_request(
+    user_email: str,
+    amount: float,
+    joy_amount: int,
+    chain: str,
+    deposit_id: int,
+    wallet_address: str | None = None,
+):
+    """Notify admins that a new deposit request was created."""
     message = f"""
-🔔 <b>새로운 입금 요청</b>
+<b>New Deposit Request</b>
 
-👤 유저: {user_email}
-💰 입금액: {amount} USDT
-🪙 JOY 수량: {joy_amount:,} JOY
-🌐 네트워크: {chain}
-🆔 요청 ID: #{deposit_id}
+User: {user_email}
+Amount: {amount} USDT
+JOY: {joy_amount:,} JOY
+Chain: {chain}
+JOY wallet: <code>{wallet_address or '-'}</code>
+Request ID: #{deposit_id}
 
-⏰ 시간: {now_kst()}
+Time: {now_kst()}
 """
     return send_telegram_notification(message)
 
 
 def notify_deposit_approved(user_email: str, amount: float, joy_amount: int, deposit_id: int):
-    """
-    입금 승인 완료 알림
-    """
+    """Notify admins that deposit approval is complete."""
     message = f"""
-✅ <b>입금 승인 완료</b>
+<b>Deposit Approved</b>
 
-👤 유저: {user_email}
-💰 입금액: {amount} USDT
-🪙 JOY 수량: {joy_amount:,} JOY
-🆔 요청 ID: #{deposit_id}
+User: {user_email}
+Amount: {amount} USDT
+JOY: {joy_amount:,} JOY
+Request ID: #{deposit_id}
 
-사용자에게 JOY 코인을 전송하세요!
+Please send JOY to the user.
 """
     return send_telegram_notification(message)
 
 
 def notify_deposit_detected(amount: float, sender: str, tx_hash: str, chain: str = "Polygon"):
-    """
-    블록체인에서 USDT 입금이 감지되었을 때 알림
-    """
+    """Notify that an on-chain USDT transfer was detected."""
     explorer_urls = {
         "Polygon": f"https://polygonscan.com/tx/{tx_hash}",
         "Ethereum": f"https://etherscan.io/tx/{tx_hash}",
@@ -88,15 +83,15 @@ def notify_deposit_detected(amount: float, sender: str, tx_hash: str, chain: str
     }
     explorer_url = explorer_urls.get(chain, f"https://polygonscan.com/tx/{tx_hash}")
     message = f"""
-💰 <b>USDT 입금 감지!</b>
+<b>USDT Deposit Detected</b>
 
-🌐 체인: {chain}
-📥 금액: {amount} USDT
-📤 보낸 주소: <code>{sender}</code>
-🔗 TX: <a href="{explorer_url}">{tx_hash[:16]}...</a>
+Chain: {chain}
+Amount: {amount} USDT
+From: <code>{sender}</code>
+TX: <a href=\"{explorer_url}\">{tx_hash[:16]}...</a>
 
-⏰ 감지 시간: {now_kst()}
+Detected at: {now_kst()}
 
-👉 관리자 대시보드에서 확인 후 승인해주세요.
+Please verify in the admin dashboard.
 """
     return send_telegram_notification(message)

@@ -5,6 +5,7 @@ class SignupIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6)
     username: str = Field(min_length=2, max_length=100)
+    wallet_address: str = Field(min_length=6, max_length=128)
     referral_code: str | None = None
     center_id: int | None = None
     sector_id: int | None = None

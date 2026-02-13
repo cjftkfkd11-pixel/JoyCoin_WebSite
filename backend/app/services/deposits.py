@@ -52,7 +52,8 @@ def create_deposit_request(db: Session, user: User, data):
             amount=float(amt),
             joy_amount=joy_amount,
             chain=data.chain,
-            deposit_id=req.id
+            deposit_id=req.id,
+            wallet_address=user.wallet_address,
         )
     except Exception as e:
         print(f"텔레그램 알림 실패 (무시): {e}")

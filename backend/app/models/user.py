@@ -47,6 +47,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     username: Mapped[str] = mapped_column(String(100), nullable=False)
+    wallet_address: Mapped[str | None] = mapped_column(String(128), nullable=True)
     
     # 추천인 시스템
     referral_code: Mapped[str] = mapped_column(

@@ -20,6 +20,7 @@ from app.api.products import router as products_router
 from app.api.notifications import router as notifications_router
 
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect, text
 from app.core.config import settings
 from app.core.security import hash_password
 from app.core.enums import UserRole
@@ -86,6 +87,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 def on_startup():
     logger.info("Creating tables...")
     Base.metadata.create_all(bind=engine)
+    ensure_schema_compatibility()
 
     logger.info("Seeding super admin...")
     seed_super_admin()
@@ -114,6 +116,22 @@ def on_startup():
         logger.warning("Wallet monitor NOT started - no chain addresses configured")
 
     logger.info("Application startup complete.")
+
+
+def ensure_schema_compatibility():
+    """
+    Lightweight schema backfill for environments that start with an existing DB
+    but no migration runner. Only adds missing columns in a safe, additive way.
+    """
+    inspector = inspect(engine)
+    tables = set(inspector.get_table_names())
+
+    if "users" in tables:
+        user_columns = {col["name"] for col in inspector.get_columns("users")}
+        if "wallet_address" not in user_columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN wallet_address VARCHAR(128)"))
+            logger.info("Added users.wallet_address column")
 
 
 def seed_super_admin():

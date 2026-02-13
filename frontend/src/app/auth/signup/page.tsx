@@ -17,6 +17,7 @@ export default function SignupPage() {
     password: '',
     confirm: '',
     nickname: '',
+    wallet_address: '',
     sector_id: '',
     ref: ''
   });
@@ -108,8 +109,14 @@ export default function SignupPage() {
           email: formData.email,
           password: formData.password,
           username: formData.nickname,
+          wallet_address: formData.wallet_address.trim(),
           sector_id: formData.sector_id ? Number(formData.sector_id) : null,
-          referral_code: formData.ref || null
+          referral_code: formData.ref || null,
+          terms_accepted: legalChecks.terms,
+          risk_accepted: legalChecks.risk,
+          privacy_accepted: legalChecks.privacy,
+          legal_version: '2026-02-10',
+          locale,
         }),
       });
 
@@ -195,6 +202,15 @@ export default function SignupPage() {
           <input type="password" placeholder={t("confirmPassword")} required
             className="w-full bg-slate-900/50 border border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl outline-none focus:border-blue-500 text-sm sm:text-base"
             value={formData.confirm} onChange={e => setFormData({...formData, confirm: e.target.value})} />
+
+          <input
+            type="text"
+            placeholder={locale === 'ko' ? 'JOY 수령 지갑 주소' : 'JOY receiving wallet address'}
+            required
+            className="w-full bg-slate-900/50 border border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl outline-none focus:border-blue-500 text-sm sm:text-base"
+            value={formData.wallet_address}
+            onChange={e => setFormData({...formData, wallet_address: e.target.value})}
+          />
 
           <select
             required

@@ -12,6 +12,7 @@ export default function SignupPage() {
   // 1. 입력 데이터를 담을 바구니(상태) 만들기
   const [email, setEmail] = useState(''); // 화면에는 Email로 표시하지만 서버에는 username으로 보냅니다.
   const [password, setPassword] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
   const [referrer, setReferrer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,8 +48,14 @@ export default function SignupPage() {
         email: email,
         password: password,
         username: email.split('@')[0], // 이메일 앞부분을 username으로 사용
+        wallet_address: walletAddress.trim(),
         center_id: Number(selectedCenterId),
-        referral_code: referrer || null
+        referral_code: referrer || null,
+        terms_accepted: true,
+        risk_accepted: true,
+        privacy_accepted: true,
+        legal_version: "2026-02-10",
+        locale: "ko",
       };
 
       const API_BASE_URL = getApiBaseUrl();
@@ -115,6 +122,18 @@ export default function SignupPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">JOY Wallet Address</label>
+            <input
+              type="text"
+              placeholder="Enter JOY receiving wallet"
+              required
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all"
+            />
           </div>
 
           {/* 추천인 코드 입력창 */}
