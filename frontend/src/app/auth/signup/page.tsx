@@ -238,7 +238,10 @@ export default function SignupPage() {
             value={formData.ref} onChange={e => setFormData({...formData, ref: e.target.value})} />
 
           {/* Legal agreements */}
-          <div className="p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+          <div className="p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-2">
+            <p className="text-[11px] text-slate-400 font-semibold mb-1">
+              {locale === 'ko' ? '필수 약관 동의' : 'Required Agreements'}
+            </p>
             <label className="flex items-start gap-2 text-xs text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
@@ -246,33 +249,46 @@ export default function SignupPage() {
                 onChange={(e) => setLegalChecks((prev) => ({ ...prev, terms: e.target.checked }))}
                 className="mt-0.5 accent-cyan-400"
               />
-              <span>{locale === 'ko' ? 'Terms of Use에 동의합니다.' : 'I agree to the Terms of Use.'}</span>
+              <span>
+                {locale === 'ko' ? '이용약관에 동의합니다. ' : 'I agree to the Terms of Use. '}
+                <a href="/legal/terms" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline">
+                  {locale === 'ko' ? '[보기]' : '[View]'}
+                </a>
+              </span>
             </label>
-            <label className="flex items-start gap-2 text-xs text-slate-300 cursor-pointer mt-2">
+            <label className="flex items-start gap-2 text-xs text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={legalChecks.risk}
                 onChange={(e) => setLegalChecks((prev) => ({ ...prev, risk: e.target.checked }))}
                 className="mt-0.5 accent-cyan-400"
               />
-              <span>{locale === 'ko' ? 'Risk Disclosure에 동의합니다.' : 'I agree to the Risk Disclosure.'}</span>
+              <span>
+                {locale === 'ko' ? '위험 고지에 동의합니다. ' : 'I agree to the Risk Disclosure. '}
+                <a href="/legal/risk" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline">
+                  {locale === 'ko' ? '[보기]' : '[View]'}
+                </a>
+              </span>
             </label>
-            <label className="flex items-start gap-2 text-xs text-slate-300 cursor-pointer mt-2">
+            <label className="flex items-start gap-2 text-xs text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={legalChecks.privacy}
                 onChange={(e) => setLegalChecks((prev) => ({ ...prev, privacy: e.target.checked }))}
                 className="mt-0.5 accent-cyan-400"
               />
-              <span>{locale === 'ko' ? 'Privacy Policy에 동의합니다.' : 'I agree to the Privacy Policy.'}</span>
+              <span>
+                {locale === 'ko' ? '개인정보처리방침에 동의합니다. ' : 'I agree to the Privacy Policy. '}
+                <a href="/legal/privacy" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline">
+                  {locale === 'ko' ? '[보기]' : '[View]'}
+                </a>
+              </span>
             </label>
-            <div className="flex gap-2 mt-2 ml-5 text-[10px]">
-              <a href="/legal/terms" target="_blank" className="text-cyan-400 hover:text-cyan-300">Terms</a>
-              <span className="text-slate-600">|</span>
-              <a href="/legal/risk" target="_blank" className="text-cyan-400 hover:text-cyan-300">Risk</a>
-              <span className="text-slate-600">|</span>
-              <a href="/legal/privacy" target="_blank" className="text-cyan-400 hover:text-cyan-300">Privacy</a>
-            </div>
+            {!allLegalChecked && (
+              <p className="text-[10px] text-yellow-400/70 ml-5">
+                {locale === 'ko' ? '모든 약관에 동의해야 가입할 수 있습니다.' : 'You must agree to all terms to sign up.'}
+              </p>
+            )}
           </div>
 
           {error && <p className="text-red-400 text-xs text-center font-bold animate-pulse">{error}</p>}
