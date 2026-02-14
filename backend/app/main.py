@@ -18,6 +18,8 @@ from app.api.sector_dashboard import router as sector_dashboard_router
 from app.api.centers import router as centers_router
 from app.api.products import router as products_router
 from app.api.notifications import router as notifications_router
+from app.api.consents import router as consents_router
+from app.api.points import router as points_router
 
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect, text
@@ -28,8 +30,9 @@ from app.core.enums import UserRole
 # 새로운 모델 import
 from app.models import (
     User, Center, Sector, Referral, Product, Purchase,
-    DepositRequest, Point, ExchangeRate, Notification
+    DepositRequest, Point, ExchangeRate, Notification, LegalConsent
 )
+from app.models.point_withdrawal import PointWithdrawal
 from app.models.user import generate_recovery_code
 
 logging.basicConfig(level=logging.INFO)
@@ -276,3 +279,5 @@ app.include_router(sector_dashboard_router)
 app.include_router(centers_router)
 app.include_router(products_router)
 app.include_router(notifications_router)
+app.include_router(consents_router)
+app.include_router(points_router)

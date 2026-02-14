@@ -11,6 +11,7 @@ from app.models.point import Point
 from app.models.exchange_rate import ExchangeRate
 from app.models.notification import Notification
 from app.models.legal_consent import LegalConsent
+from app.models.point_withdrawal import PointWithdrawal
 
 __all__ = [
     "User",
@@ -24,4 +25,5 @@ __all__ = [
     "ExchangeRate",
     "Notification",
     "LegalConsent",
+    "PointWithdrawal",
 ]
