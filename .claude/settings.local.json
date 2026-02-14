@@ -23,7 +23,9 @@
       "Bash(docker inspect:*)",
       "Bash(timeout:*)",
       "Bash(ping:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(npx next dev:*)",
+      "Bash(pip install:*)"
     ]
   }
 }
