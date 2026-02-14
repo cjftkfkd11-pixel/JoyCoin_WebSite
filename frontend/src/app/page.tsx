@@ -19,7 +19,7 @@ export default function Page() {
       </div>
 
       {/* 버튼 섹션 */}
-      <div className="flex flex-col md:flex-row items-stretch gap-3 sm:gap-6 w-full max-w-3xl px-2 sm:px-4">
+      <div className="flex flex-col md:flex-row items-stretch gap-4 sm:gap-6 w-full max-w-3xl px-4 sm:px-4">
         {isLoading ? (
           <>
             <div className="flex-1 h-24 bg-slate-800/50 rounded-3xl animate-pulse" />
@@ -31,14 +31,14 @@ export default function Page() {
             {/* 로그인 상태: 마이페이지 + 참여하기 */}
             <Link
               href="/mypage"
-              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center glass hover:bg-white/10 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl transition-all border border-white/20 shadow-2xl"
+              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center px-6 sm:px-4 glass hover:bg-white/10 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl transition-all border border-white/20 shadow-2xl"
             >
               {t("myPage")}
             </Link>
 
             <Link
               href="/buy"
-              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-700 hover:from-blue-400 hover:to-indigo-600 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/40 transition-all text-center px-4 leading-tight"
+              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center px-6 sm:px-4 bg-gradient-to-br from-blue-500 to-indigo-700 hover:from-blue-400 hover:to-indigo-600 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/40 transition-all text-center leading-tight"
             >
               {locale === 'ko' ? '조이코인 참여하기' : 'ACCESS JOYCOIN'}
             </Link>
@@ -46,29 +46,30 @@ export default function Page() {
         ) : (
           <>
             {/* 비로그인 상태: 로그인 + 회원가입 + 참여하기 */}
-            <Link
-              href="/auth/login"
-              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center glass hover:bg-white/10 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl transition-all border border-white/20 shadow-2xl"
-            >
-              {t("login")}
-            </Link>
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <Link
+                href="/auth/login"
+                className="w-full h-[60px] sm:h-24 flex items-center justify-center px-6 sm:px-4 glass hover:bg-white/10 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl transition-all border border-white/20 shadow-2xl"
+              >
+                {t("login")}
+              </Link>
+              <Link href="/admin/login" className="text-slate-500 hover:text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center transition-colors">
+                {locale === 'ko' ? '관리자 로그인' : 'ADMIN LOGIN'}
+              </Link>
+            </div>
 
             <Link
               href="/auth/signup"
-              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center glass hover:bg-white/10 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl transition-all border border-white/20 shadow-2xl"
+              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center px-6 sm:px-4 glass hover:bg-white/10 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl transition-all border border-white/20 shadow-2xl"
             >
               {t("signup")}
             </Link>
 
             <Link
               href="/buy"
-              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-700 hover:from-blue-400 hover:to-indigo-600 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/40 transition-all text-center px-4 leading-tight"
+              className="flex-1 h-[60px] sm:h-24 flex items-center justify-center px-6 sm:px-4 bg-gradient-to-br from-blue-500 to-indigo-700 hover:from-blue-400 hover:to-indigo-600 text-white font-black text-base sm:text-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/40 transition-all text-center leading-tight"
             >
               {locale === 'ko' ? '조이코인 참여하기' : 'ACCESS JOYCOIN'}
-            </Link>
-
-            <Link href="/admin/login" className="text-slate-500 hover:text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center transition-colors">
-              {locale === 'ko' ? '관리자 로그인' : 'ADMIN LOGIN'}
             </Link>
           </>
         )}
