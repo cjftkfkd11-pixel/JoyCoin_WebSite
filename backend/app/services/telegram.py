@@ -43,39 +43,39 @@ def notify_new_deposit_request(
     deposit_id: int,
     wallet_address: str | None = None,
 ):
-    """Notify admins that a new deposit request was created."""
+    """새 입금 요청 알림"""
     message = f"""
-<b>New Deposit Request</b>
+<b>📥 새 입금 요청</b>
 
-User: {user_email}
-Amount: {amount} USDT
-JOY: {joy_amount:,} JOY
-Chain: {chain}
-JOY wallet: <code>{wallet_address or '-'}</code>
-Request ID: #{deposit_id}
+사용자: {user_email}
+금액: {amount} USDT
+JOY 수량: {joy_amount:,} JOY
+체인: {chain}
+JOY 수령 지갑: <code>{wallet_address or '미등록'}</code>
+요청 ID: #{deposit_id}
 
-Time: {now_kst()}
+시간: {now_kst()}
 """
     return send_telegram_notification(message)
 
 
 def notify_deposit_approved(user_email: str, amount: float, joy_amount: int, deposit_id: int):
-    """Notify admins that deposit approval is complete."""
+    """입금 승인 완료 알림"""
     message = f"""
-<b>Deposit Approved</b>
+<b>✅ 입금 승인 완료</b>
 
-User: {user_email}
-Amount: {amount} USDT
-JOY: {joy_amount:,} JOY
-Request ID: #{deposit_id}
+사용자: {user_email}
+금액: {amount} USDT
+JOY 수량: {joy_amount:,} JOY
+요청 ID: #{deposit_id}
 
-Please send JOY to the user.
+사용자에게 JOY를 전송해 주세요.
 """
     return send_telegram_notification(message)
 
 
 def notify_deposit_detected(amount: float, sender: str, tx_hash: str, chain: str = "Polygon"):
-    """Notify that an on-chain USDT transfer was detected."""
+    """온체인 USDT 입금 감지 알림"""
     explorer_urls = {
         "Polygon": f"https://polygonscan.com/tx/{tx_hash}",
         "Ethereum": f"https://etherscan.io/tx/{tx_hash}",
@@ -83,15 +83,15 @@ def notify_deposit_detected(amount: float, sender: str, tx_hash: str, chain: str
     }
     explorer_url = explorer_urls.get(chain, f"https://polygonscan.com/tx/{tx_hash}")
     message = f"""
-<b>USDT Deposit Detected</b>
+<b>🔔 USDT 입금 감지</b>
 
-Chain: {chain}
-Amount: {amount} USDT
-From: <code>{sender}</code>
+체인: {chain}
+금액: {amount} USDT
+보낸 주소: <code>{sender}</code>
 TX: <a href=\"{explorer_url}\">{tx_hash[:16]}...</a>
 
-Detected at: {now_kst()}
+감지 시간: {now_kst()}
 
-Please verify in the admin dashboard.
+관리자 대시보드에서 확인해 주세요.
 """
     return send_telegram_notification(message)

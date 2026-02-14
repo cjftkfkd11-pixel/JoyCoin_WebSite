@@ -26,6 +26,12 @@ export default function MyPage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
 
+  // 지갑 주소 변경 상태
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [newWalletAddress, setNewWalletAddress] = useState("");
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletMessage, setWalletMessage] = useState({ type: '', text: '' });
+
   // 알림 상태
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -90,6 +96,34 @@ export default function MyPage() {
       toast(successMessage, 'success');
     } else {
       toast(locale === 'ko' ? '복사에 실패했습니다.' : 'Copy failed.', 'error');
+    }
+  };
+
+  const handleChangeWallet = async () => {
+    if (!newWalletAddress.trim() || newWalletAddress.trim().length < 6) {
+      setWalletMessage({ type: 'error', text: locale === 'ko' ? '유효한 지갑 주소를 입력하세요 (6자 이상).' : 'Enter a valid wallet address (min 6 chars).' });
+      return;
+    }
+    setWalletLoading(true);
+    setWalletMessage({ type: '', text: '' });
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/wallet-address`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ wallet_address: newWalletAddress.trim() })
+      });
+      if (res.ok) {
+        setWalletMessage({ type: 'success', text: locale === 'ko' ? '지갑 주소가 변경되었습니다.' : 'Wallet address updated.' });
+        setTimeout(() => { setShowWalletModal(false); window.location.reload(); }, 1200);
+      } else {
+        const error = await res.json();
+        setWalletMessage({ type: 'error', text: error.detail || (locale === 'ko' ? '변경 실패' : 'Update failed') });
+      }
+    } catch {
+      setWalletMessage({ type: 'error', text: locale === 'ko' ? '서버 연결 실패' : 'Server connection failed' });
+    } finally {
+      setWalletLoading(false);
     }
   };
 
@@ -183,6 +217,54 @@ export default function MyPage() {
             >
               {locale === 'ko' ? '확인' : 'OK'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 지갑 주소 변경 모달 */}
+      {showWalletModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
+          <div className="glass p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] w-full max-w-md border border-yellow-500/20 shadow-2xl relative max-h-[95vh] overflow-y-auto">
+            <button
+              onClick={() => setShowWalletModal(false)}
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-500 hover:text-white text-xl font-bold"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-black text-yellow-400 mb-6">
+              {locale === 'ko' ? '지갑 주소 변경' : 'Change Wallet Address'}
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
+                  {locale === 'ko' ? '새 지갑 주소' : 'New Wallet Address'}
+                </label>
+                <input
+                  type="text"
+                  value={newWalletAddress}
+                  onChange={(e) => setNewWalletAddress(e.target.value)}
+                  placeholder={locale === 'ko' ? 'JOY를 받을 지갑 주소 입력' : 'Enter wallet address for JOY'}
+                  className="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-yellow-500 text-sm font-mono"
+                />
+              </div>
+              <p className="text-[9px] text-yellow-600">
+                {locale === 'ko' ? '⚠️ 잘못된 주소 입력 시 JOY를 받지 못할 수 있습니다. 정확히 입력하세요.' : '⚠️ Incorrect address may result in lost JOY. Please double-check.'}
+              </p>
+              {walletMessage.text && (
+                <div className={`p-3 rounded-xl text-xs font-bold text-center ${
+                  walletMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                }`}>
+                  {walletMessage.text}
+                </div>
+              )}
+              <button
+                onClick={handleChangeWallet}
+                disabled={walletLoading}
+                className="w-full py-3 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 rounded-xl font-black transition-all"
+              >
+                {walletLoading ? t("loading") : (locale === 'ko' ? '변경하기' : 'Update')}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -325,6 +407,36 @@ export default function MyPage() {
                 </p>
               </div>
             )}
+            {/* 지갑 주소 */}
+            <div className="mt-4 p-3 bg-slate-800/50 rounded-xl">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">
+                {locale === 'ko' ? 'JOY 수령 지갑 주소' : 'JOY Wallet Address'}
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-mono text-blue-400 truncate flex-1">
+                  {user?.wallet_address || (locale === 'ko' ? '미등록' : 'Not set')}
+                </span>
+                <div className="flex gap-1 flex-shrink-0">
+                  {user?.wallet_address && (
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(user.wallet_address || '', locale === 'ko' ? '복사되었습니다!' : 'Copied!')}
+                      className="text-[10px] font-bold text-blue-400 hover:text-blue-300 px-2 py-1 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 transition-all touch-manipulation"
+                    >
+                      {locale === 'ko' ? '복사' : 'COPY'}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setNewWalletAddress(user?.wallet_address || ''); setShowWalletModal(true); setWalletMessage({ type: '', text: '' }); }}
+                    className="text-[10px] font-bold text-yellow-400 hover:text-yellow-300 px-2 py-1 bg-yellow-500/10 rounded-lg hover:bg-yellow-500/20 transition-all touch-manipulation"
+                  >
+                    {locale === 'ko' ? '변경' : 'EDIT'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={() => setShowPasswordModal(true)}
               className="mt-4 w-full py-2 text-xs font-bold text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 rounded-xl transition-all"

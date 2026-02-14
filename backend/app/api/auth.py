@@ -199,6 +199,23 @@ async def change_password(
 
 
 # ---------------------------------------------------------
+# 5-1. 지갑 주소 변경
+# ---------------------------------------------------------
+class UpdateWalletIn(BaseModel):
+    wallet_address: str = Field(..., min_length=6, max_length=128)
+
+@router.put("/wallet-address")
+async def update_wallet_address(
+    data: UpdateWalletIn,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    current_user.wallet_address = data.wallet_address.strip()
+    db.commit()
+    return {"message": "지갑 주소가 변경되었습니다.", "wallet_address": current_user.wallet_address}
+
+
+# ---------------------------------------------------------
 # 6. 이메일/유저네임 중복 확인
 # ---------------------------------------------------------
 @router.get("/check-email")
