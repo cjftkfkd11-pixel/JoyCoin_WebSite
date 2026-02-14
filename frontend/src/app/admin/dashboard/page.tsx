@@ -229,13 +229,13 @@ export default function AdminDashboard() {
     } catch (err: any) { toast(err.message, "error"); }
   };
 
-  const handleApprove = async (id: number, userEmail: string) => {
+  const handleApprove = async (id: number, userEmail: string, actualAmount?: number | null) => {
     if (!confirm(`${userEmail} 님의 입금 요청을 승인하시겠습니까?`)) return;
     try {
       setProcessingId(id);
       const response = await fetch(`${API_BASE_URL}/admin/deposits/${id}/approve`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ admin_notes: '승인 완료' })
+        body: JSON.stringify({ admin_notes: '승인 완료', actual_amount: actualAmount ?? null })
       });
       if (!response.ok) { const e = await response.json(); throw new Error(e.detail || '승인 실패'); }
       toast('승인 완료. 사용자에게 JOY 코인을 전송하세요!', 'success');
@@ -559,7 +559,7 @@ export default function AdminDashboard() {
                             <td className="p-5 text-right">
                               {req.status === 'pending' ? (
                                 <div className="flex gap-2 justify-end">
-                                  <button onClick={() => handleApprove(req.id, req.user.email)} disabled={processingId === req.id}
+                                  <button onClick={() => handleApprove(req.id, req.user.email, req.actual_amount)} disabled={processingId === req.id}
                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 text-white text-[10px] font-black rounded-lg transition-all uppercase">
                                     {processingId === req.id ? '...' : '승인'}
                                   </button>

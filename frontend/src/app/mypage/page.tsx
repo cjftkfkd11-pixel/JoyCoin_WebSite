@@ -342,7 +342,7 @@ export default function MyPage() {
           <h1 className="text-2xl sm:text-4xl font-black italic text-blue-500 uppercase tracking-tighter">{t("myPage")}</h1>
           <button
             onClick={handleLogout}
-            className="text-xs font-bold text-red-500 hover:text-red-400 transition-all underline underline-offset-8"
+            className="text-xs font-bold text-red-500 hover:text-red-400 transition-all underline underline-offset-8 px-3 py-2"
           >
             {t("logout").toUpperCase()}
           </button>

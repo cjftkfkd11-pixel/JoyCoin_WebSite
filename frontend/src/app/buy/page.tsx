@@ -157,7 +157,7 @@ export default function BuyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-6 pb-24 md:p-8 md:pb-24">
+    <div className="min-h-screen bg-[#020617] text-white p-4 sm:p-6 pb-24 md:p-8 md:pb-24">
       {/* 입금 정보 모달 */}
       {depositInfo && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -190,11 +190,11 @@ export default function BuyPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-slate-800 p-4 rounded-xl text-center">
                   <p className="text-xs text-slate-400 mb-1">{locale === 'ko' ? '입금 금액' : 'Amount'}</p>
-                  <p className="text-xl font-bold">{depositInfo.amount} USDT</p>
+                  <p className="text-base sm:text-xl font-bold">{depositInfo.amount} USDT</p>
                 </div>
                 <div className="bg-blue-600/20 border border-blue-500/30 p-4 rounded-xl text-center">
                   <p className="text-xs text-blue-300 mb-1">{locale === 'ko' ? '받을 JOY' : 'JOY to receive'}</p>
-                  <p className="text-xl font-bold text-blue-400">{depositInfo.joyAmount.toLocaleString()}</p>
+                  <p className="text-base sm:text-xl font-bold text-blue-400">{depositInfo.joyAmount.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -277,8 +277,8 @@ export default function BuyPage() {
 
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-5 sm:mb-8">
-          <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-blue-400">{locale === 'ko' ? 'JOY 참여 요청' : 'Request JOY Allocation'}</h1>
-          <a href="/mypage" className="text-sm text-slate-400 hover:text-white underline">
+          <h1 className="text-lg sm:text-3xl md:text-4xl font-bold text-blue-400">{locale === 'ko' ? 'JOY 참여 요청' : 'Request JOY Allocation'}</h1>
+          <a href="/mypage" className="text-xs sm:text-sm text-slate-400 hover:text-white underline flex-shrink-0">
             {locale === 'ko' ? '마이페이지' : 'My Page'}
           </a>
         </div>
@@ -342,7 +342,7 @@ export default function BuyPage() {
                   <button
                     key={chain.id}
                     onClick={() => setSelectedChain(chain.id)}
-                    className={`py-3 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition-all text-center ${
+                    className={`py-3.5 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition-all text-center ${
                       selectedChain === chain.id
                         ? 'bg-blue-600 text-white border border-blue-500'
                         : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-transparent'
@@ -373,7 +373,7 @@ export default function BuyPage() {
               <div className="border-t border-slate-800 pt-4 space-y-3">
                 <div className="flex justify-between">
                   <span className="text-slate-400">{locale === 'ko' ? '총 참여금액' : 'Total'}</span>
-                  <span className="text-2xl font-bold">{totalUsdt.toLocaleString()} USDT</span>
+                  <span className="text-lg sm:text-2xl font-bold">{totalUsdt.toLocaleString()} USDT</span>
                 </div>
                 <div className="flex justify-between bg-blue-600/20 p-3 rounded-xl">
                   <span className="text-blue-300">{locale === 'ko' ? '배정 JOY' : 'JOY Allocation'}</span>

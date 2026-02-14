@@ -171,7 +171,7 @@ export default function SignupPage() {
                 value={formData.nickname}
                 onChange={e => { setFormData({...formData, nickname: e.target.value}); setNicknameChecked(false); }} />
               <button type="button" onClick={checkNickname}
-                className="px-4 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap">
+                className="px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap">
                 {locale === 'ko' ? '중복확인' : 'Check'}
               </button>
             </div>
@@ -187,7 +187,7 @@ export default function SignupPage() {
                 value={formData.email}
                 onChange={e => { setFormData({...formData, email: e.target.value}); setEmailChecked(false); }} />
               <button type="button" onClick={checkEmail}
-                className="px-4 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap">
+                className="px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap">
                 {locale === 'ko' ? '중복확인' : 'Check'}
               </button>
             </div>
@@ -212,7 +212,7 @@ export default function SignupPage() {
               value={formData.wallet_address}
               onChange={e => setFormData({...formData, wallet_address: e.target.value})}
             />
-            <p className="text-[9px] text-red-400/70 mt-1 ml-1">
+            <p className="text-[10px] sm:text-xs text-red-400/70 mt-1 ml-1">
               {locale === 'ko'
                 ? '⚠️ 지갑 주소를 잘못 입력하여 발생하는 코인 미수령 등의 문제는 본인 책임이며, 회사는 이에 대해 책임지지 않습니다.'
                 : '⚠️ The company is not responsible for any loss caused by incorrect wallet address entry.'}

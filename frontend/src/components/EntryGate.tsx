@@ -448,7 +448,7 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 min-w-0 py-2 sm:py-3 text-[10px] sm:text-xs font-medium transition-colors relative px-1 ${
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 text-[10px] sm:text-xs font-medium transition-colors relative px-1 ${
                 activeTab === tab.key
                   ? "text-cyan-400 bg-slate-800/50"
                   : "text-slate-500 hover:text-slate-300"

@@ -129,25 +129,25 @@ export default function PointsPage() {
   }
 
   return (
-    <div className="min-h-screen p-6 text-white font-sans">
+    <div className="min-h-screen p-4 sm:p-6 text-white font-sans">
       <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-3xl font-black italic text-blue-500">MY POINTS</h1>
+        <h1 className="text-2xl sm:text-3xl font-black italic text-blue-500">MY POINTS</h1>
 
         {/* 포인트 잔액 + 출금 버튼 */}
-        <div className="glass p-8 rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-600/10 to-transparent">
-          <div className="flex justify-between items-center">
+        <div className="glass p-4 sm:p-8 rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-600/10 to-transparent">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Available Points
               </p>
-              <p className="text-4xl font-black text-emerald-400">
+              <p className="text-2xl sm:text-4xl font-black text-emerald-400">
                 {balance.toLocaleString()} <span className="text-sm">P</span>
               </p>
             </div>
             <button
               onClick={() => setShowForm(true)}
               disabled={balance <= 0}
-              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-black text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-black text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >
               출금 신청
             </button>

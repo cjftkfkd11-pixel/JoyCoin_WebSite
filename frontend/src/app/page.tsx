@@ -53,7 +53,7 @@ export default function Page() {
               >
                 {t("login")}
               </Link>
-              <Link href="/admin/login" className="text-slate-500 hover:text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center transition-colors">
+              <Link href="/admin/login" className="text-slate-500 hover:text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center transition-colors py-2 px-3">
                 {locale === 'ko' ? '관리자 로그인' : 'ADMIN LOGIN'}
               </Link>
             </div>

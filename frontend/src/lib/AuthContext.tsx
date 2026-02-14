@@ -13,6 +13,7 @@ interface User {
   referral_code?: string;
   recovery_code?: string;
   role?: string;
+  wallet_address?: string;
 }
 
 interface AuthContextType {

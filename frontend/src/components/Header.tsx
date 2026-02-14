@@ -5,30 +5,36 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { useAuth } from "@/lib/AuthContext";
 import { getApiBaseUrl } from "@/lib/apiBase";
 
+interface NotificationItem {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  related_id: number | null;
+  created_at: string | null;
+}
+
 export default function Header() {
   const { locale, setLocale, t } = useLanguage();
   const { user, isLoggedIn, isLoading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
   const API_BASE_URL = getApiBaseUrl();
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   // 알림 로드
   useEffect(() => {
     if (!isLoggedIn) return;
     const fetchNotifications = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/deposits/my`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/notifications`, { credentials: 'include' });
         if (res.ok) {
-          const data = await res.json();
-          const items = data.items || data;
-          const seenNotifs = JSON.parse(localStorage.getItem('seenNotifications') || '[]');
-          const newNotifs = items.filter((dep: any) =>
-            (dep.status === 'approved' || dep.status === 'rejected') &&
-            !seenNotifs.includes(dep.id)
-          );
-          setNotifications(newNotifs);
+          const data: NotificationItem[] = await res.json();
+          setNotifications(data);
         }
       } catch {}
     };
@@ -48,12 +54,22 @@ export default function Header() {
     setMobileMenuOpen(false);
   };
 
-  const clearNotifications = () => {
-    const seenNotifs = JSON.parse(localStorage.getItem('seenNotifications') || '[]');
-    const newSeen = [...seenNotifs, ...notifications.map((n: any) => n.id)];
-    localStorage.setItem('seenNotifications', JSON.stringify(newSeen));
-    setNotifications([]);
+  const clearNotifications = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/notifications/read-all`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch {}
     setShowNotifDropdown(false);
+  };
+
+  const getNotifStyle = (type: string) => {
+    if (type.includes('approved') || type.includes('matched')) return 'bg-green-500/10 text-green-400';
+    if (type.includes('rejected')) return 'bg-red-500/10 text-red-400';
+    if (type.includes('underpaid')) return 'bg-yellow-500/10 text-yellow-400';
+    return 'bg-blue-500/10 text-blue-400';
   };
 
   return (
@@ -70,7 +86,7 @@ export default function Header() {
           <button
             type="button"
             onClick={toggleLocale}
-            className="bg-slate-800/50 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700/50 hover:bg-slate-700/50 transition-all"
+            className="bg-slate-800/50 text-slate-300 px-3 py-2 rounded-xl text-xs font-semibold border border-slate-700/50 hover:bg-slate-700/50 transition-all"
           >
             {locale === "en" ? "한국어" : "ENG"}
           </button>
@@ -107,9 +123,9 @@ export default function Header() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                {notifications.length > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {notifications.length > 9 ? '9+' : notifications.length}
+                    {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
@@ -119,7 +135,7 @@ export default function Header() {
                 <div className="absolute right-0 top-10 w-80 bg-slate-900/95 border border-slate-700/50 rounded-xl shadow-2xl p-4 z-50">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-white">{locale === 'ko' ? '알림' : 'Notifications'}</h3>
-                    {notifications.length > 0 && (
+                    {unreadCount > 0 && (
                       <button onClick={clearNotifications} className="text-[10px] text-blue-400 hover:text-blue-300">
                         {locale === 'ko' ? '모두 읽음' : 'Mark all read'}
                       </button>
@@ -128,15 +144,17 @@ export default function Header() {
                   {notifications.length > 0 ? (
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {notifications.map((notif) => (
-                        <div key={notif.id} className={`p-3 rounded-lg text-xs ${notif.status === 'approved' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                          <span className="font-bold">{notif.status === 'approved' ? '✅ ' : '❌ '}</span>
-                          {notif.expected_amount} USDT → {(notif.joy_amount || 0).toLocaleString()} JOY
-                          <span className="ml-2">{notif.status === 'approved' ? (locale === 'ko' ? '승인됨' : 'Approved') : (locale === 'ko' ? '거절됨' : 'Rejected')}</span>
+                        <div key={notif.id} className={`p-3 rounded-lg text-xs ${getNotifStyle(notif.type)} ${notif.is_read ? 'opacity-50' : ''}`}>
+                          <div className="font-bold">{notif.title}</div>
+                          <div className="text-[10px] mt-1 opacity-80">{notif.message}</div>
+                          {notif.created_at && (
+                            <div className="text-[9px] mt-1 opacity-50">{new Date(notif.created_at).toLocaleString('ko-KR')}</div>
+                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-500 text-xs text-center py-4">{locale === 'ko' ? '새 알림이 없습니다' : 'No new notifications'}</p>
+                    <p className="text-slate-500 text-xs text-center py-4">{locale === 'ko' ? '알림이 없습니다' : 'No notifications'}</p>
                   )}
                 </div>
               )}
@@ -187,8 +205,8 @@ export default function Header() {
                   <div className="pb-4 border-b border-slate-700/50 mb-2">
                     <p className="text-sm text-slate-400">{locale === 'ko' ? '안녕하세요' : 'Hello'},</p>
                     <p className="text-lg font-bold text-white">{user?.username}</p>
-                    {notifications.length > 0 && (
-                      <p className="text-xs text-red-400 mt-1">🔔 {notifications.length}{locale === 'ko' ? '개의 새 알림' : ' new notifications'}</p>
+                    {unreadCount > 0 && (
+                      <p className="text-xs text-red-400 mt-1">🔔 {unreadCount}{locale === 'ko' ? '개의 새 알림' : ' new notifications'}</p>
                     )}
                   </div>
                   <a href="/mypage" onClick={closeMobileMenu} className="text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-800/50 transition-colors">
