@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function FullAdminDashboard() {
+  const { t } = useLanguage();
   // 1. 섹터별 설정 및 통계 (A~D)
   const [sectorData, setSectorData] = useState({
     "Sector A": { rate: 10, members: 124, totalSync: 45000 },
@@ -42,35 +44,35 @@ export default function FullAdminDashboard() {
         {/* 상단 타이틀 */}
         <div className="flex justify-between items-end border-b border-white/10 pb-6">
           <div>
-            <h1 className="text-4xl font-black italic tracking-tighter text-blue-500">SYSTEM CONTROL</h1>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Global Node & Referrer Management</p>
+            <h1 className="text-4xl font-black italic tracking-tighter text-blue-500">{t("adminSystemControl")}</h1>
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">{t("adminGlobalNodeReferrer")}</p>
           </div>
         </div>
 
         {/* [섹션 1] 섹터별 기여분 및 통계 (A~D) */}
         <div className="space-y-4">
-          <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] pl-2">Sector Configuration</h2>
+          <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] pl-2">{t("sectorConfiguration")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Object.entries(sectorData).map(([name, data]) => (
               <div key={name} className="glass p-6 rounded-[2.5rem] border-white/5 space-y-4 relative overflow-hidden bg-slate-900/40">
                 <div className="flex justify-between items-center">
                   <span className="text-blue-500 font-black italic">{name}</span>
-                  <span className="text-[10px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded">ONLINE</span>
+                  <span className="text-[10px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded">{t("online").toUpperCase()}</span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 border-y border-white/5 py-3">
                   <div>
-                    <p className="text-slate-500 text-[9px] uppercase font-bold">Members</p>
-                    <p className="text-xl font-black">{data.members} <span className="text-[10px] font-normal">명</span></p>
+                    <p className="text-slate-500 text-[9px] uppercase font-bold">{t("members")}</p>
+                    <p className="text-xl font-black">{data.members} <span className="text-[10px] font-normal">{t("peopleUnit")}</span></p>
                   </div>
                   <div>
-                    <p className="text-slate-500 text-[9px] uppercase font-bold">Total Sync</p>
+                    <p className="text-slate-500 text-[9px] uppercase font-bold">{t("totalSync")}</p>
                     <p className="text-xl font-black">{data.totalSync.toLocaleString()} <span className="text-[10px] font-normal text-blue-400">U</span></p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-slate-500 text-[9px] uppercase font-bold text-center">Contribution: {data.rate}%</p>
+                  <p className="text-slate-500 text-[9px] uppercase font-bold text-center">{t("contribution")}: {data.rate}%</p>
                   <div className="flex justify-between gap-1">
                     {rates.map(r => (
                       <button 
@@ -90,15 +92,15 @@ export default function FullAdminDashboard() {
 
         {/* [섹션 2] 추천인 관리 (E, F, G, H) */}
         <div className="space-y-4">
-          <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] pl-2">Referrer Network (E-H)</h2>
+          <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] pl-2">{t("referrerNetwork")}</h2>
           <div className="glass rounded-[2rem] overflow-hidden border-white/5 bg-slate-900/40">
             <table className="w-full text-left text-sm">
               <thead className="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                 <tr>
-                  <th className="p-5">Referrer ID</th>
+                  <th className="p-5">{t("referrerId")}</th>
                   <th className="p-5">Sector</th>
-                  <th className="p-5 text-center">Invites</th>
-                  <th className="p-5 text-right">Total Rewards (U)</th>
+                  <th className="p-5 text-center">{t("invites")}</th>
+                  <th className="p-5 text-right">{t("totalRewardsU")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -106,7 +108,7 @@ export default function FullAdminDashboard() {
                   <tr key={idx} className="border-t border-white/5 hover:bg-white/[0.02]">
                     <td className="p-5 font-mono text-xs">{ref.email}</td>
                     <td className="p-5 font-black text-blue-400">{ref.sector}</td>
-                    <td className="p-5 text-center font-bold">{ref.invites} 명</td>
+                    <td className="p-5 text-center font-bold">{ref.invites} {t("peopleUnit")}</td>
                     <td className="p-5 text-right font-black text-green-400">{ref.rewards.toLocaleString()} U</td>
                   </tr>
                 ))}
@@ -117,16 +119,16 @@ export default function FullAdminDashboard() {
 
         {/* [섹션 3] 실시간 활성화 요청 목록 */}
         <div className="space-y-4">
-          <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] pl-2">Activation Requests</h2>
+          <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] pl-2">{t("activationRequests")}</h2>
           <div className="glass rounded-[2rem] overflow-hidden border-white/5 bg-slate-900/40 shadow-2xl">
             <table className="w-full text-left text-sm">
               <thead className="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                 <tr>
-                  <th className="p-6">User / Date</th>
-                  <th className="p-6">Agent</th>
-                  <th className="p-6 text-right">U-Power</th>
-                  <th className="p-6 text-center text-blue-400 font-black">Expected Contribution</th>
-                  <th className="p-6 text-right">Action</th>
+                  <th className="p-6">{t("userDate")}</th>
+                  <th className="p-6">{t("agent")}</th>
+                  <th className="p-6 text-right">{t("uPower")}</th>
+                  <th className="p-6 text-center text-blue-400 font-black">{t("expectedContribution")}</th>
+                  <th className="p-6 text-right">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,7 +142,7 @@ export default function FullAdminDashboard() {
                         <div className="text-[10px] text-slate-500 uppercase mt-1">{req.sector}</div>
                       </td>
                       <td className="p-6">
-                        <span className="bg-white/5 px-3 py-1 rounded-full text-[10px] text-slate-400">Agent {req.referrer}</span>
+                        <span className="bg-white/5 px-3 py-1 rounded-full text-[10px] text-slate-400">{t("agent")} {req.referrer}</span>
                       </td>
                       <td className="p-6 text-right font-mono font-bold">{req.power.toLocaleString()} U</td>
                       <td className="p-6 text-center text-blue-400 font-black">+{fee.toFixed(2)} U <br/><span className="text-[9px] text-slate-600">at {currentRate}%</span></td>

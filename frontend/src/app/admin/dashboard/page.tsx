@@ -129,7 +129,7 @@ export default function AdminDashboard() {
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
       setReferralBonus(points);
-      toast(`${t("referralBonusPercent")} ${points}%`, "success");
+      toast(t("referralBonusUpdated").replace('{points}', String(points)), "success");
     } catch (err: any) { toast(err.message, "error"); }
   };
 
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       setJoyPerUsdt(data.joy_per_usdt);
       setJoyPerUsdtInput(String(data.joy_per_usdt));
-      toast(`JOY 시세 변경: 1 USDT = ${data.joy_per_usdt} JOY / 1 JOY = ${data.joy_to_krw} KRW`, "success");
+      toast(t("exchangeRateChanged").replace('{joy}', String(data.joy_per_usdt)).replace('{krw}', String(data.joy_to_krw)), "success");
     } catch (err: any) { toast(err.message, "error"); }
   };
 
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
 
   const handleBan = async (userId: number, isBanned: boolean) => {
     const action = isBanned ? 'unban' : 'ban';
-    const msg = isBanned ? '차단을 해제하시겠습니까?' : '이 유저를 차단하시겠습니까?';
+    const msg = isBanned ? t("unbanConfirm") : t("banConfirm");
     if (!confirm(msg)) return;
     try {
       setUserProcessingId(userId);
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
 
   const handleRoleChange = async (userId: number, currentRole: string) => {
     const action = currentRole === 'admin' ? 'demote' : 'promote';
-    const msg = currentRole === 'admin' ? '일반 유저로 변경하시겠습니까?' : '관리자로 승격하시겠습니까?';
+    const msg = currentRole === 'admin' ? t("demoteConfirm") : t("promoteConfirm");
     if (!confirm(msg)) return;
     try {
       setUserProcessingId(userId);
@@ -232,15 +232,15 @@ export default function AdminDashboard() {
   };
 
   const handleApprove = async (id: number, userEmail: string, actualAmount?: number | null) => {
-    if (!confirm(`${userEmail} 님의 입금 요청을 승인하시겠습니까?`)) return;
+    if (!confirm(t("approveDepositConfirm").replace('{user}', userEmail))) return;
     try {
       setProcessingId(id);
       const response = await fetch(`${API_BASE_URL}/admin/deposits/${id}/approve`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ admin_notes: '승인 완료', actual_amount: actualAmount ?? null })
+        body: JSON.stringify({ admin_notes: t("approved"), actual_amount: actualAmount ?? null })
       });
-      if (!response.ok) { const e = await response.json(); throw new Error(e.detail || '승인 실패'); }
-      toast('승인 완료. 사용자에게 JOY 코인을 전송하세요!', 'success');
+      if (!response.ok) { const e = await response.json(); throw new Error(e.detail || t("approveFailed")); }
+      toast(t("depositApprovedToast"), 'success');
       fetchDeposits();
       fetchStats();
     } catch (err: any) { toast(err.message, "error"); }
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
   };
 
   const handleReject = async (id: number, userEmail: string) => {
-    const reason = prompt(`${userEmail} 님의 입금 요청 거절 사유:`);
+    const reason = prompt(t("rejectDepositPrompt").replace('{user}', userEmail));
     if (!reason) return;
     try {
       setProcessingId(id);
@@ -256,8 +256,8 @@ export default function AdminDashboard() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ admin_notes: reason })
       });
-      if (!response.ok) { const e = await response.json(); throw new Error(e.detail || '거절 실패'); }
-      toast('입금 요청이 거절되었습니다.', 'info');
+      if (!response.ok) { const e = await response.json(); throw new Error(e.detail || t("rejectFailed")); }
+      toast(t("depositRejectedToast"), 'info');
       fetchDeposits();
       fetchStats();
     } catch (err: any) { toast(err.message, "error"); }
@@ -270,7 +270,7 @@ export default function AdminDashboard() {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ fee_percent: fee })
       });
-      if (!response.ok) throw new Error('기여분 변경 실패');
+      if (!response.ok) throw new Error(t("sectorFeeUpdateFailed"));
       fetchSectors();
     } catch (err: any) { toast(err.message, "error"); }
   };
@@ -284,14 +284,14 @@ export default function AdminDashboard() {
 
   const copyToClipboard = async (value: string, successMessage: string) => {
     if (!value) {
-      toast('복사할 주소가 없습니다.', 'warning');
+      toast(t("copyMissing"), 'warning');
       return;
     }
     try {
       await navigator.clipboard.writeText(value);
       toast(successMessage, 'success');
     } catch {
-      toast('복사에 실패했습니다.', 'error');
+      toast(t("copyFailed"), 'error');
     }
   };
 
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
       approved: "bg-green-500/10 text-green-400 border-green-500/20",
       rejected: "bg-red-500/10 text-red-400 border-red-500/20",
     };
-    const labels: Record<string, string> = { pending: "대기중", approved: "승인완료", rejected: "거절됨" };
+    const labels: Record<string, string> = { pending: t("pending"), approved: t("approved"), rejected: t("rejected") };
     return (
       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${styles[status] || styles.pending}`}>
         {labels[status] || status}
@@ -431,7 +431,7 @@ export default function AdminDashboard() {
                     return (
                       <div key={ss.sector_id} className="p-4 rounded-2xl border border-blue-500/10 bg-blue-500/5">
                         <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest">{t("sectorName")} {sector?.name || ss.sector_id}</p>
-                        <p className="text-lg font-black italic mt-1">{ss.deposit_count}건</p>
+                        <p className="text-lg font-black italic mt-1">{ss.deposit_count}{t("items")}</p>
                         <p className="text-xs text-slate-400 mt-0.5">${ss.total_usdt.toLocaleString()}</p>
                       </div>
                     );
@@ -531,7 +531,7 @@ export default function AdminDashboard() {
                               {req.expected_amount.toLocaleString()} USDT
                               {req.actual_amount != null && req.actual_amount !== req.expected_amount && (
                                 <div className={`text-[9px] mt-0.5 ${Math.floor(req.actual_amount) < Math.floor(req.expected_amount) ? 'text-yellow-400' : 'text-green-400'}`}>
-                                  실제: {req.actual_amount} USDT
+                                  {t("actual")}: {req.actual_amount} USDT
                                 </div>
                               )}
                             </td>
@@ -563,16 +563,16 @@ export default function AdminDashboard() {
                                 <div className="flex gap-2 justify-end">
                                   <button onClick={() => handleApprove(req.id, req.user.email, req.actual_amount)} disabled={processingId === req.id}
                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 text-white text-[10px] font-black rounded-lg transition-all uppercase">
-                                    {processingId === req.id ? '...' : '승인'}
+                                    {processingId === req.id ? '...' : t("approve")}
                                   </button>
                                   <button onClick={() => handleReject(req.id, req.user.email)} disabled={processingId === req.id}
                                     className="px-3 py-1.5 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 text-white text-[10px] font-black rounded-lg transition-all uppercase">
-                                    거절
+                                    {t("reject")}
                                   </button>
                                 </div>
                               ) : (
                                 <span className="text-slate-600 text-[10px] uppercase font-black tracking-widest">
-                                  {req.status === 'approved' ? '완료' : '거절됨'}
+                                  {req.status === 'approved' ? t("completed") : t("rejected")}
                                 </span>
                               )}
                             </td>
@@ -583,7 +583,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
-              <p className="text-slate-600 text-[10px] text-right">총 {filteredRequests.length}건</p>
+              <p className="text-slate-600 text-[10px] text-right">{t("totalCount")} {filteredRequests.length} {t("items")}</p>
             </>
           ) : activeTab === 'products' ? (
             /* 상품 관리 탭 */
@@ -652,7 +652,7 @@ export default function AdminDashboard() {
                       <div><span className="text-slate-500 text-xs">JOY</span><p className="font-bold text-blue-400">{p.joy_amount.toLocaleString()}</p></div>
                       <div><span className="text-slate-500 text-xs">USDT</span><p className="font-bold">{p.price_usdt}</p></div>
                       <div><span className="text-slate-500 text-xs">KRW</span><p className="font-bold text-slate-300">{(p.price_krw || 0).toLocaleString()}</p></div>
-                      <div><span className="text-slate-500 text-xs">할인</span><p className="font-bold text-green-400">{p.discount_rate}%</p></div>
+                      <div><span className="text-slate-500 text-xs">{t("discountRate")}</span><p className="font-bold text-green-400">{p.discount_rate}%</p></div>
                     </div>
                     {p.description && <p className="text-xs text-slate-500">{p.description}</p>}
                     <div className="flex gap-2 pt-2">
@@ -766,7 +766,7 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               </div>
-              <p className="text-slate-600 text-[10px] text-right">총 {users.filter(u => !userSearch || u.email.toLowerCase().includes(userSearch.toLowerCase()) || u.username.toLowerCase().includes(userSearch.toLowerCase())).length}건</p>
+              <p className="text-slate-600 text-[10px] text-right">{t("totalCount")} {users.filter(u => !userSearch || u.email.toLowerCase().includes(userSearch.toLowerCase()) || u.username.toLowerCase().includes(userSearch.toLowerCase())).length} {t("items")}</p>
             </>
           ) : (
             /* 섹터 기여분 설정 탭 */

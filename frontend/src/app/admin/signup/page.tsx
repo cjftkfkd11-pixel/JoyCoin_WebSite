@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 import { getApiBaseUrl } from '@/lib/apiBase';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t, locale } = useLanguage();
 
   // 1. 입력 데이터를 담을 바구니(상태) 만들기
   const [email, setEmail] = useState(''); // 화면에는 Email로 표시하지만 서버에는 username으로 보냅니다.
@@ -55,7 +57,7 @@ export default function SignupPage() {
         risk_accepted: true,
         privacy_accepted: true,
         legal_version: "2026-02-10",
-        locale: "ko",
+        locale,
       };
 
       const API_BASE_URL = getApiBaseUrl();
@@ -66,14 +68,15 @@ export default function SignupPage() {
       });
 
       if (response.ok) {
-        toast("회원가입이 완료되었습니다! 로그인을 진행해주세요.", "success");
+        toast(t("adminSignupSuccess"), "success");
         router.push('/auth/login');
       } else {
         const errorData = await response.json();
-        toast(`가입 실패: ${typeof errorData.detail === 'object' ? JSON.stringify(errorData.detail) : errorData.detail}`, "error");
+        const detail = typeof errorData.detail === 'object' ? JSON.stringify(errorData.detail) : errorData.detail;
+        toast(`${t("adminSignupFailed")}: ${detail}`, "error");
       }
     } catch (error) {
-      toast("서버 연결에 실패했습니다. 백엔드 서버가 켜져 있는지 확인하세요.", "error");
+      toast(t("serverConnectionFailed"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -83,14 +86,14 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#020617] p-6 text-white font-sans">
       <div className="glass p-10 rounded-[2.5rem] w-full max-w-md border border-blue-500/10 shadow-2xl relative">
         <div className="text-center mb-10">
-          <h2 className="text-blue-500 text-xs font-black uppercase tracking-[0.4em] mb-2">Join JoyCoin</h2>
-          <h1 className="text-3xl font-black italic">SIGN UP</h1>
+          <h2 className="text-blue-500 text-xs font-black uppercase tracking-[0.4em] mb-2">{t("joinJoycoin")}</h2>
+          <h1 className="text-3xl font-black italic">{t("signup").toUpperCase()}</h1>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-6">
           {/* 이메일(Username) 입력창 */}
           <div className="space-y-2">
-            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Email Address</label>
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">{t("email")}</label>
             <input 
               type="email" placeholder="example@joy.com" required value={email} onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all"
@@ -99,7 +102,7 @@ export default function SignupPage() {
           
           {/* 비밀번호 입력창 */}
           <div className="space-y-2">
-            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Password</label>
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">{t("password")}</label>
             <input 
               type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all"
@@ -108,14 +111,14 @@ export default function SignupPage() {
 
           {/* 센터 선택 드롭다운 (GET /centers 연동) */}
           <div className="space-y-2">
-            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Select Center</label>
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">{t("selectCenter")}</label>
             <select 
               required
               value={selectedCenterId}
               onChange={(e) => setSelectedCenterId(e.target.value)}
               className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all text-white appearance-none cursor-pointer"
             >
-              <option value="" disabled>센터를 선택하세요</option>
+              <option value="" disabled>{t("selectCenter")}</option>
               {centers.map((center) => (
                 <option key={center.id} value={center.id} className="bg-slate-900">
                   {center.name} ({center.region})
@@ -125,10 +128,10 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">JOY Wallet Address</label>
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">{t("joyWalletAddress")}</label>
             <input
               type="text"
-              placeholder="Enter JOY receiving wallet"
+              placeholder={t("joyWalletPlaceholder")}
               required
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value)}
@@ -138,9 +141,9 @@ export default function SignupPage() {
 
           {/* 추천인 코드 입력창 */}
           <div className="space-y-2">
-            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">Referral Code (Optional)</label>
+            <label className="text-slate-500 text-[10px] font-bold uppercase ml-2">{t("referralCodeOptional")}</label>
             <input 
-              type="text" placeholder="Referral Code" value={referrer} onChange={(e) => setReferrer(e.target.value)}
+              type="text" placeholder={t("referralCodePlaceholder")} value={referrer} onChange={(e) => setReferrer(e.target.value)}
               className="w-full bg-slate-900/50 border border-slate-800 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all"
             />
           </div>
@@ -149,7 +152,7 @@ export default function SignupPage() {
             type="submit" disabled={isLoading}
             className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
           >
-            {isLoading ? "CREATING ACCOUNT..." : "REGISTER NOW"}
+            {isLoading ? t("loading").toUpperCase() : t("registerNow").toUpperCase()}
           </button>
         </form>
       </div>
