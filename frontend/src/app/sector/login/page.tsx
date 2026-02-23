@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/apiBase';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function SectorLogin() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function SectorLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useLanguage();
 
   const API_BASE_URL = getApiBaseUrl();
 
@@ -28,7 +30,7 @@ export default function SectorLogin() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.detail || '로그인 실패');
+        throw new Error(data.detail || t("loginFailed"));
       }
 
       // 로그인 성공 후 역할 확인
@@ -36,7 +38,7 @@ export default function SectorLogin() {
       if (meRes.ok) {
         const user = await meRes.json();
         if (user.role !== 'sector_manager') {
-          setError('섹터 매니저 계정이 아닙니다.');
+          setError(t("notSectorManager"));
           await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
           return;
         }
@@ -53,8 +55,8 @@ export default function SectorLogin() {
     <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-black italic text-blue-500 uppercase tracking-tighter">Sector</h1>
-          <p className="text-slate-500 text-[10px] font-bold uppercase mt-2 tracking-[0.3em]">Manager Login</p>
+          <h1 className="text-4xl font-black italic text-blue-500 uppercase tracking-tighter">{t("sector")}</h1>
+          <p className="text-slate-500 text-[10px] font-bold uppercase mt-2 tracking-[0.3em]">{t("managerLogin")}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -66,7 +68,7 @@ export default function SectorLogin() {
 
           <input
             type="email"
-            placeholder="이메일"
+            placeholder={t("email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -74,7 +76,7 @@ export default function SectorLogin() {
           />
           <input
             type="password"
-            placeholder="비밀번호"
+            placeholder={t("password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -85,7 +87,7 @@ export default function SectorLogin() {
             disabled={isLoading}
             className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white font-black text-sm rounded-xl transition-all uppercase tracking-widest"
           >
-            {isLoading ? 'LOADING...' : 'LOGIN'}
+            {isLoading ? t("loading").toUpperCase() : t("login").toUpperCase()}
           </button>
         </form>
       </div>

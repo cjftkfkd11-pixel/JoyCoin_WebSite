@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/apiBase';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const maskEmail = (email: string) => {
   const [name, domain] = email.split('@');
@@ -34,6 +35,7 @@ interface DepositItem {
 
 export default function SectorDashboard() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [data, setData] = useState<SectorStats | null>(null);
   const [deposits, setDeposits] = useState<DepositItem[]>([]);
@@ -87,10 +89,9 @@ export default function SectorDashboard() {
       approved: "bg-green-500/10 text-green-400 border-green-500/20",
       rejected: "bg-red-500/10 text-red-400 border-red-500/20",
     };
-    const labels: Record<string, string> = { pending: "대기중", approved: "승인완료", rejected: "거절됨" };
     return (
       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${styles[status] || styles.pending}`}>
-        {labels[status] || status}
+        {t(status as any) || status}
       </span>
     );
   };
@@ -98,7 +99,7 @@ export default function SectorDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-        <p className="text-blue-500 font-black tracking-[0.5em] text-sm uppercase italic animate-pulse">Loading...</p>
+        <p className="text-blue-500 font-black tracking-[0.5em] text-sm uppercase italic animate-pulse">{t("loading")}</p>
       </div>
     );
   }
@@ -110,12 +111,12 @@ export default function SectorDashboard() {
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-black italic tracking-tighter">
-              <span className="text-blue-500">Sector {data?.sector.name}</span> Dashboard
+              <span className="text-blue-500">{t("sector")} {data?.sector.name}</span> {t("sectorDashboard")}
             </h1>
-            <p className="text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-[0.3em]">섹터 매니저</p>
+            <p className="text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-[0.3em]">{t("sectorManager")}</p>
           </div>
           <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-full text-[10px] font-black text-red-500 hover:bg-red-500/20 transition-all">
-            LOGOUT
+            {t("logout").toUpperCase()}
           </button>
         </div>
       </div>
@@ -127,19 +128,19 @@ export default function SectorDashboard() {
           {/* 통계 카드 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/40">
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Contribution Rate</p>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{t("fee")}</p>
               <p className="text-3xl font-black italic text-blue-400 mt-2">{data?.sector.fee_percent}%</p>
             </div>
             <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/40">
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">총 입금액</p>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{t("totalDeposits")}</p>
               <p className="text-3xl font-black italic text-green-400 mt-2">{data?.stats.total_approved_deposits?.toLocaleString()} <span className="text-xs">USDT</span></p>
             </div>
             <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/40">
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">기여분 정산</p>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{t("feeAmount")}</p>
               <p className="text-3xl font-black italic text-yellow-400 mt-2">{data?.stats.fee_amount?.toLocaleString()} <span className="text-xs">USDT</span></p>
             </div>
             <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/40">
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">유저 수</p>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{t("totalUsers")}</p>
               <p className="text-3xl font-black italic mt-2">{data?.stats.total_users}</p>
             </div>
           </div>
@@ -148,7 +149,7 @@ export default function SectorDashboard() {
           <div className="flex gap-3">
             <input
               type="text"
-              placeholder="이메일 또는 유저명으로 검색..."
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

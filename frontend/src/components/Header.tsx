@@ -74,7 +74,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-[60] px-4 md:px-10 py-4 flex justify-between items-center bg-[#020617]/95 backdrop-blur-md border-b border-slate-800/50" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
+      <header className="fixed top-0 left-0 right-0 z-[60] px-4 md:px-10 py-4 flex justify-between items-center bg-[#020617]/95 backdrop-blur-md border-b border-slate-800/50 overflow-hidden" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
         <div className="flex items-center space-x-4">
           <a href="/" className="text-2xl md:text-3xl font-black tracking-tighter text-blue-500 cursor-pointer drop-shadow-lg">
             JOYCOIN
@@ -132,7 +132,7 @@ export default function Header() {
 
               {/* Notification Dropdown */}
               {showNotifDropdown && (
-                <div className="absolute right-0 top-10 w-80 bg-slate-900/95 border border-slate-700/50 rounded-xl shadow-2xl p-4 z-50">
+                <div className="absolute right-0 top-10 w-80 bg-slate-900/95 border border-slate-700/50 rounded-xl shadow-2xl p-4 z-[70]">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-white">{locale === 'ko' ? '알림' : 'Notifications'}</h3>
                     {unreadCount > 0 && (
