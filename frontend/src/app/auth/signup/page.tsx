@@ -89,7 +89,7 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirm) return setError(t("passwordMismatch"));
-    if (formData.password.length < 6) return setError(locale === 'ko' ? "비밀번호는 6자 이상이어야 합니다." : "Password must be at least 6 characters.");
+    if (formData.password.length < 12) return setError(t("passwordMinLength"));
 
     if (!emailChecked) {
       return setError(locale === 'ko' ? "이메일 중복 확인을 해주세요." : "Please check email availability.");

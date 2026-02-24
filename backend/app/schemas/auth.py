@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 class SignupIn(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=6)
+    password: str = Field(min_length=12)
     username: str = Field(min_length=2, max_length=100)
     wallet_address: str = Field(min_length=6, max_length=128)
     referral_code: str | None = None

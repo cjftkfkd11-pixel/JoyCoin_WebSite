@@ -15,7 +15,6 @@ from app.api.admin_users import router as admin_users_router
 from app.api.admin_settings import router as admin_settings_router
 from app.api.admin_sectors import router as admin_sectors_router
 from app.api.sector_dashboard import router as sector_dashboard_router
-from app.api.centers import router as centers_router
 from app.api.products import router as products_router
 from app.api.notifications import router as notifications_router
 from app.api.consents import router as consents_router
@@ -283,7 +282,6 @@ app.include_router(admin_users_router)
 app.include_router(admin_settings_router)
 app.include_router(admin_sectors_router)
 app.include_router(sector_dashboard_router)
-app.include_router(centers_router)
 app.include_router(products_router)
 app.include_router(notifications_router)
 app.include_router(consents_router)

@@ -35,7 +35,7 @@ interface DepositItem {
 
 export default function SectorDashboard() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const [data, setData] = useState<SectorStats | null>(null);
   const [deposits, setDeposits] = useState<DepositItem[]>([]);
@@ -159,7 +159,7 @@ export default function SectorDashboard() {
               onClick={handleSearch}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black uppercase transition-all"
             >
-              검색
+              {t("search")}
             </button>
           </div>
 
@@ -167,7 +167,7 @@ export default function SectorDashboard() {
           <div className="rounded-2xl overflow-hidden border border-white/5 bg-slate-900/20">
             {deposits.length === 0 ? (
               <div className="p-16 text-center text-slate-600 font-bold uppercase tracking-widest text-sm">
-                입금 내역이 없습니다
+                {t("noDeposits")}
               </div>
             ) : (
               <div className="max-h-[50vh] overflow-y-auto">
@@ -175,11 +175,11 @@ export default function SectorDashboard() {
                   <thead className="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sticky top-0 z-10">
                     <tr>
                       <th className="p-5">ID</th>
-                      <th className="p-5">유저</th>
-                      <th className="p-5">네트워크</th>
-                      <th className="p-5 text-right">금액</th>
-                      <th className="p-5 text-center">상태</th>
-                      <th className="p-5 text-right">요청일시</th>
+                      <th className="p-5">{t("user")}</th>
+                      <th className="p-5">{t("network")}</th>
+                      <th className="p-5 text-right">{t("amount")}</th>
+                      <th className="p-5 text-center">{t("status")}</th>
+                      <th className="p-5 text-right">{t("requestDate")}</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm font-bold">
@@ -197,7 +197,7 @@ export default function SectorDashboard() {
                           {(dep.actual_amount || dep.expected_amount).toLocaleString()} USDT
                         </td>
                         <td className="p-5 text-center">{getStatusBadge(dep.status)}</td>
-                        <td className="p-5 text-right text-slate-500 text-xs">{new Date(dep.created_at).toLocaleString('ko-KR')}</td>
+                        <td className="p-5 text-right text-slate-500 text-xs">{new Date(dep.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -205,7 +205,7 @@ export default function SectorDashboard() {
               </div>
             )}
           </div>
-          <p className="text-slate-600 text-[10px] text-right">총 {deposits.length}건</p>
+          <p className="text-slate-600 text-[10px] text-right">{t("totalCount")} {deposits.length}{t("items")}</p>
         </div>
       </div>
     </div>
