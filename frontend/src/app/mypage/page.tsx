@@ -61,7 +61,7 @@ export default function MyPage() {
             !seenNotifs.includes(dep.id)
           );
           setNotifications(newNotifs);
-          if (newNotifs.length > 0 && window.innerWidth >= 1024) {
+          if (newNotifs.length > 0) {
             setShowNotifications(true);
           }
         }

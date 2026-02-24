@@ -18,6 +18,7 @@ async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
     method: options.method ?? "GET",
     headers,
     body,
+    credentials: "include", // HttpOnly 쿠키 인증 방식 통일
   });
 
   if (!res.ok) {
@@ -54,43 +55,35 @@ export async function login(email: string, password: string) {
   return api<{ access: string }>("/auth/login", {
     method: "POST",
     body: { email, password },
+    // credentials: 'include'는 api() 내부에서 처리됨
   });
 }
 
-// 입금요청 생성
+// 입금요청 생성 (쿠키 인증 방식)
 export async function createDepositRequest(params: {
-  token: string;
-  chain: "TRC20" | "ERC20" | "BSC" | "Polygon";
+  chain: "Polygon" | "Ethereum" | "TRON";
   amount_usdt: number;
-  joy_amount: number;
-  sender_name: string;
 }) {
   return api<{
     id: number;
     chain: string;
     assigned_address: string;
-    sender_name: string;
     expected_amount: number;
     joy_amount: number;
     status: string;
     created_at: string;
   }>("/deposits/request", {
     method: "POST",
-    headers: { Authorization: `Bearer ${params.token}` },
     body: {
       chain: params.chain,
       amount_usdt: params.amount_usdt,
-      joy_amount: params.joy_amount,
-      sender_name: params.sender_name,
     },
   });
 }
 
-// 내 입금내역
-export async function getMyDeposits(token: string) {
-  return api<{ items: Array<any> }>("/deposits/my", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+// 내 입금내역 (쿠키 인증)
+export async function getMyDeposits() {
+  return api<{ items: Array<any> }>("/deposits/my");
 }
 
 // 센터 목록
@@ -110,26 +103,24 @@ export async function getProducts() {
   }>>("/products");
 }
 
-// 내 정보 조회
-export async function getMe(token: string) {
+// 내 정보 조회 (쿠키 인증)
+export async function getMe() {
   return api<{
     id: number;
     email: string;
     username: string;
     referral_code: string;
+    recovery_code: string;
     role: string;
-    center_id: number | null;
+    wallet_address: string | null;
     total_joy: number;
     total_points: number;
-    is_email_verified: boolean;
-    created_at: string;
-  }>("/auth/me", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    referral_reward_remaining: number;
+  }>("/auth/me");
 }
 
-// 알림 목록
-export async function getNotifications(token: string) {
+// 알림 목록 (쿠키 인증)
+export async function getNotifications() {
   return api<Array<{
     id: number;
     type: string;
@@ -138,58 +129,44 @@ export async function getNotifications(token: string) {
     is_read: boolean;
     related_id: number | null;
     created_at: string;
-  }>>("/notifications", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  }>>("/notifications");
 }
 
 // 읽지 않은 알림 개수
-export async function getUnreadNotificationCount(token: string) {
-  return api<{ count: number }>("/notifications/unread-count", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function getUnreadNotificationCount() {
+  return api<{ count: number }>("/notifications/unread-count");
 }
 
 // 알림 읽음 처리
-export async function markNotificationAsRead(token: string, notificationId: number) {
-  return api<{ message: string }>(`/notifications/${notificationId}/read`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function markNotificationAsRead(notificationId: number) {
+  return api<{ message: string }>(`/notifications/${notificationId}/read`, { method: "POST" });
 }
 
 // 모든 알림 읽음 처리
-export async function markAllNotificationsAsRead(token: string) {
-  return api<{ message: string }>("/notifications/read-all", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function markAllNotificationsAsRead() {
+  return api<{ message: string }>("/notifications/read-all", { method: "POST" });
 }
 
-// ===== 관리자 API =====
+// ===== 관리자 API (쿠키 인증) =====
 
 // 입금 목록 (관리자)
-export async function getAdminDeposits(token: string, status?: string) {
+export async function getAdminDeposits(status?: string) {
   const query = status ? `?status=${status}` : "";
-  return api<Array<any>>(`/admin/deposits${query}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return api<Array<any>>(`/admin/deposits${query}`);
 }
 
 // 입금 승인 (관리자)
-export async function approveDeposit(token: string, depositId: number, data?: { actual_amount?: number; admin_notes?: string }) {
+export async function approveDeposit(depositId: number, data?: { actual_amount?: number; admin_notes?: string }) {
   return api<{ message: string; id: number }>(`/admin/deposits/${depositId}/approve`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
     body: data || {},
   });
 }
 
 // 입금 거부 (관리자)
-export async function rejectDeposit(token: string, depositId: number, notes?: string) {
+export async function rejectDeposit(depositId: number, notes?: string) {
   return api<{ message: string; id: number }>(`/admin/deposits/${depositId}/reject`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
     body: { admin_notes: notes },
   });
 }

@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     SUPER_ADMIN_EMAIL: str | None = None
     SUPER_ADMIN_PASSWORD: str | None = None
 
+    # 쿠키 보안 (프로덕션 HTTPS 환경에서 True로 설정)
+    COOKIE_SECURE: bool = False
+
     # 텔레그램 봇 설정
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None

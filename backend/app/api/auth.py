@@ -43,6 +43,8 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
 def signup(data: SignupIn, request: Request, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다")
+    if db.query(User).filter(User.username == data.username).first():
+        raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다")
     if not (data.terms_accepted and data.risk_accepted and data.privacy_accepted):
         raise HTTPException(status_code=400, detail="Required legal agreements were not accepted.")
 
@@ -118,6 +120,11 @@ def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="이메일 또는 비밀번호가 올바르지 않습니다.",
         )
+    if user.is_banned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="차단된 계정입니다. 관리자에게 문의하세요.",
+        )
 
     access = create_access_token(
         user_id=user.id,
@@ -129,7 +136,7 @@ def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
         key="accessToken",
         value=access,
         httponly=True,
-        secure=False,
+        secure=settings.COOKIE_SECURE,
         samesite="lax",
         max_age=settings.JWT_EXPIRE_MIN * 60,
         path="/"

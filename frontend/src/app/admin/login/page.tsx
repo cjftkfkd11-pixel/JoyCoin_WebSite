@@ -31,6 +31,17 @@ export default function AdminLoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // role 검증: admin 권한인지 확인
+        const meRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
+        if (meRes.ok) {
+          const me = await meRes.json();
+          if (me.role !== 'admin') {
+            // 권한 없으면 로그아웃 후 에러 표시
+            await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
+            toast(t("notAdminRole"), "error");
+            return;
+          }
+        }
         router.push('/admin/dashboard');
       } else {
         const errorDetail = typeof data.detail === 'object'
@@ -39,7 +50,7 @@ export default function AdminLoginPage() {
         toast(`${t("loginFailed")}: ${errorDetail}`, "error");
       }
     } catch (error) {
-      toast(t("loading"), "error");
+      toast(t("serverError"), "error");
     } finally {
       setIsLoading(false);
     }

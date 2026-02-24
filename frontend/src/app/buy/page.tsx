@@ -26,6 +26,7 @@ export default function BuyPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [depositInfo, setDepositInfo] = useState<{ id: number; address: string; amount: number; joyAmount: number; chain: string } | null>(null);
@@ -61,7 +62,7 @@ export default function BuyPage() {
         if (rateData.joy_per_usdt) setJoyPerUsdt(rateData.joy_per_usdt);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { setLoading(false); setLoadError(true); });
   }, []);
 
   const updateQuantity = (productId: number, delta: number) => {
@@ -73,7 +74,7 @@ export default function BuyPage() {
   };
 
   const totalUsdt = products.reduce((sum, p) => sum + (p.price_usdt * (quantities[p.id] || 0)), 0);
-  const totalJoy = totalUsdt * joyPerUsdt;
+  const totalJoy = products.reduce((sum, p) => sum + (p.joy_amount * (quantities[p.id] || 0)), 0);
 
   const resetSelection = () => {
     const resetQty: Record<number, number> = {};
@@ -139,6 +140,14 @@ export default function BuyPage() {
   };
 
   if (loading) return <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center font-semibold">{t("loading")}</div>;
+  if (loadError) return (
+    <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center gap-4">
+      <p className="text-red-400 font-bold">{locale === 'ko' ? '상품 정보를 불러올 수 없습니다.' : 'Failed to load products.'}</p>
+      <button onClick={() => window.location.reload()} className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition-all">
+        {locale === 'ko' ? '다시 시도' : 'Retry'}
+      </button>
+    </div>
+  );
 
   const closeDepositInfo = () => {
     setDepositInfo(null);
@@ -299,7 +308,7 @@ export default function BuyPage() {
                       <p className="text-xs sm:text-sm text-slate-400 mb-2">{product.description}</p>
                       <div className="flex items-center gap-2 sm:gap-3">
                         <span className="text-lg sm:text-2xl font-bold">{product.price_usdt} USDT</span>
-                        <span className="text-sm sm:text-base text-blue-400">= {(product.price_usdt * joyPerUsdt).toLocaleString()} JOY</span>
+                        <span className="text-sm sm:text-base text-blue-400">= {product.joy_amount.toLocaleString()} JOY</span>
                       </div>
                     </div>
 

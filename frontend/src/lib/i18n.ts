@@ -263,6 +263,17 @@ export const translations = {
     sectorFeeUpdateFailed: "Failed to update sector contribution",
     peopleUnit: "people",
 
+    // Auth errors
+    bannedAccount: "This account has been banned. Please contact the administrator.",
+    notAdminRole: "This account does not have admin privileges.",
+    serverError: "Server connection failed. Please try again.",
+    rejectReason: "Reason for rejection:",
+    rejectReasonPlaceholder: "Enter reason for rejection",
+    demoteSectorManager: "Demote to User",
+    demoteSectorManagerConfirm: "Demote this sector manager to a regular user?",
+    noSectorFilter: "No Sector",
+    autoRefresh: "Auto-refresh",
+
     // Sector
     sectorManager: "Sector Manager",
     sectorLogin: "Sector Login",
@@ -457,6 +468,17 @@ export const translations = {
     referralBonusDesc: "추천인이 JOY 참여 시 결제 USDT의 N% 포인트 적립",
     sectorContribution: "섹터별 기여분 설정",
     legalDisclaimer: "Allocation approval is an operational verification process and does not constitute issuance, sale, or investment facilitation.",
+
+    // Auth errors
+    bannedAccount: "차단된 계정입니다. 관리자에게 문의하세요.",
+    notAdminRole: "관리자 권한이 없는 계정입니다.",
+    serverError: "서버 연결에 실패했습니다. 다시 시도해 주세요.",
+    rejectReason: "거절 사유:",
+    rejectReasonPlaceholder: "거절 사유를 입력하세요",
+    demoteSectorManager: "유저로 강등",
+    demoteSectorManagerConfirm: "이 섹터 매니저를 일반 유저로 강등하시겠습니까?",
+    noSectorFilter: "섹터 없음",
+    autoRefresh: "자동 새로고침",
 
     // Sector
     sectorManager: "섹터 매니저",

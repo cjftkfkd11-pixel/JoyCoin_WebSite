@@ -102,3 +102,20 @@ def demote_user(
     user.role = UserRole.USER.value
     db.commit()
     return {"ok": True, "message": "일반 유저로 변경 완료", "user_id": user.id}
+
+
+@router.post("/{user_id}/demote-sector-manager")
+def demote_sector_manager(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin),
+):
+    """섹터 매니저를 일반 유저로 강등"""
+    user = db.query(User).get(user_id)
+    if not user:
+        raise HTTPException(404, "user not found")
+    if user.role != "sector_manager":
+        raise HTTPException(400, "섹터 매니저가 아닙니다")
+    user.role = UserRole.USER.value
+    db.commit()
+    return {"ok": True, "message": "일반 유저로 강등 완료", "user_id": user.id}

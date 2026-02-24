@@ -51,7 +51,7 @@ interface UserItem {
 export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const [requests, setRequests] = useState<DepositRequest[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
@@ -74,6 +74,10 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [sectorFilter, setSectorFilter] = useState<string>('all');
 
+  // 거절 모달 상태
+  const [rejectModal, setRejectModal] = useState<{ id: number; userEmail: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
   const API_BASE_URL = getApiBaseUrl();
 
   useEffect(() => {
@@ -83,13 +87,20 @@ export default function AdminDashboard() {
     fetchProducts();
     fetchSettings();
     fetchStats();
+
+    // 30초마다 입금 요청 자동 갱신
+    const interval = setInterval(() => {
+      fetchDeposits();
+      fetchStats();
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchDeposits = async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`${API_BASE_URL}/admin/deposits`, { credentials: 'include' });
-      if (response.status === 401) { router.push('/admin/login'); return; }
+      if (response.status === 401 || response.status === 403) { router.push('/admin/login'); return; }
       if (!response.ok) throw new Error(t("systemError"));
       setRequests(await response.json());
       setError(null);
@@ -192,6 +203,17 @@ export default function AdminDashboard() {
     finally { setUserProcessingId(null); }
   };
 
+  const handleDemoteSectorManager = async (userId: number) => {
+    if (!confirm(t("demoteSectorManagerConfirm"))) return;
+    try {
+      setUserProcessingId(userId);
+      const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/demote-sector-manager`, { method: 'POST', credentials: 'include' });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
+      fetchUsers();
+    } catch (err: any) { toast(err.message, "error"); }
+    finally { setUserProcessingId(null); }
+  };
+
   const fetchProducts = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/products/admin/all`, { credentials: 'include' });
@@ -247,14 +269,24 @@ export default function AdminDashboard() {
     finally { setProcessingId(null); }
   };
 
-  const handleReject = async (id: number, userEmail: string) => {
-    const reason = prompt(t("rejectDepositPrompt").replace('{user}', userEmail));
-    if (!reason) return;
+  const openRejectModal = (id: number, userEmail: string) => {
+    setRejectReason('');
+    setRejectModal({ id, userEmail });
+  };
+
+  const handleReject = async () => {
+    if (!rejectModal) return;
+    const { id, userEmail } = rejectModal;
+    if (!rejectReason.trim()) {
+      toast(locale === 'ko' ? '거절 사유를 입력해주세요.' : 'Please enter a reason.', 'warning');
+      return;
+    }
+    setRejectModal(null);
     try {
       setProcessingId(id);
       const response = await fetch(`${API_BASE_URL}/admin/deposits/${id}/reject`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ admin_notes: reason })
+        body: JSON.stringify({ admin_notes: rejectReason })
       });
       if (!response.ok) { const e = await response.json(); throw new Error(e.detail || t("rejectFailed")); }
       toast(t("depositRejectedToast"), 'info');
@@ -316,7 +348,9 @@ export default function AdminDashboard() {
       req.user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       req.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       req.id.toString().includes(searchQuery);
-    const matchesSector = sectorFilter === 'all' || req.user?.sector_id?.toString() === sectorFilter;
+    const matchesSector = sectorFilter === 'all'
+      || (sectorFilter === 'none' && req.user?.sector_id == null)
+      || req.user?.sector_id?.toString() === sectorFilter;
     return matchesStatus && matchesSearch && matchesSector;
   });
 
@@ -334,6 +368,39 @@ export default function AdminDashboard() {
 
   return (
     <div className="h-screen bg-[#020617] text-white flex flex-col overflow-hidden font-sans">
+
+      {/* 거절 사유 입력 모달 */}
+      {rejectModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 p-6 sm:p-8 rounded-2xl w-full max-w-md border border-red-500/20 shadow-2xl">
+            <h2 className="text-lg font-black text-red-400 mb-2">{t("reject")}</h2>
+            <p className="text-xs text-slate-400 mb-4 font-mono">{rejectModal.userEmail}</p>
+            <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">{t("rejectReason")}</label>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              placeholder={t("rejectReasonPlaceholder")}
+              rows={3}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500 resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRejectModal(null)}
+                className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-black transition-all"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                onClick={handleReject}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-black transition-all"
+              >
+                {t("reject")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 헤더 - 고정 */}
       <div className="flex-shrink-0 p-6 md:px-12 md:pt-8 border-b border-white/10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -456,6 +523,7 @@ export default function AdminDashboard() {
                   className="bg-slate-900/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50"
                 >
                   <option value="all">{t("allSectors")}</option>
+                  <option value="none">{t("noSectorFilter")}</option>
                   {sectors.map(s => (
                     <option key={s.id} value={s.id.toString()}>{t("sectorName")} {s.name}</option>
                   ))}
@@ -557,7 +625,7 @@ export default function AdminDashboard() {
                                 </div>
                               )}
                             </td>
-                            <td className="p-5 text-center text-slate-500 text-xs">{new Date(req.created_at).toLocaleString('ko-KR')}</td>
+                            <td className="p-5 text-center text-slate-500 text-xs">{new Date(req.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US')}</td>
                             <td className="p-5 text-right">
                               {req.status === 'pending' ? (
                                 <div className="flex gap-2 justify-end">
@@ -565,7 +633,7 @@ export default function AdminDashboard() {
                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 text-white text-[10px] font-black rounded-lg transition-all uppercase">
                                     {processingId === req.id ? '...' : t("approve")}
                                   </button>
-                                  <button onClick={() => handleReject(req.id, req.user.email)} disabled={processingId === req.id}
+                                  <button onClick={() => openRejectModal(req.id, req.user.email)} disabled={processingId === req.id}
                                     className="px-3 py-1.5 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 text-white text-[10px] font-black rounded-lg transition-all uppercase">
                                     {t("reject")}
                                   </button>
@@ -739,7 +807,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="p-5 text-center text-slate-500 text-xs">{u.created_at ? new Date(u.created_at).toLocaleDateString('ko-KR') : '-'}</td>
                           <td className="p-5 text-right">
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex gap-2 justify-end flex-wrap">
                               <button
                                 onClick={() => handleBan(u.id, u.is_banned)}
                                 disabled={u.role === 'admin' || userProcessingId === u.id}
@@ -749,15 +817,25 @@ export default function AdminDashboard() {
                               >
                                 {u.is_banned ? t("unban") : t("ban")}
                               </button>
-                              <button
-                                onClick={() => handleRoleChange(u.id, u.role)}
-                                disabled={userProcessingId === u.id}
-                                className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all uppercase ${
-                                  u.role === 'admin' ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                                }`}
-                              >
-                                {u.role === 'admin' ? t("demote") : t("promote")}
-                              </button>
+                              {u.role === 'sector_manager' ? (
+                                <button
+                                  onClick={() => handleDemoteSectorManager(u.id)}
+                                  disabled={userProcessingId === u.id}
+                                  className="px-3 py-1.5 text-[10px] font-black rounded-lg transition-all uppercase bg-orange-600 hover:bg-orange-500 text-white"
+                                >
+                                  {t("demoteSectorManager")}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleRoleChange(u.id, u.role)}
+                                  disabled={userProcessingId === u.id}
+                                  className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all uppercase ${
+                                    u.role === 'admin' ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-yellow-600 hover:bg-yellow-500 text-white'
+                                  }`}
+                                >
+                                  {u.role === 'admin' ? t("demote") : t("promote")}
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

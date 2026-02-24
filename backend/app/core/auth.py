@@ -25,6 +25,8 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == int(user_id)).first()
     if user is None:
         raise HTTPException(status_code=401, detail="사용자를 찾을 수 없습니다.")
+    if user.is_banned:
+        raise HTTPException(status_code=403, detail="차단된 계정입니다. 관리자에게 문의하세요.")
     return user
 
 # 2. [추가] 관리자 확인 경비원 (쿠키 기반)
