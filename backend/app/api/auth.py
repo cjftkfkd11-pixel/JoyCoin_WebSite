@@ -177,7 +177,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 # ---------------------------------------------------------
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie("accessToken", path="/")
+    response.delete_cookie("accessToken", path="/", samesite="none", secure=True)
     return {"message": "로그아웃 성공"}
 
 
