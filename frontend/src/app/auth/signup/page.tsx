@@ -120,6 +120,14 @@ export default function SignupPage() {
         }),
       });
 
+      if (!response.ok) {
+        const data = await response.json();
+        const detail = Array.isArray(data.detail)
+          ? (locale === 'ko' ? "입력 정보를 확인해주세요." : "Please check your input.")
+          : (data.detail || (locale === 'ko' ? "가입에 실패했습니다." : "Registration failed."));
+        setError(detail);
+        return;
+      }
       if (response.ok) {
         const result = await response.json();
         showModal({
@@ -134,9 +142,6 @@ export default function SignupPage() {
           buttonText: locale === 'ko' ? '로그인하러 가기' : 'Go to Login',
           onClose: () => router.push('/auth/login?registered=1'),
         });
-      } else {
-        const data = await response.json();
-        setError(data.detail || (locale === 'ko' ? "가입에 실패했습니다." : "Registration failed."));
       }
     } catch (err) {
       setError(locale === 'ko' ? "서버 연결에 실패했습니다." : "Server connection failed.");
@@ -195,7 +200,7 @@ export default function SignupPage() {
             {emailChecked && !emailError && <p className="text-green-400 text-xs mt-1">{locale === 'ko' ? '사용 가능' : 'Available'}</p>}
           </div>
 
-          <input type="password" placeholder={locale === 'ko' ? "비밀번호 (6자 이상)" : "Password (6+ chars)"} required
+          <input type="password" placeholder={locale === 'ko' ? "비밀번호 (12자 이상)" : "Password (12+ chars)"} required
             className="w-full bg-slate-900/50 border border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl outline-none focus:border-blue-500 text-sm sm:text-base"
             value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
 
