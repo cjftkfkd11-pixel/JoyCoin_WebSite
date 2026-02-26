@@ -123,7 +123,7 @@ export default function SignupPage() {
       if (!response.ok) {
         const data = await response.json();
         const detail = Array.isArray(data.detail)
-          ? (locale === 'ko' ? "입력 정보를 확인해주세요." : "Please check your input.")
+          ? data.detail.map((e: {loc?: string[]; msg?: string}) => `${e.loc?.slice(-1)[0] ?? ''}: ${e.msg ?? ''}`).join(' / ')
           : (data.detail || (locale === 'ko' ? "가입에 실패했습니다." : "Registration failed."));
         setError(detail);
         return;
