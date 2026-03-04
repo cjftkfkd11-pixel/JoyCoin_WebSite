@@ -1,12 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 정적 export 결과물이 out/ 폴더로 생성되게 함 (Next 13+)
+  // Next 정적 사이트 export
   output: "export",
 
-  // 정적 export에서는 next/image 최적화 서버가 없어서 이 옵션이 거의 필수
-  images: { unoptimized: true },
+  // static export에서 이미지 최적화 서버가 없기 때문에 필요
+  images: {
+    unoptimized: true,
+  },
 
-  // (선택) trailingSlash가 필요하면 true로
+  // 선택 (URL 뒤에 / 붙이고 싶으면 true)
   // trailingSlash: true,
 };
 
