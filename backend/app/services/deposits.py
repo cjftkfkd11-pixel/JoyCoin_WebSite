@@ -75,8 +75,13 @@ def create_deposit_request(db: Session, user: User, data):
         assigned_address=assigned_address,
         sender_name=user.username,
         status="pending",
+        joy_credited=True,
     )
     db.add(req)
+
+    # JOY 즉시 선지급 (USDT 입금 확인 전 선충전)
+    user.total_joy = int(user.total_joy or 0) + joy_amount
+
     db.commit()
     db.refresh(req)
 

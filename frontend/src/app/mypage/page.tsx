@@ -32,6 +32,14 @@ export default function MyPage() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletMessage, setWalletMessage] = useState({ type: '', text: '' });
 
+  // 출금 상태
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [withdrawalChain, setWithdrawalChain] = useState('Polygon');
+  const [withdrawalLoading, setWithdrawalLoading] = useState(false);
+  const [withdrawalMessage, setWithdrawalMessage] = useState({ type: '', text: '' });
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+
   // 알림 상태
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -65,6 +73,12 @@ export default function MyPage() {
             setShowNotifications(true);
           }
         }
+
+        // 출금 내역 로드
+        const withdrawalRes = await fetch(`${API_BASE_URL}/withdrawals/my`, { credentials: 'include' });
+        if (withdrawalRes.ok) {
+          setWithdrawals(await withdrawalRes.json());
+        }
       } catch (err) {
         console.error("데이터 로드 실패:", err);
         setErrorMessage(locale === 'ko' ? "서버와 통신하는 중 문제가 발생했습니다." : "Failed to communicate with server.");
@@ -78,7 +92,7 @@ export default function MyPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <span className="px-2 py-1 bg-yellow-500/20 text-yellow-500 text-[10px] font-bold rounded-md">{t("pending").toUpperCase()}</span>;
+      case 'pending': return <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] font-bold rounded-md">APPROVED</span>;
       case 'approved': return <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] font-bold rounded-md">{t("approved").toUpperCase()}</span>;
       case 'rejected': return <span className="px-2 py-1 bg-red-500/20 text-red-500 text-[10px] font-bold rounded-md">{t("rejected").toUpperCase()}</span>;
       default: return <span className="text-slate-500">{status}</span>;
@@ -88,6 +102,44 @@ export default function MyPage() {
   const handleLogout = async () => {
     await logout();
     window.location.href = '/';
+  };
+
+  const handleWithdrawal = async () => {
+    const amount = parseInt(withdrawalAmount);
+    if (!amount || amount <= 0) {
+      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? '출금 수량을 입력하세요.' : 'Enter withdrawal amount.' });
+      return;
+    }
+    if (amount > (user?.total_joy || 0)) {
+      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? `보유 JOY(${user?.total_joy?.toLocaleString()})가 부족합니다.` : `Insufficient JOY balance (${user?.total_joy?.toLocaleString()}).` });
+      return;
+    }
+    if (!user?.wallet_address) {
+      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? '먼저 지갑 주소를 등록해주세요.' : 'Please register your wallet address first.' });
+      return;
+    }
+    setWithdrawalLoading(true);
+    setWithdrawalMessage({ type: '', text: '' });
+    try {
+      const res = await fetch(`${API_BASE_URL}/withdrawals/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ amount, wallet_address: user.wallet_address, chain: withdrawalChain }),
+      });
+      if (res.ok) {
+        setWithdrawalMessage({ type: 'success', text: locale === 'ko' ? '출금 요청이 완료되었습니다. 관리자 처리 후 전송됩니다.' : 'Withdrawal requested. Admin will process it shortly.' });
+        setWithdrawalAmount('');
+        setTimeout(() => { setShowWithdrawalModal(false); window.location.reload(); }, 2000);
+      } else {
+        const error = await res.json();
+        setWithdrawalMessage({ type: 'error', text: error.detail || (locale === 'ko' ? '출금 요청 실패' : 'Withdrawal failed') });
+      }
+    } catch {
+      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? '서버 연결 실패' : 'Server connection failed' });
+    } finally {
+      setWithdrawalLoading(false);
+    }
   };
 
   const copyToClipboard = async (text: string, successMessage: string) => {
@@ -172,6 +224,100 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-white p-4 sm:p-8 pb-24 font-sans">
+      {/* 출금 모달 */}
+      {showWithdrawalModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
+          <div className="glass p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] w-full max-w-md border border-blue-500/20 shadow-2xl relative max-h-[95vh] overflow-y-auto">
+            <button
+              onClick={() => { setShowWithdrawalModal(false); setWithdrawalMessage({ type: '', text: '' }); setWithdrawalAmount(''); }}
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-500 hover:text-white text-xl font-bold"
+            >×</button>
+            <h2 className="text-xl font-black text-blue-400 mb-6">
+              {locale === 'ko' ? 'JOY 출금 요청' : 'JOY Withdrawal'}
+            </h2>
+            <div className="space-y-4">
+              {/* 보유 JOY */}
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
+                <span className="text-xs text-slate-400">{locale === 'ko' ? '보유 JOY' : 'Available JOY'}</span>
+                <span className="font-black text-blue-400">{user?.total_joy?.toLocaleString() || '0'} JOY</span>
+              </div>
+              {/* 수량 입력 */}
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
+                  {locale === 'ko' ? '출금 수량' : 'Amount'}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
+                    placeholder="0"
+                    min="1"
+                    max={user?.total_joy || 0}
+                    className="flex-1 bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-mono"
+                  />
+                  <button
+                    onClick={() => setWithdrawalAmount(String(user?.total_joy || 0))}
+                    className="px-3 py-2 text-xs font-bold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-all"
+                  >
+                    {locale === 'ko' ? '전체' : 'MAX'}
+                  </button>
+                </div>
+              </div>
+              {/* 체인 선택 */}
+              <div>
+                <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
+                  {locale === 'ko' ? '네트워크' : 'Network'}
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Polygon', 'Ethereum', 'TRON'].map(chain => (
+                    <button
+                      key={chain}
+                      onClick={() => setWithdrawalChain(chain)}
+                      className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                        withdrawalChain === chain
+                          ? 'bg-blue-600 text-white border border-blue-500'
+                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-transparent'
+                      }`}
+                    >
+                      {chain}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* 지갑 주소 */}
+              <div className="p-3 bg-slate-800/50 rounded-xl">
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">
+                  {locale === 'ko' ? '수령 지갑 주소' : 'Wallet Address'}
+                </p>
+                <p className="text-xs font-mono text-blue-400 break-all">
+                  {user?.wallet_address || (locale === 'ko' ? '미등록 — 먼저 지갑 주소를 등록하세요' : 'Not set — please register a wallet address')}
+                </p>
+              </div>
+              <p className="text-[9px] text-yellow-600">
+                {locale === 'ko'
+                  ? '⚠️ 출금 요청 후 관리자가 처리하면 위 지갑 주소로 JOY가 전송됩니다. 처리 전에는 취소할 수 없습니다.'
+                  : '⚠️ After admin processes your request, JOY will be sent to the above address. Cannot be cancelled once submitted.'}
+              </p>
+              {withdrawalMessage.text && (
+                <div className={`p-3 rounded-xl text-xs font-bold text-center ${
+                  withdrawalMessage.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                }`}>
+                  {withdrawalMessage.text}
+                </div>
+              )}
+              <button
+                onClick={handleWithdrawal}
+                disabled={withdrawalLoading || !user?.wallet_address}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl font-black transition-all"
+              >
+                {withdrawalLoading ? (locale === 'ko' ? '처리 중...' : 'Processing...') : (locale === 'ko' ? '출금 요청' : 'Request Withdrawal')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 알림 모달 */}
       {showNotifications && notifications.length > 0 && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
@@ -478,6 +624,13 @@ export default function MyPage() {
             >
               {locale === 'ko' ? 'JOY 충전하기' : 'CHARGE JOY'}
             </button>
+            <button
+              type="button"
+              onClick={() => { setWithdrawalMessage({ type: '', text: '' }); setWithdrawalAmount(''); setShowWithdrawalModal(true); }}
+              className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-black text-sm transition-all touch-manipulation"
+            >
+              {locale === 'ko' ? 'JOY 출금하기' : 'WITHDRAW JOY'}
+            </button>
           </div>
         </div>
 
@@ -535,6 +688,45 @@ export default function MyPage() {
             </table>
           </div>
         </div>
+
+        {/* 출금 내역 */}
+        {withdrawals.length > 0 && (
+          <div className="glass p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-800/50 bg-slate-900/20 shadow-2xl mt-6">
+            <h2 className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 sm:mb-8">
+              {locale === 'ko' ? '출금 내역' : 'Withdrawal History'}
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-[10px] sm:text-[11px] text-slate-600 uppercase border-b border-slate-800">
+                    <th className="pb-3 sm:pb-4 font-black pr-2">ID</th>
+                    <th className="pb-3 sm:pb-4 font-black pr-2">JOY</th>
+                    <th className="pb-3 sm:pb-4 font-black pr-2">{locale === 'ko' ? '체인' : 'Chain'}</th>
+                    <th className="pb-3 sm:pb-4 font-black pr-2">{locale === 'ko' ? '상태' : 'Status'}</th>
+                    <th className="pb-3 sm:pb-4 font-black text-right">{locale === 'ko' ? '요청일' : 'Date'}</th>
+                  </tr>
+                </thead>
+                <tbody className="text-[11px] sm:text-xs">
+                  {withdrawals.map((w) => (
+                    <tr key={w.id} className="border-b border-slate-800/30 hover:bg-white/5 transition-colors">
+                      <td className="py-3 sm:py-4 font-mono text-slate-500 pr-2">{w.id.toString().slice(0, 6)}</td>
+                      <td className="py-3 sm:py-4 font-black text-blue-400 pr-2">{w.amount.toLocaleString()} JOY</td>
+                      <td className="py-3 sm:py-4 text-slate-400 pr-2">{w.chain}</td>
+                      <td className="py-3 sm:py-4 pr-2">
+                        {w.status === 'pending' && <span className="px-2 py-1 bg-yellow-500/20 text-yellow-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '처리중' : 'PENDING'}</span>}
+                        {w.status === 'approved' && <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '완료' : 'DONE'}</span>}
+                        {w.status === 'rejected' && <span className="px-2 py-1 bg-red-500/20 text-red-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '거절' : 'REJECTED'}</span>}
+                      </td>
+                      <td className="py-3 sm:py-4 text-right text-slate-500 whitespace-nowrap">
+                        {new Date(w.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

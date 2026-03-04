@@ -45,7 +45,7 @@ def notify_new_deposit_request(
 ):
     """새 입금 요청 알림"""
     message = f"""
-<b>📥 새 입금 요청</b>
+<b>📥 새 입금 요청 - 승인불필요</b>
 
 사용자: {user_email}
 금액: {amount} USDT
@@ -147,6 +147,52 @@ TX: <a href=\"{url}\">{tx_hash[:16]}...</a>
 요청 ID: #{deposit_id}
 
 관리자 확인이 필요합니다.
+시간: {now_kst()}
+"""
+    return send_telegram_notification(message)
+
+
+def notify_withdrawal_request(
+    user_email: str,
+    amount: int,
+    wallet_address: str,
+    chain: str,
+    withdrawal_id: int,
+):
+    """JOY 출금 요청 알림"""
+    message = f"""
+<b>💸 JOY 출금 요청</b>
+
+사용자: {user_email}
+출금 수량: {amount:,} JOY
+수령 지갑: <code>{wallet_address}</code>
+체인: {chain}
+요청 ID: #{withdrawal_id}
+
+시간: {now_kst()}
+
+관리자 대시보드에서 처리해 주세요.
+"""
+    return send_telegram_notification(message)
+
+
+def notify_withdrawal_approved(
+    user_email: str,
+    amount: int,
+    wallet_address: str,
+    chain: str,
+    withdrawal_id: int,
+):
+    """JOY 출금 승인 알림"""
+    message = f"""
+<b>✅ JOY 출금 승인 완료</b>
+
+사용자: {user_email}
+출금 수량: {amount:,} JOY
+수령 지갑: <code>{wallet_address}</code>
+체인: {chain}
+요청 ID: #{withdrawal_id}
+
 시간: {now_kst()}
 """
     return send_telegram_notification(message)

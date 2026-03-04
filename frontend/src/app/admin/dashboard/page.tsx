@@ -48,6 +48,18 @@ interface UserItem {
   created_at: string | null;
 }
 
+interface JoyWithdrawal {
+  id: number;
+  amount: number;
+  wallet_address: string;
+  chain: string;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+  processed_at: string | null;
+  user: { id: number; email: string; username: string };
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
@@ -60,7 +72,10 @@ export default function AdminDashboard() {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'deposits' | 'sectors' | 'users' | 'products'>('deposits');
+  const [activeTab, setActiveTab] = useState<'deposits' | 'sectors' | 'users' | 'products' | 'withdrawals'>('deposits');
+  const [withdrawals, setWithdrawals] = useState<JoyWithdrawal[]>([]);
+  const [withdrawalProcessingId, setWithdrawalProcessingId] = useState<number | null>(null);
+  const [withdrawalStatusFilter, setWithdrawalStatusFilter] = useState<string>('pending');
   const [users, setUsers] = useState<UserItem[]>([]);
   const [userSearch, setUserSearch] = useState('');
   const [userProcessingId, setUserProcessingId] = useState<number | null>(null);
@@ -87,11 +102,13 @@ export default function AdminDashboard() {
     fetchProducts();
     fetchSettings();
     fetchStats();
+    fetchWithdrawals();
 
-    // 30초마다 입금 요청 자동 갱신
+    // 30초마다 자동 갱신
     const interval = setInterval(() => {
       fetchDeposits();
       fetchStats();
+      fetchWithdrawals();
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -307,6 +324,44 @@ export default function AdminDashboard() {
     } catch (err: any) { toast(err.message, "error"); }
   };
 
+  const fetchWithdrawals = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/withdrawals`, { credentials: 'include' });
+      if (res.ok) setWithdrawals(await res.json());
+    } catch (err) { console.error("Withdrawal load failed:", err); }
+  };
+
+  const handleWithdrawalApprove = async (w: JoyWithdrawal) => {
+    if (!confirm(`${w.user.email} 의 ${w.amount.toLocaleString()} JOY 출금을 승인하시겠습니까?\n지갑: ${w.wallet_address}`)) return;
+    try {
+      setWithdrawalProcessingId(w.id);
+      const res = await fetch(`${API_BASE_URL}/admin/withdrawals/${w.id}/approve`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ admin_notes: '승인' })
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
+      toast('출금 승인 완료', 'success');
+      fetchWithdrawals();
+    } catch (err: any) { toast(err.message, 'error'); }
+    finally { setWithdrawalProcessingId(null); }
+  };
+
+  const handleWithdrawalReject = async (w: JoyWithdrawal) => {
+    const reason = prompt(`${w.user.email} 의 출금 요청을 거절하시겠습니까?\n거절 사유 입력:`);
+    if (reason === null) return;
+    try {
+      setWithdrawalProcessingId(w.id);
+      const res = await fetch(`${API_BASE_URL}/admin/withdrawals/${w.id}/reject`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ admin_notes: reason || '관리자 거절' })
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
+      toast('출금 거절 완료 (JOY 복구됨)', 'info');
+      fetchWithdrawals();
+    } catch (err: any) { toast(err.message, 'error'); }
+    finally { setWithdrawalProcessingId(null); }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
@@ -448,6 +503,17 @@ export default function AdminDashboard() {
             className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all ${activeTab === 'sectors' ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
           >
             {t("sectorSettingsTab")}
+          </button>
+          <button
+            onClick={() => setActiveTab('withdrawals')}
+            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${activeTab === 'withdrawals' ? 'bg-orange-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+          >
+            출금 관리
+            {withdrawals.filter(w => w.status === 'pending').length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                {withdrawals.filter(w => w.status === 'pending').length}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -954,6 +1020,122 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
+        </div>
+
+          {/* 출금 관리 탭 */}
+          {activeTab === 'withdrawals' && (
+            <div>
+              {/* 요약 카드 */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
+                  <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">대기중</p>
+                  <p className="text-2xl font-black italic mt-1 text-yellow-300">{withdrawals.filter(w => w.status === 'pending').length}</p>
+                </div>
+                <div className="p-4 rounded-2xl border border-green-500/20 bg-green-500/5">
+                  <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">승인완료</p>
+                  <p className="text-2xl font-black italic mt-1 text-green-300">{withdrawals.filter(w => w.status === 'approved').length}</p>
+                </div>
+                <div className="p-4 rounded-2xl border border-white/5 bg-slate-900/40">
+                  <p className="text-purple-400 text-[10px] font-black uppercase tracking-widest">총 대기 JOY</p>
+                  <p className="text-2xl font-black italic mt-1 text-purple-300">
+                    {withdrawals.filter(w => w.status === 'pending').reduce((s, w) => s + w.amount, 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* 상태 필터 */}
+              <div className="flex gap-2 mb-4">
+                {['pending', 'approved', 'rejected'].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setWithdrawalStatusFilter(s)}
+                    className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${withdrawalStatusFilter === s ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+                  >
+                    {s === 'pending' ? '대기' : s === 'approved' ? '승인' : '거절'}
+                    {s === 'pending' && withdrawals.filter(w => w.status === 'pending').length > 0 && (
+                      <span className="ml-1 text-yellow-400">({withdrawals.filter(w => w.status === 'pending').length})</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* 출금 목록 테이블 */}
+              <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
+                      <th className="px-4 py-3 font-black">ID</th>
+                      <th className="px-4 py-3 font-black">사용자</th>
+                      <th className="px-4 py-3 font-black">JOY 수량</th>
+                      <th className="px-4 py-3 font-black">수령 지갑 주소</th>
+                      <th className="px-4 py-3 font-black">체인</th>
+                      <th className="px-4 py-3 font-black">상태</th>
+                      <th className="px-4 py-3 font-black">요청일</th>
+                      {withdrawalStatusFilter === 'pending' && <th className="px-4 py-3 font-black text-right">처리</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="text-xs divide-y divide-slate-800/30">
+                    {withdrawals.filter(w => w.status === withdrawalStatusFilter).length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">출금 요청 없음</td>
+                      </tr>
+                    ) : (
+                      withdrawals.filter(w => w.status === withdrawalStatusFilter).map(w => (
+                        <tr key={w.id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
+                          <td className="px-4 py-4">
+                            <p className="font-bold">{w.user.username}</p>
+                            <p className="text-slate-500 text-[10px]">{w.user.email}</p>
+                          </td>
+                          <td className="px-4 py-4 font-black text-orange-400">{w.amount.toLocaleString()} JOY</td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-blue-400 text-[10px] max-w-[180px] truncate">{w.wallet_address}</span>
+                              <button
+                                onClick={() => { navigator.clipboard.writeText(w.wallet_address); toast('복사됨', 'success'); }}
+                                className="text-[9px] px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all flex-shrink-0"
+                              >복사</button>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-slate-400">{w.chain}</td>
+                          <td className="px-4 py-4">
+                            {w.status === 'pending' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">대기중</span>}
+                            {w.status === 'approved' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20">승인완료</span>}
+                            {w.status === 'rejected' && (
+                              <div>
+                                <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">거절</span>
+                                {w.admin_notes && <p className="text-[9px] text-slate-500 mt-1">{w.admin_notes}</p>}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-slate-500 whitespace-nowrap">
+                            {new Date(w.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          {withdrawalStatusFilter === 'pending' && (
+                            <td className="px-4 py-4 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => handleWithdrawalApprove(w)}
+                                  disabled={withdrawalProcessingId === w.id}
+                                  className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 rounded-lg text-[10px] font-black transition-all"
+                                >승인</button>
+                                <button
+                                  onClick={() => handleWithdrawalReject(w)}
+                                  disabled={withdrawalProcessingId === w.id}
+                                  className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all"
+                                >거절</button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Legal Disclaimer */}

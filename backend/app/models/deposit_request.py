@@ -1,6 +1,6 @@
 # backend/app/models/deposit_request.py
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, ForeignKey, Numeric, func
+from sqlalchemy import String, Integer, DateTime, ForeignKey, Numeric, Boolean, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from app.core.db import Base
 from app.core.enums import DepositStatus, BlockchainNetwork
@@ -67,6 +67,9 @@ class DepositRequest(Base):
     
     # 블록체인 감지된 TX 해시
     detected_tx_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+
+    # JOY 선지급 여부 (요청 즉시 충전했으면 True → wallet_monitor에서 중복 충전 방지)
+    joy_credited: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # 관리자 메모
     admin_notes: Mapped[str | None] = mapped_column(String(500), nullable=True)

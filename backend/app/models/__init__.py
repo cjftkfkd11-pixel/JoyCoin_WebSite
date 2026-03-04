@@ -12,6 +12,7 @@ from app.models.exchange_rate import ExchangeRate
 from app.models.notification import Notification
 from app.models.legal_consent import LegalConsent
 from app.models.point_withdrawal import PointWithdrawal
+from app.models.joy_withdrawal import JoyWithdrawal
 
 __all__ = [
     "User",
@@ -26,4 +27,5 @@ __all__ = [
     "Notification",
     "LegalConsent",
     "PointWithdrawal",
+    "JoyWithdrawal",
 ]

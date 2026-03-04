@@ -78,6 +78,7 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
 
         # 유저 정보 로드
         from app.models import User
+        from datetime import datetime
         user = db.query(User).filter(User.id == matched.user_id).first()
         user_email = user.email if user else "unknown"
 
@@ -91,8 +92,15 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
         diff = expected_base - actual_base
 
         if diff <= 0:
-            # 정상 입금 (같거나 많이 넣음)
-            logger.info(f"Deposit matched: #{matched.id} = {amount_rounded} USDT (expected {matched.expected_amount})")
+            # 정상 입금 → 자동 승인
+            matched.status = "approved"
+            matched.approved_at = datetime.utcnow()
+
+            # joy_credited=True면 이미 선충전됨 → 중복 충전 방지
+            if not matched.joy_credited and user:
+                user.total_joy = int(user.total_joy or 0) + int(matched.joy_amount or 0)
+
+            logger.info(f"Deposit auto-approved: #{matched.id} = {amount_rounded} USDT (expected {matched.expected_amount})")
             notify_deposit_matched(
                 user_email=user_email,
                 expected=float(matched.expected_amount),
@@ -107,6 +115,15 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
             recalculated_joy = int(actual_base * joy_per_usdt)
             original_joy = matched.joy_amount
             matched.joy_amount = recalculated_joy
+            matched.status = "approved"
+            matched.approved_at = datetime.utcnow()
+
+            # joy_credited=True면 이미 선충전됨 → 차액만큼 차감
+            if matched.joy_credited and user:
+                over_credited = original_joy - recalculated_joy
+                user.total_joy = max(0, int(user.total_joy or 0) - over_credited)
+            elif not matched.joy_credited and user:
+                user.total_joy = int(user.total_joy or 0) + recalculated_joy
 
             logger.warning(
                 f"Underpaid deposit #{matched.id}: expected {expected_base}, got {actual_base}. "
@@ -132,7 +149,7 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
                     message=(
                         f"예상 금액: {matched.expected_amount} USDT, "
                         f"실제 입금: {amount_rounded} USDT. "
-                        f"해당 금액 기준 JOY {recalculated_joy:,}개 지급 예정."
+                        f"JOY {recalculated_joy:,}개로 조정되었습니다."
                     ),
                     type="deposit_underpaid",
                 )

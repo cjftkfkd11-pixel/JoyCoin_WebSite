@@ -19,6 +19,8 @@ from app.api.products import router as products_router
 from app.api.notifications import router as notifications_router
 from app.api.consents import router as consents_router
 from app.api.points import router as points_router
+from app.api.withdrawals import router as withdrawals_router
+from app.api.admin_withdrawals import router as admin_withdrawals_router
 
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect, text
@@ -32,6 +34,7 @@ from app.models import (
     DepositRequest, Point, ExchangeRate, Notification, LegalConsent
 )
 from app.models.point_withdrawal import PointWithdrawal
+from app.models.joy_withdrawal import JoyWithdrawal
 from app.models.user import generate_recovery_code
 
 logging.basicConfig(level=logging.INFO)
@@ -141,6 +144,10 @@ def ensure_schema_compatibility():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE deposit_requests ADD COLUMN detected_tx_hash VARCHAR(128)"))
             logger.info("Added deposit_requests.detected_tx_hash column")
+        if "joy_credited" not in dr_columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE deposit_requests ADD COLUMN joy_credited BOOLEAN NOT NULL DEFAULT FALSE"))
+            logger.info("Added deposit_requests.joy_credited column")
 
 
 def seed_super_admin():
@@ -286,3 +293,5 @@ app.include_router(products_router)
 app.include_router(notifications_router)
 app.include_router(consents_router)
 app.include_router(points_router)
+app.include_router(withdrawals_router)
+app.include_router(admin_withdrawals_router)
