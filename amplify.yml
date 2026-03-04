@@ -10,12 +10,12 @@ frontend:
         - npm ci --legacy-peer-deps
     build:
       commands:
-        - cd frontend
         - npm run build
   artifacts:
-    baseDirectory: frontend/out
+    # build가 frontend 폴더에서 실행되므로 out은 상대경로 out
+    baseDirectory: out
     files:
       - '**/*'
   cache:
     paths:
-      - frontend/node_modules/**/*
+      - node_modules/**/*
