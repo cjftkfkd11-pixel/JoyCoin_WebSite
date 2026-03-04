@@ -11,6 +11,7 @@ module.exports = (phase) => {
   /** @type {import('next').NextConfig} */
   const nextConfig = {
     distDir: isDevServer ? ".next-dev" : ".next",
+    output: isDevServer ? undefined : "export",
   };
 
   return nextConfig;
