@@ -1136,8 +1136,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-        </div>
-
         {/* Legal Disclaimer */}
         <div className="mt-6 p-3 border-t border-slate-800">
           <p className="text-[10px] text-slate-600 text-center italic">
