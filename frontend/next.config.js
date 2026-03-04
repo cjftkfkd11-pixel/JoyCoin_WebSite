@@ -1,18 +1,13 @@
-const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // 정적 export 결과물이 out/ 폴더로 생성되게 함 (Next 13+)
+  output: "export",
 
-/**
- * Keep dev and production build artifacts separate.
- * This prevents chunk/cache corruption when `next dev` and `next build/start`
- * are used in the same workspace.
- */
-module.exports = (phase) => {
-  const isDevServer = phase === PHASE_DEVELOPMENT_SERVER;
+  // 정적 export에서는 next/image 최적화 서버가 없어서 이 옵션이 거의 필수
+  images: { unoptimized: true },
 
-  /** @type {import('next').NextConfig} */
-  const nextConfig = {
-    distDir: isDevServer ? ".next-dev" : ".next",
-    output: isDevServer ? undefined : "export",
-  };
-
-  return nextConfig;
+  // (선택) trailingSlash가 필요하면 true로
+  // trailingSlash: true,
 };
+
+module.exports = nextConfig;
