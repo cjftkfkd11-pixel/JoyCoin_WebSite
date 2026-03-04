@@ -12,7 +12,6 @@ frontend:
       commands:
         - npm run build
   artifacts:
-    # build가 frontend 폴더에서 실행되므로 out은 상대경로 out
     baseDirectory: out
     files:
       - '**/*'
