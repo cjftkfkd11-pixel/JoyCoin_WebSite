@@ -442,6 +442,38 @@ export default function BuyPage() {
           </div>
         </div>
       </div>
+
+      {/* 모바일 하단 고정 버튼 */}
+      {totalUsdt > 0 && !authLoading && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#020617]/95 backdrop-blur-md border-t border-slate-800 z-40">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 text-sm">
+              <span className="text-slate-400">{totalJoy.toLocaleString()} JOY</span>
+              <span className="text-slate-600 mx-1">·</span>
+              <span className="text-white font-bold">{totalUsdt.toLocaleString()} USDT</span>
+            </div>
+            <button
+              onClick={() => {
+                if (!isLoggedIn) {
+                  const confirmed = confirm(
+                    locale === 'ko'
+                      ? '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+                      : 'Login is required.\nWould you like to go to the login page?'
+                  );
+                  if (confirmed) router.push('/auth/login');
+                  return;
+                }
+                setConsentChecks({ notInvestment: false, risks: false, notGuaranteed: false, voluntary: false });
+                setShowConsent(true);
+              }}
+              disabled={requesting}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 rounded-xl font-bold text-sm transition-all"
+            >
+              {requesting ? (locale === 'ko' ? '처리 중...' : 'Processing...') : (locale === 'ko' ? '참여 요청' : 'Request')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
