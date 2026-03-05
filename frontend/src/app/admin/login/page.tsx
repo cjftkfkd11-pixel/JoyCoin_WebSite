@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 import { getApiBaseUrl } from '@/lib/apiBase';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -13,6 +14,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { login } = useAuth();
 
   // 로그인 처리 함수
   const handleLogin = async (e: React.FormEvent) => {
@@ -41,6 +43,7 @@ export default function AdminLoginPage() {
             toast(t("notAdminRole"), "error");
             return;
           }
+          login(me);
         }
         router.push('/admin/dashboard');
       } else {

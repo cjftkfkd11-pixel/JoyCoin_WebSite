@@ -137,7 +137,7 @@ def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
         value=access,
         httponly=True,
         secure=settings.COOKIE_SECURE,
-        samesite="none",
+        samesite="none" if settings.COOKIE_SECURE else "lax",
         max_age=settings.JWT_EXPIRE_MIN * 60,
         path="/"
     )

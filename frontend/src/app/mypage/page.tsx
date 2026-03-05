@@ -128,12 +128,12 @@ export default function MyPage() {
         body: JSON.stringify({ amount, wallet_address: user.wallet_address, chain: withdrawalChain }),
       });
       if (res.ok) {
-        setWithdrawalMessage({ type: 'success', text: locale === 'ko' ? '출금 요청이 완료되었습니다. 관리자 처리 후 전송됩니다.' : 'Withdrawal requested. Admin will process it shortly.' });
+        setWithdrawalMessage({ type: 'success', text: locale === 'ko' ? '수령 신청이 완료되었습니다. 관리자 처리 후 전송됩니다.' : 'Claim requested. Admin will process it shortly.' });
         setWithdrawalAmount('');
         setTimeout(() => { setShowWithdrawalModal(false); window.location.reload(); }, 2000);
       } else {
         const error = await res.json();
-        setWithdrawalMessage({ type: 'error', text: error.detail || (locale === 'ko' ? '출금 요청 실패' : 'Withdrawal failed') });
+        setWithdrawalMessage({ type: 'error', text: error.detail || (locale === 'ko' ? '수령 신청 실패' : 'Claim failed') });
       }
     } catch {
       setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? '서버 연결 실패' : 'Server connection failed' });
@@ -233,18 +233,18 @@ export default function MyPage() {
               className="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-500 hover:text-white text-xl font-bold"
             >×</button>
             <h2 className="text-xl font-black text-blue-400 mb-6">
-              {locale === 'ko' ? 'JOY 출금 요청' : 'JOY Withdrawal'}
+              {locale === 'ko' ? 'JOY 수령 신청' : 'JOY Claim Request'}
             </h2>
             <div className="space-y-4">
               {/* 보유 JOY */}
               <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
-                <span className="text-xs text-slate-400">{locale === 'ko' ? '보유 JOY' : 'Available JOY'}</span>
+                <span className="text-xs text-slate-400">{locale === 'ko' ? '구매한 JOY' : 'My JOY'}</span>
                 <span className="font-black text-blue-400">{user?.total_joy?.toLocaleString() || '0'} JOY</span>
               </div>
               {/* 수량 입력 */}
               <div>
                 <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
-                  {locale === 'ko' ? '출금 수량' : 'Amount'}
+                  {locale === 'ko' ? '수령 신청 수량' : 'Claim Amount'}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -296,7 +296,7 @@ export default function MyPage() {
               </div>
               <p className="text-[9px] text-yellow-600">
                 {locale === 'ko'
-                  ? '⚠️ 출금 요청 후 관리자가 처리하면 위 지갑 주소로 JOY가 전송됩니다. 처리 전에는 취소할 수 없습니다.'
+                  ? '⚠️ 수령 신청 후 관리자가 처리하면 위 지갑 주소로 JOY가 전송됩니다. 처리 전에는 취소할 수 없습니다.'
                   : '⚠️ After admin processes your request, JOY will be sent to the above address. Cannot be cancelled once submitted.'}
               </p>
               {withdrawalMessage.text && (
@@ -311,7 +311,7 @@ export default function MyPage() {
                 disabled={withdrawalLoading || !user?.wallet_address}
                 className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl font-black transition-all"
               >
-                {withdrawalLoading ? (locale === 'ko' ? '처리 중...' : 'Processing...') : (locale === 'ko' ? '출금 요청' : 'Request Withdrawal')}
+                {withdrawalLoading ? (locale === 'ko' ? '처리 중...' : 'Processing...') : (locale === 'ko' ? '수령 신청' : 'Request Claim')}
               </button>
             </div>
           </div>
@@ -617,20 +617,24 @@ export default function MyPage() {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => { window.location.href = '/buy'; }}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-black text-sm transition-all shadow-lg shadow-blue-900/30 touch-manipulation"
-            >
-              {locale === 'ko' ? 'JOY 충전하기' : 'CHARGE JOY'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setWithdrawalMessage({ type: '', text: '' }); setWithdrawalAmount(''); setShowWithdrawalModal(true); }}
-              className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-black text-sm transition-all touch-manipulation"
-            >
-              {locale === 'ko' ? 'JOY 출금하기' : 'WITHDRAW JOY'}
-            </button>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/buy'; }}
+                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-900/40 touch-manipulation"
+              >
+                <span className="text-xl">⚡</span>
+                <span className="text-xs font-black tracking-wide">{locale === 'ko' ? '구매하기' : 'BUY'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setWithdrawalMessage({ type: '', text: '' }); setWithdrawalAmount(''); setShowWithdrawalModal(true); }}
+                className="flex flex-col items-center justify-center gap-1.5 py-4 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-600/50 rounded-2xl font-black text-sm transition-all touch-manipulation"
+              >
+                <span className="text-xl">↗</span>
+                <span className="text-xs font-black tracking-wide">{locale === 'ko' ? '수령 신청' : 'CLAIM'}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -693,7 +697,7 @@ export default function MyPage() {
         {withdrawals.length > 0 && (
           <div className="glass p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-800/50 bg-slate-900/20 shadow-2xl mt-6">
             <h2 className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 sm:mb-8">
-              {locale === 'ko' ? '출금 내역' : 'Withdrawal History'}
+              {locale === 'ko' ? '수령 신청 내역' : 'Claim History'}
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left">

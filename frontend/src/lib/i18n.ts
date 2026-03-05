@@ -80,7 +80,7 @@ export const translations = {
     // My Page
     myInfo: "My Info",
     myReferralCode: "My Referral Code",
-    totalJoy: "Total JOY",
+    totalJoy: "My JOY",
     totalPoints: "Total Points",
     referralRewardRemaining: "Referral Rewards Left",
     referralRewardDesc: "10% bonus points on your next participation",
@@ -326,7 +326,7 @@ export const translations = {
     // My Page
     myInfo: "내 정보",
     myReferralCode: "내 추천인 코드",
-    totalJoy: "보유 JOY",
+    totalJoy: "구매한 JOY",
     totalPoints: "보유 포인트",
     referralRewardRemaining: "남은 추천 보상",
     referralRewardDesc: "다음 참여 시 결제금액의 10% 포인트 적립",
