@@ -92,12 +92,12 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
         diff = expected_base - actual_base
 
         if diff <= 0:
-            # 정상 입금 → 자동 승인
+            # 정상 입금 → 자동 승인 + JOY 지급
             matched.status = "approved"
             matched.approved_at = datetime.utcnow()
+            matched.joy_credited = True
 
-            # joy_credited=True면 이미 선충전됨 → 중복 충전 방지
-            if not matched.joy_credited and user:
+            if user:
                 user.total_joy = int(user.total_joy or 0) + int(matched.joy_amount or 0)
 
             logger.info(f"Deposit auto-approved: #{matched.id} = {amount_rounded} USDT (expected {matched.expected_amount})")
@@ -111,18 +111,14 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
                 deposit_id=matched.id,
             )
         else:
-            # 부족 입금 → JOY 재계산
+            # 부족 입금 → JOY 재계산 후 지급
             recalculated_joy = int(actual_base * joy_per_usdt)
-            original_joy = matched.joy_amount
             matched.joy_amount = recalculated_joy
             matched.status = "approved"
             matched.approved_at = datetime.utcnow()
+            matched.joy_credited = True
 
-            # joy_credited=True면 이미 선충전됨 → 차액만큼 차감
-            if matched.joy_credited and user:
-                over_credited = original_joy - recalculated_joy
-                user.total_joy = max(0, int(user.total_joy or 0) - over_credited)
-            elif not matched.joy_credited and user:
+            if user:
                 user.total_joy = int(user.total_joy or 0) + recalculated_joy
 
             logger.warning(

@@ -63,11 +63,14 @@ def approve_deposit(
         raise HTTPException(400, f"처리할 수 없는 상태입니다: {dr.status}")
 
     # 4. 입금 요청 정보 업데이트
+    already_credited = dr.joy_credited
+
     dr.actual_amount = payload.actual_amount if payload.actual_amount else (dr.actual_amount or dr.expected_amount)
     dr.admin_notes = payload.admin_notes
     dr.admin_id = admin.id
     dr.status = "approved"
     dr.approved_at = datetime.utcnow()
+    dr.joy_credited = True
 
     # 5. [중요] actual_amount 기준으로 JOY 재계산 (부족 입금 대응)
     user = db.query(User).filter(User.id == dr.user_id).first()
@@ -85,7 +88,9 @@ def approve_deposit(
         joy_per_usdt = float(rate.joy_per_usdt) if rate else 5.0
         dr.joy_amount = int(actual_base * joy_per_usdt)
 
-    user.total_joy = int(user.total_joy or 0) + int(dr.joy_amount or 0)
+    # 이미 wallet_monitor가 자동 지급했으면 중복 지급 방지
+    if not already_credited:
+        user.total_joy = int(user.total_joy or 0) + int(dr.joy_amount or 0)
 
     # 6. 추천 보상: 남은 횟수가 있으면 결제 USDT의 N%를 포인트로 적립
     remaining = int(user.referral_reward_remaining or 0)
