@@ -78,6 +78,19 @@ interface UsdtWithdrawal {
   confirmed_at: string | null;
 }
 
+interface PointWithdrawal {
+  id: number;
+  user_id: number;
+  user_email: string;
+  amount: number;
+  method: string;
+  account_info: string;
+  status: string;
+  admin_notes: string | null;
+  processed_at: string | null;
+  created_at: string;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
@@ -90,7 +103,10 @@ export default function AdminDashboard() {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'deposits' | 'sectors' | 'users' | 'products' | 'withdrawals' | 'usdt'>('deposits');
+  const [activeTab, setActiveTab] = useState<'deposits' | 'settings' | 'users' | 'products' | 'payouts'>('deposits');
+  const [payoutsSubTab, setPayoutsSubTab] = useState<'joy' | 'usdt' | 'points'>('joy');
+  const [pointWithdrawals, setPointWithdrawals] = useState<PointWithdrawal[]>([]);
+  const [pointProcessingId, setPointProcessingId] = useState<number | null>(null);
   const [usdtStats, setUsdtStats] = useState<UsdtStats | null>(null);
   const [usdtWithdrawals, setUsdtWithdrawals] = useState<UsdtWithdrawal[]>([]);
   const [usdtProcessingId, setUsdtProcessingId] = useState<number | null>(null);
@@ -126,6 +142,7 @@ export default function AdminDashboard() {
     fetchStats();
     fetchWithdrawals();
     fetchUsdtData();
+    fetchPointWithdrawals();
 
     // 30초마다 자동 갱신
     const interval = setInterval(() => {
@@ -133,9 +150,17 @@ export default function AdminDashboard() {
       fetchStats();
       fetchWithdrawals();
       fetchUsdtData();
+      fetchPointWithdrawals();
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchPointWithdrawals = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/points/admin/withdrawals`, { credentials: 'include' });
+      if (res.ok) setPointWithdrawals(await res.json());
+    } catch {}
+  };
 
   const fetchUsdtData = async () => {
     try {
@@ -549,30 +574,19 @@ export default function AdminDashboard() {
             {t("productsTab")}
           </button>
           <button
-            onClick={() => setActiveTab('sectors')}
-            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all ${activeTab === 'sectors' ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab('settings')}
+            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all ${activeTab === 'settings' ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
           >
             {t("sectorSettingsTab")}
           </button>
           <button
-            onClick={() => setActiveTab('withdrawals')}
-            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${activeTab === 'withdrawals' ? 'bg-orange-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab('payouts')}
+            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${activeTab === 'payouts' ? 'bg-orange-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
           >
             출금 관리
-            {withdrawals.filter(w => w.status === 'pending').length > 0 && (
+            {(withdrawals.filter(w => w.status === 'pending').length + usdtWithdrawals.filter(w => w.status === 'pending').length + pointWithdrawals.filter(w => w.status === 'pending').length) > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
-                {withdrawals.filter(w => w.status === 'pending').length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('usdt')}
-            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${activeTab === 'usdt' ? 'bg-green-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
-          >
-            💰 USDT 관리
-            {usdtWithdrawals.filter(w => w.status === 'pending').length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
-                {usdtWithdrawals.filter(w => w.status === 'pending').length}
+                {withdrawals.filter(w => w.status === 'pending').length + usdtWithdrawals.filter(w => w.status === 'pending').length + pointWithdrawals.filter(w => w.status === 'pending').length}
               </span>
             )}
           </button>
@@ -973,8 +987,8 @@ export default function AdminDashboard() {
               </div>
               <p className="text-slate-600 text-[10px] text-right">{t("totalCount")} {users.filter(u => !userSearch || u.email.toLowerCase().includes(userSearch.toLowerCase()) || u.username.toLowerCase().includes(userSearch.toLowerCase())).length} {t("items")}</p>
             </>
-          ) : (
-            /* 섹터 기여분 설정 탭 */
+          ) : activeTab === 'settings' ? (
+            /* 설정 탭 */
             <div className="space-y-8">
               {/* JOY 시세 설정 */}
               <div className="space-y-4">
@@ -1108,238 +1122,327 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-          )}
-        </div>
-
-          {/* 출금 관리 탭 */}
-          {activeTab === 'withdrawals' && (
-            <div>
-              {/* 요약 카드 */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
-                  <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">대기중</p>
-                  <p className="text-2xl font-black italic mt-1 text-yellow-300">{withdrawals.filter(w => w.status === 'pending').length}</p>
-                </div>
-                <div className="p-4 rounded-2xl border border-green-500/20 bg-green-500/5">
-                  <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">승인완료</p>
-                  <p className="text-2xl font-black italic mt-1 text-green-300">{withdrawals.filter(w => w.status === 'approved').length}</p>
-                </div>
-                <div className="p-4 rounded-2xl border border-white/5 bg-slate-900/40">
-                  <p className="text-purple-400 text-[10px] font-black uppercase tracking-widest">총 대기 JOY</p>
-                  <p className="text-2xl font-black italic mt-1 text-purple-300">
-                    {withdrawals.filter(w => w.status === 'pending').reduce((s, w) => s + w.amount, 0).toLocaleString()}
-                  </p>
-                </div>
+          ) : activeTab === 'payouts' ? (
+            /* 출금 관리 탭 - JOY 출금 + USDT 출금 통합 */
+            <div className="space-y-4">
+              {/* 서브 탭 */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPayoutsSubTab('joy')}
+                  className={`px-5 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${payoutsSubTab === 'joy' ? 'bg-orange-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+                >
+                  JOY 수령 관리
+                  {withdrawals.filter(w => w.status === 'pending').length > 0 && (
+                    <span className="ml-2 text-yellow-300">({withdrawals.filter(w => w.status === 'pending').length})</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setPayoutsSubTab('usdt')}
+                  className={`px-5 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${payoutsSubTab === 'usdt' ? 'bg-green-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+                >
+                  💰 USDT 출금 관리
+                  {usdtWithdrawals.filter(w => w.status === 'pending').length > 0 && (
+                    <span className="ml-2 text-yellow-300">({usdtWithdrawals.filter(w => w.status === 'pending').length})</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setPayoutsSubTab('points')}
+                  className={`px-5 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${payoutsSubTab === 'points' ? 'bg-emerald-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+                >
+                  🟢 포인트 출금
+                  {pointWithdrawals.filter(w => w.status === 'pending').length > 0 && (
+                    <span className="ml-2 text-yellow-300">({pointWithdrawals.filter(w => w.status === 'pending').length})</span>
+                  )}
+                </button>
               </div>
 
-              {/* 상태 필터 */}
-              <div className="flex gap-2 mb-4">
-                {['pending', 'approved', 'rejected'].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setWithdrawalStatusFilter(s)}
-                    className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${withdrawalStatusFilter === s ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
-                  >
-                    {s === 'pending' ? '대기' : s === 'approved' ? '승인' : '거절'}
-                    {s === 'pending' && withdrawals.filter(w => w.status === 'pending').length > 0 && (
-                      <span className="ml-1 text-yellow-400">({withdrawals.filter(w => w.status === 'pending').length})</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* 출금 목록 테이블 */}
-              <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
-                      <th className="px-4 py-3 font-black">ID</th>
-                      <th className="px-4 py-3 font-black">사용자</th>
-                      <th className="px-4 py-3 font-black">JOY 수량</th>
-                      <th className="px-4 py-3 font-black">수령 지갑 주소</th>
-                      <th className="px-4 py-3 font-black">체인</th>
-                      <th className="px-4 py-3 font-black">상태</th>
-                      <th className="px-4 py-3 font-black">요청일</th>
-                      {withdrawalStatusFilter === 'pending' && <th className="px-4 py-3 font-black text-right">처리</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="text-xs divide-y divide-slate-800/30">
-                    {withdrawals.filter(w => w.status === withdrawalStatusFilter).length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">출금 요청 없음</td>
-                      </tr>
-                    ) : (
-                      withdrawals.filter(w => w.status === withdrawalStatusFilter).map(w => (
-                        <tr key={w.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
-                          <td className="px-4 py-4">
-                            <p className="font-bold">{w.user.username}</p>
-                            <p className="text-slate-500 text-[10px]">{w.user.email}</p>
-                          </td>
-                          <td className="px-4 py-4 font-black text-orange-400">{w.amount.toLocaleString()} JOY</td>
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-blue-400 text-[10px] max-w-[180px] truncate">{w.wallet_address}</span>
-                              <button
-                                onClick={() => { navigator.clipboard.writeText(w.wallet_address); toast('복사됨', 'success'); }}
-                                className="text-[9px] px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all flex-shrink-0"
-                              >복사</button>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-slate-400">{w.chain}</td>
-                          <td className="px-4 py-4">
-                            {w.status === 'pending' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">대기중</span>}
-                            {w.status === 'approved' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20">승인완료</span>}
-                            {w.status === 'rejected' && (
-                              <div>
-                                <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">거절</span>
-                                {w.admin_notes && <p className="text-[9px] text-slate-500 mt-1">{w.admin_notes}</p>}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-4 text-slate-500 whitespace-nowrap">
-                            {new Date(w.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                          </td>
-                          {withdrawalStatusFilter === 'pending' && (
-                            <td className="px-4 py-4 text-right">
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  onClick={() => handleWithdrawalApprove(w)}
-                                  disabled={withdrawalProcessingId === w.id}
-                                  className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 rounded-lg text-[10px] font-black transition-all"
-                                >승인</button>
-                                <button
-                                  onClick={() => handleWithdrawalReject(w)}
-                                  disabled={withdrawalProcessingId === w.id}
-                                  className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all"
-                                >거절</button>
+              {payoutsSubTab === 'joy' ? (
+                <div>
+                  {/* 요약 카드 */}
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
+                      <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">대기중</p>
+                      <p className="text-2xl font-black italic mt-1 text-yellow-300">{withdrawals.filter(w => w.status === 'pending').length}</p>
+                    </div>
+                    <div className="p-4 rounded-2xl border border-green-500/20 bg-green-500/5">
+                      <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">승인완료</p>
+                      <p className="text-2xl font-black italic mt-1 text-green-300">{withdrawals.filter(w => w.status === 'approved').length}</p>
+                    </div>
+                    <div className="p-4 rounded-2xl border border-white/5 bg-slate-900/40">
+                      <p className="text-purple-400 text-[10px] font-black uppercase tracking-widest">총 대기 JOY</p>
+                      <p className="text-2xl font-black italic mt-1 text-purple-300">
+                        {withdrawals.filter(w => w.status === 'pending').reduce((s, w) => s + w.amount, 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  {/* 상태 필터 */}
+                  <div className="flex gap-2 mb-4">
+                    {['pending', 'approved', 'rejected'].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setWithdrawalStatusFilter(s)}
+                        className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${withdrawalStatusFilter === s ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+                      >
+                        {s === 'pending' ? '대기' : s === 'approved' ? '승인' : '거절'}
+                        {s === 'pending' && withdrawals.filter(w => w.status === 'pending').length > 0 && (
+                          <span className="ml-1 text-yellow-400">({withdrawals.filter(w => w.status === 'pending').length})</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {/* 출금 목록 테이블 */}
+                  <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
+                          <th className="px-4 py-3 font-black">ID</th>
+                          <th className="px-4 py-3 font-black">사용자</th>
+                          <th className="px-4 py-3 font-black">JOY 수량</th>
+                          <th className="px-4 py-3 font-black">수령 지갑 주소</th>
+                          <th className="px-4 py-3 font-black">체인</th>
+                          <th className="px-4 py-3 font-black">상태</th>
+                          <th className="px-4 py-3 font-black">요청일</th>
+                          {withdrawalStatusFilter === 'pending' && <th className="px-4 py-3 font-black text-right">처리</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="text-xs divide-y divide-slate-800/30">
+                        {withdrawals.filter(w => w.status === withdrawalStatusFilter).length === 0 ? (
+                          <tr><td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">출금 요청 없음</td></tr>
+                        ) : withdrawals.filter(w => w.status === withdrawalStatusFilter).map(w => (
+                          <tr key={w.id} className="hover:bg-white/5 transition-colors">
+                            <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
+                            <td className="px-4 py-4">
+                              <p className="font-bold">{w.user.username}</p>
+                              <p className="text-slate-500 text-[10px]">{w.user.email}</p>
+                            </td>
+                            <td className="px-4 py-4 font-black text-orange-400">{w.amount.toLocaleString()} JOY</td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-blue-400 text-[10px] max-w-[180px] truncate">{w.wallet_address}</span>
+                                <button onClick={() => { navigator.clipboard.writeText(w.wallet_address); toast('복사됨', 'success'); }}
+                                  className="text-[9px] px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all flex-shrink-0">복사</button>
                               </div>
                             </td>
-                          )}
+                            <td className="px-4 py-4 text-slate-400">{w.chain}</td>
+                            <td className="px-4 py-4">
+                              {w.status === 'pending' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">대기중</span>}
+                              {w.status === 'approved' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20">승인완료</span>}
+                              {w.status === 'rejected' && (
+                                <div>
+                                  <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">거절</span>
+                                  {w.admin_notes && <p className="text-[9px] text-slate-500 mt-1">{w.admin_notes}</p>}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-slate-500 whitespace-nowrap">
+                              {new Date(w.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                            {withdrawalStatusFilter === 'pending' && (
+                              <td className="px-4 py-4 text-right">
+                                <div className="flex gap-2 justify-end">
+                                  <button onClick={() => handleWithdrawalApprove(w)} disabled={withdrawalProcessingId === w.id}
+                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 rounded-lg text-[10px] font-black transition-all">승인</button>
+                                  <button onClick={() => handleWithdrawalReject(w)} disabled={withdrawalProcessingId === w.id}
+                                    className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all">거절</button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : payoutsSubTab === 'usdt' ? (
+                <div className="space-y-6">
+                  {/* USDT 통계 카드 */}
+                  {usdtStats && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-4 rounded-2xl border border-green-500/20 bg-green-500/5">
+                        <p className="text-[10px] text-slate-400 uppercase mb-1">총 수령 USDT</p>
+                        <p className="text-2xl font-black text-green-400">{usdtStats.total_received_usdt.toFixed(2)}</p>
+                      </div>
+                      <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5">
+                        <p className="text-[10px] text-slate-400 uppercase mb-1">확정 출금</p>
+                        <p className="text-2xl font-black text-red-400">{usdtStats.total_withdrawn_usdt.toFixed(2)}</p>
+                      </div>
+                      <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
+                        <p className="text-[10px] text-slate-400 uppercase mb-1">대기 중 출금</p>
+                        <p className="text-2xl font-black text-yellow-400">{usdtStats.pending_withdrawal_usdt.toFixed(2)}</p>
+                      </div>
+                      <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
+                        <p className="text-[10px] text-slate-400 uppercase mb-1">가용 USDT</p>
+                        <p className="text-2xl font-black text-blue-400">{usdtStats.available_usdt.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  )}
+                  {/* USDT 출금 신청 목록 */}
+                  <div>
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">미국어드민 출금 신청 내역</h3>
+                    <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
+                            <th className="px-4 py-3 font-black">ID</th>
+                            <th className="px-4 py-3 font-black">신청자</th>
+                            <th className="px-4 py-3 font-black">금액</th>
+                            <th className="px-4 py-3 font-black">메모</th>
+                            <th className="px-4 py-3 font-black">상태</th>
+                            <th className="px-4 py-3 font-black">신청일</th>
+                            <th className="px-4 py-3 font-black text-right">처리</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/30">
+                          {usdtWithdrawals.length === 0 ? (
+                            <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600 italic">출금 신청 내역 없음</td></tr>
+                          ) : usdtWithdrawals.map(w => (
+                            <tr key={w.id} className="hover:bg-white/5 transition-colors">
+                              <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
+                              <td className="px-4 py-4 text-blue-300">{w.requester_email || '-'}</td>
+                              <td className="px-4 py-4 font-black text-green-400">{w.amount.toFixed(2)} USDT</td>
+                              <td className="px-4 py-4 text-slate-400">{w.note || '-'}</td>
+                              <td className="px-4 py-4">
+                                <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
+                                  w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                                  w.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
+                                  'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {w.status === 'pending' ? '대기' : w.status === 'confirmed' ? '확정' : '거절'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-slate-500">{new Date(w.created_at).toLocaleDateString('ko-KR')}</td>
+                              <td className="px-4 py-4 text-right">
+                                {w.status === 'pending' && (
+                                  <div className="flex gap-2 justify-end">
+                                    <button disabled={usdtProcessingId === w.id}
+                                      onClick={async () => {
+                                        if (!confirm(`${w.amount.toFixed(2)} USDT 출금을 확정하시겠습니까?`)) return;
+                                        setUsdtProcessingId(w.id);
+                                        try {
+                                          const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/confirm`, {
+                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                            credentials: 'include', body: JSON.stringify({ admin_notes: null }),
+                                          });
+                                          if (res.ok) { toast('출금 확정 완료', 'success'); fetchUsdtData(); }
+                                          else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                        } finally { setUsdtProcessingId(null); }
+                                      }}
+                                      className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50">확정</button>
+                                    <button disabled={usdtProcessingId === w.id}
+                                      onClick={async () => {
+                                        if (!confirm('출금 신청을 거절하시겠습니까?')) return;
+                                        setUsdtProcessingId(w.id);
+                                        try {
+                                          const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/reject`, {
+                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                            credentials: 'include', body: JSON.stringify({ admin_notes: null }),
+                                          });
+                                          if (res.ok) { toast('거절 처리 완료', 'success'); fetchUsdtData(); }
+                                          else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                        } finally { setUsdtProcessingId(null); }
+                                      }}
+                                      className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50">거절</button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* 포인트 출금 관리 */
+                <div className="space-y-4">
+                  <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">포인트 출금 신청 내역</h3>
+                  <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
+                          <th className="px-4 py-3 font-black">ID</th>
+                          <th className="px-4 py-3 font-black">신청자</th>
+                          <th className="px-4 py-3 font-black">포인트</th>
+                          <th className="px-4 py-3 font-black">수령 방식</th>
+                          <th className="px-4 py-3 font-black">계좌/주소</th>
+                          <th className="px-4 py-3 font-black">상태</th>
+                          <th className="px-4 py-3 font-black">신청일</th>
+                          <th className="px-4 py-3 font-black text-right">처리</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-          {/* USDT 관리 탭 - 별도 조건부 렌더링 */}
-          {activeTab === 'usdt' && (
-            <div className="space-y-6">
-              {/* USDT 통계 카드 */}
-              {usdtStats && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-2xl border border-green-500/20 bg-green-500/5">
-                    <p className="text-[10px] text-slate-400 uppercase mb-1">총 수령 USDT</p>
-                    <p className="text-2xl font-black text-green-400">{usdtStats.total_received_usdt.toFixed(2)}</p>
-                  </div>
-                  <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5">
-                    <p className="text-[10px] text-slate-400 uppercase mb-1">확정 출금</p>
-                    <p className="text-2xl font-black text-red-400">{usdtStats.total_withdrawn_usdt.toFixed(2)}</p>
-                  </div>
-                  <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
-                    <p className="text-[10px] text-slate-400 uppercase mb-1">대기 중 출금</p>
-                    <p className="text-2xl font-black text-yellow-400">{usdtStats.pending_withdrawal_usdt.toFixed(2)}</p>
-                  </div>
-                  <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
-                    <p className="text-[10px] text-slate-400 uppercase mb-1">가용 USDT</p>
-                    <p className="text-2xl font-black text-blue-400">{usdtStats.available_usdt.toFixed(2)}</p>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/30">
+                        {pointWithdrawals.length === 0 ? (
+                          <tr><td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">포인트 출금 신청 없음</td></tr>
+                        ) : pointWithdrawals.map(pw => (
+                          <tr key={pw.id} className="hover:bg-white/5 transition-colors">
+                            <td className="px-4 py-4 font-mono text-slate-500">#{pw.id}</td>
+                            <td className="px-4 py-4 text-blue-300 text-[10px]">{pw.user_email}</td>
+                            <td className="px-4 py-4 font-black text-emerald-400">{pw.amount.toLocaleString()} P</td>
+                            <td className="px-4 py-4 text-slate-400">{pw.method}</td>
+                            <td className="px-4 py-4 font-mono text-blue-400 text-[10px] max-w-[160px] truncate">{pw.account_info}</td>
+                            <td className="px-4 py-4">
+                              {pw.status === 'pending' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">대기중</span>}
+                              {pw.status === 'approved' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20">승인완료</span>}
+                              {pw.status === 'rejected' && (
+                                <div>
+                                  <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">거절</span>
+                                  {pw.admin_notes && <p className="text-[9px] text-slate-500 mt-1">{pw.admin_notes}</p>}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-slate-500 whitespace-nowrap">
+                              {new Date(pw.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              {pw.status === 'pending' && (
+                                <div className="flex gap-2 justify-end">
+                                  <button
+                                    disabled={pointProcessingId === pw.id}
+                                    onClick={async () => {
+                                      if (!confirm(`${pw.amount.toLocaleString()}P 출금을 승인하시겠습니까?`)) return;
+                                      setPointProcessingId(pw.id);
+                                      try {
+                                        const res = await fetch(`${API_BASE_URL}/points/admin/withdrawals/${pw.id}/approve`, {
+                                          method: 'POST', credentials: 'include',
+                                        });
+                                        if (res.ok) { toast('포인트 출금 승인 완료', 'success'); fetchPointWithdrawals(); }
+                                        else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                      } finally { setPointProcessingId(null); }
+                                    }}
+                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 rounded-lg text-[10px] font-black transition-all">승인</button>
+                                  <button
+                                    disabled={pointProcessingId === pw.id}
+                                    onClick={async () => {
+                                      if (!confirm('포인트 출금 신청을 거절하시겠습니까?')) return;
+                                      setPointProcessingId(pw.id);
+                                      try {
+                                        const res = await fetch(`${API_BASE_URL}/points/admin/withdrawals/${pw.id}/reject`, {
+                                          method: 'POST', credentials: 'include',
+                                        });
+                                        if (res.ok) { toast('거절 처리 완료', 'success'); fetchPointWithdrawals(); }
+                                        else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                      } finally { setPointProcessingId(null); }
+                                    }}
+                                    className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all">거절</button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
-
-              {/* USDT 출금 신청 목록 */}
-              <div>
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">미국어드민 출금 신청 내역</h3>
-                <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
-                        <th className="px-4 py-3 font-black">ID</th>
-                        <th className="px-4 py-3 font-black">신청자</th>
-                        <th className="px-4 py-3 font-black">금액</th>
-                        <th className="px-4 py-3 font-black">메모</th>
-                        <th className="px-4 py-3 font-black">상태</th>
-                        <th className="px-4 py-3 font-black">신청일</th>
-                        <th className="px-4 py-3 font-black text-right">처리</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/30">
-                      {usdtWithdrawals.length === 0 ? (
-                        <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600 italic">출금 신청 내역 없음</td></tr>
-                      ) : usdtWithdrawals.map(w => (
-                        <tr key={w.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
-                          <td className="px-4 py-4 text-blue-300">{w.requester_email || '-'}</td>
-                          <td className="px-4 py-4 font-black text-green-400">{w.amount.toFixed(2)} USDT</td>
-                          <td className="px-4 py-4 text-slate-400">{w.note || '-'}</td>
-                          <td className="px-4 py-4">
-                            <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
-                              w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                              w.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-                              'bg-red-500/20 text-red-400'
-                            }`}>
-                              {w.status === 'pending' ? '대기' : w.status === 'confirmed' ? '확정' : '거절'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 text-slate-500">{new Date(w.created_at).toLocaleDateString('ko-KR')}</td>
-                          <td className="px-4 py-4 text-right">
-                            {w.status === 'pending' && (
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  disabled={usdtProcessingId === w.id}
-                                  onClick={async () => {
-                                    if (!confirm(`${w.amount.toFixed(2)} USDT 출금을 확정하시겠습니까?`)) return;
-                                    setUsdtProcessingId(w.id);
-                                    try {
-                                      const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/confirm`, {
-                                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                        credentials: 'include', body: JSON.stringify({ admin_notes: null }),
-                                      });
-                                      if (res.ok) { toast('출금 확정 완료', 'success'); fetchUsdtData(); }
-                                      else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
-                                    } finally { setUsdtProcessingId(null); }
-                                  }}
-                                  className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50"
-                                >
-                                  확정
-                                </button>
-                                <button
-                                  disabled={usdtProcessingId === w.id}
-                                  onClick={async () => {
-                                    if (!confirm('출금 신청을 거절하시겠습니까?')) return;
-                                    setUsdtProcessingId(w.id);
-                                    try {
-                                      const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/reject`, {
-                                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                        credentials: 'include', body: JSON.stringify({ admin_notes: null }),
-                                      });
-                                      if (res.ok) { toast('거절 처리 완료', 'success'); fetchUsdtData(); }
-                                      else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
-                                    } finally { setUsdtProcessingId(null); }
-                                  }}
-                                  className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50"
-                                >
-                                  거절
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
-          )}
+          ) : null}
 
         {/* Legal Disclaimer */}
         <div className="mt-6 p-3 border-t border-slate-800">
           <p className="text-[10px] text-slate-600 text-center italic">
             {t("legalDisclaimer")}
           </p>
+        </div>
         </div>
       </div>
     </div>

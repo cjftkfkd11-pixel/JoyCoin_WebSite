@@ -1,11 +1,12 @@
 # backend/app/api/admin_users.py
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.core.db import get_db
 from app.core.auth import get_current_admin
 from app.core.enums import UserRole
-from app.models import User
+from app.models import User, Referral, Sector
 
 router = APIRouter(prefix="/admin/users", tags=["admin:users"])
 
@@ -102,6 +103,39 @@ def demote_user(
     user.role = UserRole.USER.value
     db.commit()
     return {"ok": True, "message": "일반 유저로 변경 완료", "user_id": user.id}
+
+
+@router.get("/referrers")
+def list_referrers(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin),
+):
+    """추천인 현황 목록"""
+    # referrer_id별로 추천 수 집계
+    counts = (
+        db.query(Referral.referrer_id, func.count(Referral.id).label("invite_count"))
+        .group_by(Referral.referrer_id)
+        .subquery()
+    )
+    rows = (
+        db.query(User, counts.c.invite_count)
+        .join(counts, User.id == counts.c.referrer_id)
+        .order_by(counts.c.invite_count.desc())
+        .all()
+    )
+    result = []
+    for user, invite_count in rows:
+        sector = db.query(Sector).filter(Sector.id == user.sector_id).first() if user.sector_id else None
+        result.append({
+            "id": user.id,
+            "email": user.email,
+            "username": user.username,
+            "sector": sector.name if sector else "-",
+            "invite_count": invite_count,
+            "total_points": int(user.total_points or 0),
+            "referral_reward_remaining": int(user.referral_reward_remaining or 0),
+        })
+    return result
 
 
 @router.post("/{user_id}/demote-sector-manager")

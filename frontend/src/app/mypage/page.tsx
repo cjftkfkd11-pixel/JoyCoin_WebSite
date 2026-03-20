@@ -35,7 +35,7 @@ export default function MyPage() {
   // 출금 상태
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
-  const [withdrawalChain, setWithdrawalChain] = useState('Polygon');
+  const [withdrawalChain, setWithdrawalChain] = useState('Solana');
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [withdrawalMessage, setWithdrawalMessage] = useState({ type: '', text: '' });
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -264,25 +264,13 @@ export default function MyPage() {
                   </button>
                 </div>
               </div>
-              {/* 체인 선택 */}
+              {/* 네트워크 */}
               <div>
                 <label className="text-[10px] text-slate-500 uppercase tracking-wider block mb-2">
                   {locale === 'ko' ? '네트워크' : 'Network'}
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['Polygon', 'Ethereum', 'TRON'].map(chain => (
-                    <button
-                      key={chain}
-                      onClick={() => setWithdrawalChain(chain)}
-                      className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                        withdrawalChain === chain
-                          ? 'bg-blue-600 text-white border border-blue-500'
-                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-transparent'
-                      }`}
-                    >
-                      {chain}
-                    </button>
-                  ))}
+                <div className="py-2 px-4 rounded-xl text-xs font-bold bg-blue-600 text-white border border-blue-500 text-center">
+                  Solana (USDT)
                 </div>
               </div>
               {/* 지갑 주소 */}
@@ -603,7 +591,16 @@ export default function MyPage() {
             {/* 포인트 잔액 */}
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] text-slate-500 uppercase tracking-wider">{t("totalPoints")}</span>
-              <span className="text-sm font-black text-green-400">{user?.total_points?.toLocaleString() || '0'} P</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black text-green-400">{user?.total_points?.toLocaleString() || '0'} P</span>
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = '/points'; }}
+                  className="text-[10px] font-black px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg hover:bg-green-500/20 transition-all"
+                >
+                  {locale === 'ko' ? '관리 →' : 'Manage →'}
+                </button>
+              </div>
             </div>
 
             {/* 남은 추천 보상 횟수 */}
