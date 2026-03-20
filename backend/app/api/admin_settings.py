@@ -16,6 +16,7 @@ class SettingsResponse(BaseModel):
     telegram_enabled: bool
     referral_bonus_percent: int
     joy_per_usdt: float
+    usdt_display_percent: int
 
 
 @router.get("", response_model=SettingsResponse)
@@ -29,6 +30,7 @@ def get_settings(
         telegram_enabled=bool(settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID),
         referral_bonus_percent=rate.referral_bonus_percent if rate else 10,
         joy_per_usdt=float(rate.joy_per_usdt) if rate else 5.0,
+        usdt_display_percent=rate.usdt_display_percent if rate else 50,
     )
 
 
@@ -50,6 +52,26 @@ def update_referral_bonus(
     rate.referral_bonus_percent = data.referral_bonus_percent
     db.commit()
     return {"ok": True, "referral_bonus_percent": rate.referral_bonus_percent}
+
+
+class UsdtDisplayPercentUpdate(BaseModel):
+    usdt_display_percent: int
+
+
+@router.put("/usdt-display-percent")
+def update_usdt_display_percent(
+    data: UsdtDisplayPercentUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    if data.usdt_display_percent < 1 or data.usdt_display_percent > 100:
+        raise HTTPException(400, "퍼센트는 1~100 사이여야 합니다")
+    rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
+    if not rate:
+        raise HTTPException(404, "환율 설정을 찾을 수 없습니다")
+    rate.usdt_display_percent = data.usdt_display_percent
+    db.commit()
+    return {"ok": True, "usdt_display_percent": rate.usdt_display_percent}
 
 
 class ExchangeRateUpdate(BaseModel):

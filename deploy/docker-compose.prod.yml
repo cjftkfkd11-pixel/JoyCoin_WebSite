@@ -22,7 +22,6 @@ services:
     env_file:
       - ./env/.env
     environment:
-      - DB_URL=${DB_URL:-postgresql+psycopg://app:app@db:5432/app}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
     depends_on:
       db:

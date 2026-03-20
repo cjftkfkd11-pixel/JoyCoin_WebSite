@@ -31,7 +31,7 @@ export default function BuyPage() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [depositInfo, setDepositInfo] = useState<{ id: number; address: string; amount: number; joyAmount: number; chain: string } | null>(null);
   const [joyPerUsdt, setJoyPerUsdt] = useState(5.0);
-  const [selectedChain, setSelectedChain] = useState('Polygon');
+  const [selectedChain, setSelectedChain] = useState('Solana');
   const [showConsent, setShowConsent] = useState(false);
   const [consentChecks, setConsentChecks] = useState({
     notInvestment: false,
@@ -41,9 +41,7 @@ export default function BuyPage() {
   });
 
   const chains = [
-    { id: 'Polygon', label: 'Polygon', color: 'purple' },
-    { id: 'Ethereum', label: 'Ethereum', color: 'blue' },
-    { id: 'TRON', label: 'TRON (TRC-20)', color: 'red' },
+    { id: 'Solana', label: 'Solana (USDT)', color: 'purple' },
   ];
 
   const API_BASE_URL = getApiBaseUrl();
@@ -188,7 +186,7 @@ export default function BuyPage() {
             <div className="space-y-3">
               <div className="bg-slate-800 p-4 rounded-xl">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-slate-400">{locale === 'ko' ? `USDT 입금 주소 (${depositInfo.chain})` : `USDT Address (${depositInfo.chain})`}</span>
+                  <span className="text-xs text-slate-400">{locale === 'ko' ? `USDT 입금 주소 (Solana 네트워크)` : `USDT Address (Solana Network)`}</span>
                   <button type="button" onClick={copyAddress} className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 bg-blue-500/10 rounded touch-manipulation">
                     {locale === 'ko' ? '복사' : 'Copy'}
                   </button>
@@ -210,7 +208,7 @@ export default function BuyPage() {
               <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-xl text-xs text-yellow-400">
                 <p className="font-semibold mb-1">{locale === 'ko' ? '⚠️ 주의사항' : '⚠️ Important'}</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>{locale === 'ko' ? `반드시 ${depositInfo.chain} 네트워크로 입금해주세요` : `Send via ${depositInfo.chain} network only`}</li>
+                  <li>{locale === 'ko' ? `반드시 Solana 네트워크로 입금해주세요 (SPL USDT)` : `Send via Solana network only (SPL USDT)`}</li>
                   <li>{locale === 'ko' ? '소수점 포함 정확한 금액을 입금해주세요 (예: 200.37 USDT)' : 'Send the exact amount including decimals (e.g. 200.37 USDT)'}</li>
                   <li>{locale === 'ko' ? '다른 네트워크로 전송 시 복구 불가' : 'Wrong network = unrecoverable'}</li>
                 </ul>

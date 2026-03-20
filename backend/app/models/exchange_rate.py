@@ -22,6 +22,9 @@ class ExchangeRate(Base):
     # 추천인 보너스 퍼센트 (구매 USDT의 ?% 포인트 적립)
     referral_bonus_percent: Mapped[int] = mapped_column(Integer, default=10, nullable=False)
 
+    # US Admin에게 표시할 USDT 비율 (실제 수령액의 ?% 표시)
+    usdt_display_percent: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
+
     # 현재 활성화된 환율인지
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     

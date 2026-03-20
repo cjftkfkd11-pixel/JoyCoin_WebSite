@@ -13,6 +13,7 @@ from app.models.notification import Notification
 from app.models.legal_consent import LegalConsent
 from app.models.point_withdrawal import PointWithdrawal
 from app.models.joy_withdrawal import JoyWithdrawal
+from app.models.usdt_withdrawal import UsdtWithdrawal
 
 __all__ = [
     "User",
@@ -28,4 +29,5 @@ __all__ = [
     "LegalConsent",
     "PointWithdrawal",
     "JoyWithdrawal",
+    "UsdtWithdrawal",
 ]

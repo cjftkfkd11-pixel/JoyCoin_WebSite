@@ -209,9 +209,16 @@ export default function SignupPage() {
             value={formData.confirm} onChange={e => setFormData({...formData, confirm: e.target.value})} />
 
           <div>
+            <div className="mb-1.5 p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+              <p className="text-[11px] sm:text-xs text-purple-300 font-semibold">
+                {locale === 'ko'
+                  ? '🔮 Phantom 지갑의 Solana 기반 JOY 코인 수령 주소를 입력하세요'
+                  : '🔮 Enter your Phantom wallet address (Solana network) to receive JOY coins'}
+              </p>
+            </div>
             <input
               type="text"
-              placeholder={locale === 'ko' ? 'JOY 수령 지갑 주소' : 'JOY receiving wallet address'}
+              placeholder={locale === 'ko' ? 'Solana 지갑 주소 (Phantom)' : 'Solana wallet address (Phantom)'}
               required
               className="w-full bg-slate-900/50 border border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl outline-none focus:border-blue-500 text-sm sm:text-base"
               value={formData.wallet_address}

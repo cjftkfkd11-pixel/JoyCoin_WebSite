@@ -10,16 +10,12 @@ from app.services.telegram import notify_new_deposit_request
 
 def _get_address_for_chain(chain: str) -> str:
     """체인에 맞는 입금 주소 반환"""
-    if chain == "TRON":
-        addr = settings.USDT_ADMIN_ADDRESS_TRON
+    if chain == "Solana":
+        addr = settings.USDT_ADMIN_ADDRESS_SOLANA
         if not addr:
-            raise ValueError("USDT_ADMIN_ADDRESS_TRON is not configured")
+            raise ValueError("USDT_ADMIN_ADDRESS_SOLANA is not configured")
         return addr
-    else:  # Polygon, Ethereum (EVM 공용)
-        addr = settings.USDT_ADMIN_ADDRESS
-        if not addr:
-            raise ValueError("USDT_ADMIN_ADDRESS is not configured")
-        return addr
+    raise ValueError(f"지원하지 않는 체인입니다: {chain}")
 
 
 def _generate_unique_decimal(db: Session, base_amount: float, chain: str) -> float:

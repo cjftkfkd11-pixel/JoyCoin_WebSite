@@ -198,6 +198,30 @@ def notify_withdrawal_approved(
     return send_telegram_notification(message)
 
 
+def notify_usdt_withdrawal_request(
+    requester_email: str,
+    amount: float,
+    note: str | None,
+    withdrawal_id: int,
+    total_usdt: float,
+):
+    """미국어드민 USDT 출금 신청 알림 (슈퍼어드민에게)"""
+    message = f"""
+<b>💰 USDT 출금 신청 (미국어드민)</b>
+
+신청자: {requester_email}
+출금 신청액: {amount:,.2f} USDT
+현재 총 USDT: {total_usdt:,.2f} USDT
+메모: {note or '없음'}
+요청 ID: #{withdrawal_id}
+
+시간: {now_kst()}
+
+슈퍼관리자 대시보드에서 확정해 주세요.
+"""
+    return send_telegram_notification(message)
+
+
 def notify_deposit_unmatched(amount: float, sender: str, tx_hash: str, chain: str):
     """매칭 실패 알림 (pending 요청 없음)"""
     url = _explorer_url(chain, tx_hash)

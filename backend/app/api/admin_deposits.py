@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import func as sqlfunc
 
 from app.core.db import get_db
-from app.core.auth import get_current_admin
+from app.core.auth import get_current_admin, get_current_any_admin
 from app.models import DepositRequest, User, Point, ExchangeRate
 from app.schemas.deposits import DepositRequestOut, AdminDepositRequestOut
 from app.services.telegram import notify_deposit_approved
@@ -33,7 +33,7 @@ class RejectIn(BaseModel):
 def list_deposits(
     status: Optional[str] = Query(None, description="pending|approved|rejected"),
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(get_current_any_admin),  # 슈퍼어드민 + 미국어드민 조회 가능
 ):
     q = db.query(DepositRequest).options(joinedload(DepositRequest.user)).order_by(DepositRequest.created_at.desc())
     if status:
@@ -166,7 +166,7 @@ def reject_deposit(
 @router.get("/stats")
 def get_deposit_stats(
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(get_current_any_admin),
 ):
     total_users = db.query(sqlfunc.count(User.id)).scalar()
     total_deposits = db.query(sqlfunc.count(DepositRequest.id)).scalar()

@@ -21,6 +21,7 @@ from app.api.consents import router as consents_router
 from app.api.points import router as points_router
 from app.api.withdrawals import router as withdrawals_router
 from app.api.admin_withdrawals import router as admin_withdrawals_router
+from app.api.us_admin import router as us_admin_router
 
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect, text
@@ -103,22 +104,16 @@ def on_startup():
     logger.info("Generating recovery codes for existing users...")
     generate_recovery_codes()
 
-    # 지갑 모니터링 백그라운드 스레드 시작 (Polygon/Ethereum/TRON)
-    has_evm = settings.USDT_ADMIN_ADDRESS and settings.POLYGONSCAN_API_KEY
-    has_tron = settings.USDT_ADMIN_ADDRESS_TRON
-    if has_evm or has_tron:
+    # 지갑 모니터링 백그라운드 스레드 시작 (Solana)
+    has_solana = settings.USDT_ADMIN_ADDRESS_SOLANA
+    if has_solana:
         import threading
         from app.services.wallet_monitor import wallet_monitor_loop
-        chains = []
-        if has_evm:
-            chains.extend(["Polygon", "Ethereum"])
-        if has_tron:
-            chains.append("TRON")
         monitor_thread = threading.Thread(target=wallet_monitor_loop, daemon=True)
         monitor_thread.start()
-        logger.info(f"Wallet monitor started for: {', '.join(chains)}")
+        logger.info("Wallet monitor started for: Solana")
     else:
-        logger.warning("Wallet monitor NOT started - no chain addresses configured")
+        logger.warning("Wallet monitor NOT started - USDT_ADMIN_ADDRESS_SOLANA not configured")
 
     logger.info("Application startup complete.")
 
@@ -295,3 +290,4 @@ app.include_router(consents_router)
 app.include_router(points_router)
 app.include_router(withdrawals_router)
 app.include_router(admin_withdrawals_router)
+app.include_router(us_admin_router)

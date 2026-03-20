@@ -29,10 +29,29 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="차단된 계정입니다. 관리자에게 문의하세요.")
     return user
 
-# 2. [추가] 관리자 확인 경비원 (쿠키 기반)
+# 2. 슈퍼어드민 확인 경비원 (쿠키 기반)
 def get_current_admin(current_user: User = Depends(get_current_user)):
-    # 유저의 role이 'admin'인지 확인합니다.
     if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="슈퍼관리자 권한이 없습니다."
+        )
+    return current_user
+
+
+# 4. 미국어드민 확인 경비원 (us_admin 또는 admin 허용)
+def get_current_us_admin(current_user: User = Depends(get_current_user)):
+    if current_user.role not in ("admin", "us_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="미국관리자 권한이 없습니다."
+        )
+    return current_user
+
+
+# 5. 어드민 이상 (admin, us_admin) - 조회 전용 용도
+def get_current_any_admin(current_user: User = Depends(get_current_user)):
+    if current_user.role not in ("admin", "us_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="관리자 권한이 없습니다."

@@ -60,6 +60,24 @@ interface JoyWithdrawal {
   user: { id: number; email: string; username: string };
 }
 
+interface UsdtStats {
+  total_received_usdt: number;
+  total_withdrawn_usdt: number;
+  pending_withdrawal_usdt: number;
+  available_usdt: number;
+}
+
+interface UsdtWithdrawal {
+  id: number;
+  amount: number;
+  note: string | null;
+  status: string;
+  admin_notes: string | null;
+  requester_email: string | null;
+  created_at: string;
+  confirmed_at: string | null;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
@@ -72,7 +90,10 @@ export default function AdminDashboard() {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'deposits' | 'sectors' | 'users' | 'products' | 'withdrawals'>('deposits');
+  const [activeTab, setActiveTab] = useState<'deposits' | 'sectors' | 'users' | 'products' | 'withdrawals' | 'usdt'>('deposits');
+  const [usdtStats, setUsdtStats] = useState<UsdtStats | null>(null);
+  const [usdtWithdrawals, setUsdtWithdrawals] = useState<UsdtWithdrawal[]>([]);
+  const [usdtProcessingId, setUsdtProcessingId] = useState<number | null>(null);
   const [withdrawals, setWithdrawals] = useState<JoyWithdrawal[]>([]);
   const [withdrawalProcessingId, setWithdrawalProcessingId] = useState<number | null>(null);
   const [withdrawalStatusFilter, setWithdrawalStatusFilter] = useState<string>('pending');
@@ -86,6 +107,7 @@ export default function AdminDashboard() {
   const [referralBonus, setReferralBonus] = useState(10);
   const [joyPerUsdt, setJoyPerUsdt] = useState(5.0);
   const [joyPerUsdtInput, setJoyPerUsdtInput] = useState('5.0');
+  const [usdtDisplayPercent, setUsdtDisplayPercent] = useState(50);
   const [stats, setStats] = useState<Stats | null>(null);
   const [sectorFilter, setSectorFilter] = useState<string>('all');
 
@@ -103,15 +125,28 @@ export default function AdminDashboard() {
     fetchSettings();
     fetchStats();
     fetchWithdrawals();
+    fetchUsdtData();
 
     // 30초마다 자동 갱신
     const interval = setInterval(() => {
       fetchDeposits();
       fetchStats();
       fetchWithdrawals();
+      fetchUsdtData();
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchUsdtData = async () => {
+    try {
+      const [statsRes, withdrawalsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/us-admin/stats`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/us-admin/withdraw-requests`, { credentials: 'include' }),
+      ]);
+      if (statsRes.ok) setUsdtStats(await statsRes.json());
+      if (withdrawalsRes.ok) setUsdtWithdrawals(await withdrawalsRes.json());
+    } catch {}
+  };
 
   const fetchDeposits = async () => {
     try {
@@ -145,6 +180,9 @@ export default function AdminDashboard() {
           setJoyPerUsdt(data.joy_per_usdt);
           setJoyPerUsdtInput(String(data.joy_per_usdt));
         }
+        if (data.usdt_display_percent) {
+          setUsdtDisplayPercent(data.usdt_display_percent);
+        }
       }
     } catch {}
   };
@@ -158,6 +196,18 @@ export default function AdminDashboard() {
       if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
       setReferralBonus(points);
       toast(t("referralBonusUpdated").replace('{points}', String(points)), "success");
+    } catch (err: any) { toast(err.message, "error"); }
+  };
+
+  const handleUsdtDisplayPercentChange = async (pct: number) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/settings/usdt-display-percent`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ usdt_display_percent: pct })
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
+      setUsdtDisplayPercent(pct);
+      toast(`USDT 표시 비율이 ${pct}%로 변경되었습니다.`, "success");
     } catch (err: any) { toast(err.message, "error"); }
   };
 
@@ -512,6 +562,17 @@ export default function AdminDashboard() {
             {withdrawals.filter(w => w.status === 'pending').length > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                 {withdrawals.filter(w => w.status === 'pending').length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('usdt')}
+            className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${activeTab === 'usdt' ? 'bg-green-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
+          >
+            💰 USDT 관리
+            {usdtWithdrawals.filter(w => w.status === 'pending').length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                {usdtWithdrawals.filter(w => w.status === 'pending').length}
               </span>
             )}
           </button>
@@ -990,6 +1051,34 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* US Admin USDT 표시 비율 설정 */}
+              <div className="space-y-4">
+                <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] italic">US ADMIN USDT 표시 비율</h2>
+                <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/40">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-black text-white">USDT 표시 비율</h3>
+                      <p className="text-xs text-slate-500 mt-1">US Admin 대시보드에 표시할 실제 수령액 비율</p>
+                    </div>
+                    <span className="text-3xl font-black italic text-blue-400">{usdtDisplayPercent}%</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[10, 20, 30, 50, 70].map(pct => (
+                      <button
+                        key={pct}
+                        onClick={() => handleUsdtDisplayPercentChange(pct)}
+                        className={`py-3 rounded-xl text-sm font-black transition-all ${usdtDisplayPercent === pct
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white'
+                        }`}
+                      >
+                        {pct}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* 섹터별 기여분 */}
               <div className="space-y-4">
                 <h2 className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] italic">{t("sectorContribution")}</h2>
@@ -1132,6 +1221,116 @@ export default function AdminDashboard() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+          {/* USDT 관리 탭 - 별도 조건부 렌더링 */}
+          {activeTab === 'usdt' && (
+            <div className="space-y-6">
+              {/* USDT 통계 카드 */}
+              {usdtStats && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-2xl border border-green-500/20 bg-green-500/5">
+                    <p className="text-[10px] text-slate-400 uppercase mb-1">총 수령 USDT</p>
+                    <p className="text-2xl font-black text-green-400">{usdtStats.total_received_usdt.toFixed(2)}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5">
+                    <p className="text-[10px] text-slate-400 uppercase mb-1">확정 출금</p>
+                    <p className="text-2xl font-black text-red-400">{usdtStats.total_withdrawn_usdt.toFixed(2)}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
+                    <p className="text-[10px] text-slate-400 uppercase mb-1">대기 중 출금</p>
+                    <p className="text-2xl font-black text-yellow-400">{usdtStats.pending_withdrawal_usdt.toFixed(2)}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
+                    <p className="text-[10px] text-slate-400 uppercase mb-1">가용 USDT</p>
+                    <p className="text-2xl font-black text-blue-400">{usdtStats.available_usdt.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* USDT 출금 신청 목록 */}
+              <div>
+                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">미국어드민 출금 신청 내역</h3>
+                <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800 bg-slate-900/40">
+                        <th className="px-4 py-3 font-black">ID</th>
+                        <th className="px-4 py-3 font-black">신청자</th>
+                        <th className="px-4 py-3 font-black">금액</th>
+                        <th className="px-4 py-3 font-black">메모</th>
+                        <th className="px-4 py-3 font-black">상태</th>
+                        <th className="px-4 py-3 font-black">신청일</th>
+                        <th className="px-4 py-3 font-black text-right">처리</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/30">
+                      {usdtWithdrawals.length === 0 ? (
+                        <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600 italic">출금 신청 내역 없음</td></tr>
+                      ) : usdtWithdrawals.map(w => (
+                        <tr key={w.id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
+                          <td className="px-4 py-4 text-blue-300">{w.requester_email || '-'}</td>
+                          <td className="px-4 py-4 font-black text-green-400">{w.amount.toFixed(2)} USDT</td>
+                          <td className="px-4 py-4 text-slate-400">{w.note || '-'}</td>
+                          <td className="px-4 py-4">
+                            <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
+                              w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                              w.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>
+                              {w.status === 'pending' ? '대기' : w.status === 'confirmed' ? '확정' : '거절'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-slate-500">{new Date(w.created_at).toLocaleDateString('ko-KR')}</td>
+                          <td className="px-4 py-4 text-right">
+                            {w.status === 'pending' && (
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  disabled={usdtProcessingId === w.id}
+                                  onClick={async () => {
+                                    if (!confirm(`${w.amount.toFixed(2)} USDT 출금을 확정하시겠습니까?`)) return;
+                                    setUsdtProcessingId(w.id);
+                                    try {
+                                      const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/confirm`, {
+                                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                        credentials: 'include', body: JSON.stringify({ admin_notes: null }),
+                                      });
+                                      if (res.ok) { toast('출금 확정 완료', 'success'); fetchUsdtData(); }
+                                      else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                    } finally { setUsdtProcessingId(null); }
+                                  }}
+                                  className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50"
+                                >
+                                  확정
+                                </button>
+                                <button
+                                  disabled={usdtProcessingId === w.id}
+                                  onClick={async () => {
+                                    if (!confirm('출금 신청을 거절하시겠습니까?')) return;
+                                    setUsdtProcessingId(w.id);
+                                    try {
+                                      const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/reject`, {
+                                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                        credentials: 'include', body: JSON.stringify({ admin_notes: null }),
+                                      });
+                                      if (res.ok) { toast('거절 처리 완료', 'success'); fetchUsdtData(); }
+                                      else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                    } finally { setUsdtProcessingId(null); }
+                                  }}
+                                  className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50"
+                                >
+                                  거절
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}

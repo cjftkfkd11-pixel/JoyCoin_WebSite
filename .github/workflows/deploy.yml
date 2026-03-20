@@ -19,5 +19,6 @@ jobs:
             cd ~/JoyCoin_WebSite
             git pull origin main
             cd deploy
+            sudo docker compose -f docker-compose.prod.yml build --no-cache web
             sudo NEXT_PUBLIC_API_BASE_URL=https://joycoinweb.com/api docker compose -f docker-compose.prod.yml build --no-cache frontend
             sudo docker compose -f docker-compose.prod.yml up -d

@@ -13,8 +13,9 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:3000"
 
     # 체인별 USDT 입금 주소
-    USDT_ADMIN_ADDRESS: str | None = None          # Polygon/Ethereum (EVM 공용)
-    USDT_ADMIN_ADDRESS_TRON: str | None = None      # TRON (TRC-20)
+    USDT_ADMIN_ADDRESS: str | None = None          # Polygon/Ethereum (EVM 공용, 레거시)
+    USDT_ADMIN_ADDRESS_TRON: str | None = None      # TRON (TRC-20, 레거시)
+    USDT_ADMIN_ADDRESS_SOLANA: str | None = None   # Solana (SPL USDT)
 
     # 이미 쓰고 있는 슈퍼관리자
     SUPER_ADMIN_EMAIL: str | None = None

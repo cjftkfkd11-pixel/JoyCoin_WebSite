@@ -5,7 +5,7 @@ from typing import Optional
 
 
 class DepositRequestIn(BaseModel):
-    chain: str = Field(..., pattern="^(Polygon|Ethereum|TRON)$")
+    chain: str = Field(..., pattern="^(Solana)$")
     amount_usdt: float = Field(..., gt=0, le=1_000_000, description="USDT 금액 (0 초과, 100만 이하)")
 
 
