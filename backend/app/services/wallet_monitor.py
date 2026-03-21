@@ -199,7 +199,7 @@ def fetch_solana_usdt_transfers(token_account: str, limit: int = 30) -> list[dic
                 continue
 
             try:
-                tx_result = _solana_rpc("getParsedTransaction", [
+                tx_result = _solana_rpc("getTransaction", [
                     sig,
                     {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0},
                 ])
