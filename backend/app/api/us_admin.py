@@ -103,7 +103,7 @@ def request_usdt_withdrawal(
             amount=data.amount,
             note=data.note,
             withdrawal_id=withdrawal.id,
-            total_usdt=total_received,
+            total_usdt=total_received_actual,
         )
     except Exception as e:
         print(f"텔레그램 알림 실패 (무시): {e}")

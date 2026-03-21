@@ -48,7 +48,7 @@ def request_withdrawal(
     if not data.wallet_address or len(data.wallet_address.strip()) < 6:
         raise HTTPException(400, "유효한 지갑 주소를 입력해주세요.")
 
-    valid_chains = ["Polygon", "Ethereum", "TRON"]
+    valid_chains = ["Solana"]
     if data.chain not in valid_chains:
         raise HTTPException(400, f"지원하지 않는 체인입니다. ({', '.join(valid_chains)})")
 
