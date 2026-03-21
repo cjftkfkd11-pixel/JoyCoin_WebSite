@@ -92,7 +92,7 @@ export default function MyPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] font-bold rounded-md">APPROVED</span>;
+      case 'pending': return <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-[10px] font-bold rounded-md">{t("pending").toUpperCase()}</span>;
       case 'approved': return <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] font-bold rounded-md">{t("approved").toUpperCase()}</span>;
       case 'rejected': return <span className="px-2 py-1 bg-red-500/20 text-red-500 text-[10px] font-bold rounded-md">{t("rejected").toUpperCase()}</span>;
       default: return <span className="text-slate-500">{status}</span>;

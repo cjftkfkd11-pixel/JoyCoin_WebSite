@@ -11,7 +11,7 @@ from sqlalchemy import func as sqlfunc
 
 from app.core.db import get_db
 from app.core.auth import get_current_admin, get_current_any_admin
-from app.models import DepositRequest, User, Point, ExchangeRate
+from app.models import DepositRequest, User, Point, ExchangeRate, Notification
 from app.schemas.deposits import DepositRequestOut, AdminDepositRequestOut
 from app.services.telegram import notify_deposit_approved
 
@@ -117,6 +117,16 @@ def approve_deposit(
             user.total_points = int(user.total_points or 0) + bonus_points
             user.referral_reward_remaining = remaining - 1
 
+    # 사용자 알림 생성 (승인)
+    import json
+    notif = Notification(
+        user_id=user.id,
+        title="deposit_approved",
+        message=json.dumps({"amount": int(dr.actual_amount or dr.expected_amount), "joy": int(dr.joy_amount or 0)}),
+        type="deposit_approved",
+        is_read=False,
+    )
+    db.add(notif)
     db.commit()
     db.refresh(dr)
 
@@ -154,9 +164,19 @@ def reject_deposit(
 
     dr.status = "rejected"
     dr.admin_id = admin.id
-    if payload and payload.admin_notes:
-        dr.admin_notes = payload.admin_notes
+    reason = payload.admin_notes if payload and payload.admin_notes else "사유 없음"
+    dr.admin_notes = reason
 
+    # 사용자 알림 생성 (거절)
+    import json
+    notif = Notification(
+        user_id=dr.user_id,
+        title="deposit_rejected",
+        message=json.dumps({"amount": float(dr.expected_amount), "reason": reason}),
+        type="deposit_rejected",
+        is_read=False,
+    )
+    db.add(notif)
     db.commit()
     db.refresh(dr)
     return dr

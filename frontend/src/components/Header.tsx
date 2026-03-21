@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useAuth } from "@/lib/AuthContext";
 import { getApiBaseUrl } from "@/lib/apiBase";
@@ -21,6 +21,8 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const mobileNotifRef = useRef<HTMLDivElement>(null);
 
   const API_BASE_URL = getApiBaseUrl();
 
@@ -40,6 +42,20 @@ export default function Header() {
     };
     fetchNotifications();
   }, [isLoggedIn]);
+
+  // 외부 클릭 시 알림 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        notifRef.current && !notifRef.current.contains(e.target as Node) &&
+        mobileNotifRef.current && !mobileNotifRef.current.contains(e.target as Node)
+      ) {
+        setShowNotifDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -72,9 +88,34 @@ export default function Header() {
     return 'bg-blue-500/10 text-blue-400';
   };
 
+  const getNotifContent = (notif: NotificationItem): { title: string; message: string } => {
+    try {
+      const data = JSON.parse(notif.message);
+      const ko = locale === 'ko';
+      if (notif.type === 'deposit_approved') {
+        return {
+          title: ko ? '입금 승인 완료' : 'Deposit Approved',
+          message: ko
+            ? `${data.amount} USDT 입금이 승인되었습니다. ${Number(data.joy).toLocaleString()} JOY가 지급되었습니다.`
+            : `${data.amount} USDT deposit approved. ${Number(data.joy).toLocaleString()} JOY has been credited.`,
+        };
+      }
+      if (notif.type === 'deposit_rejected') {
+        return {
+          title: ko ? '입금 거절' : 'Deposit Rejected',
+          message: ko
+            ? `${data.amount} USDT 입금 요청이 거절되었습니다. 사유: ${data.reason}`
+            : `${data.amount} USDT deposit was rejected. Reason: ${data.reason}`,
+        };
+      }
+    } catch {}
+    // JSON 아닌 구형 알림은 그대로 표시
+    return { title: notif.title, message: notif.message };
+  };
+
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-[60] px-4 md:px-10 py-4 flex justify-between items-center bg-[#020617]/95 backdrop-blur-md border-b border-slate-800/50 overflow-hidden" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
+      <header className="fixed top-0 left-0 right-0 z-[60] px-4 md:px-10 py-4 flex justify-between items-center bg-[#020617]/95 backdrop-blur-md border-b border-slate-800/50" style={{ WebkitTransform: 'translateZ(0)', transform: 'translateZ(0)' }}>
         <div className="flex items-center space-x-4">
           <a href="/" className="text-2xl md:text-3xl font-black tracking-tighter text-blue-500 cursor-pointer drop-shadow-lg">
             JOYCOIN
@@ -114,7 +155,7 @@ export default function Header() {
 
           {/* Notification Bell (로그인 시에만) */}
           {isLoggedIn && (
-            <div className="relative hidden lg:block">
+            <div ref={notifRef} className="relative hidden lg:block">
               <button
                 type="button"
                 onClick={() => setShowNotifDropdown(!showNotifDropdown)}
@@ -143,15 +184,18 @@ export default function Header() {
                   </div>
                   {notifications.length > 0 ? (
                     <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {notifications.map((notif) => (
+                      {notifications.map((notif) => {
+                        const { title, message } = getNotifContent(notif);
+                        return (
                         <div key={notif.id} className={`p-3 rounded-lg text-xs ${getNotifStyle(notif.type)} ${notif.is_read ? 'opacity-50' : ''}`}>
-                          <div className="font-bold">{notif.title}</div>
-                          <div className="text-[10px] mt-1 opacity-80">{notif.message}</div>
+                          <div className="font-bold">{title}</div>
+                          <div className="text-[10px] mt-1 opacity-80">{message}</div>
                           {notif.created_at && (
-                            <div className="text-[9px] mt-1 opacity-50">{new Date(notif.created_at).toLocaleString('ko-KR')}</div>
+                            <div className="text-[9px] mt-1 opacity-50">{new Date(notif.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US')}</div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-slate-500 text-xs text-center py-4">{locale === 'ko' ? '알림이 없습니다' : 'No notifications'}</p>
@@ -178,6 +222,56 @@ export default function Header() {
               </div>
             ) : null}
           </div>
+
+          {/* Mobile Notification Bell */}
+          {isLoggedIn && (
+            <div ref={mobileNotifRef} className="relative lg:hidden">
+              <button
+                type="button"
+                onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                className="relative p-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {showNotifDropdown && (
+                <div className="absolute right-0 top-10 w-72 bg-slate-900/95 border border-slate-700/50 rounded-xl shadow-2xl p-4 z-[70]">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-bold text-white">{locale === 'ko' ? '알림' : 'Notifications'}</h3>
+                    {unreadCount > 0 && (
+                      <button onClick={clearNotifications} className="text-[10px] text-blue-400 hover:text-blue-300">
+                        {locale === 'ko' ? '모두 읽음' : 'Mark all read'}
+                      </button>
+                    )}
+                  </div>
+                  {notifications.length > 0 ? (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {notifications.map((notif) => {
+                        const { title, message } = getNotifContent(notif);
+                        return (
+                        <div key={notif.id} className={`p-3 rounded-lg text-xs ${getNotifStyle(notif.type)} ${notif.is_read ? 'opacity-50' : ''}`}>
+                          <div className="font-bold">{title}</div>
+                          <div className="text-[10px] mt-1 opacity-80">{message}</div>
+                          {notif.created_at && (
+                            <div className="text-[9px] mt-1 opacity-50">{new Date(notif.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US')}</div>
+                          )}
+                        </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-slate-500 text-xs text-center py-4">{locale === 'ko' ? '알림이 없습니다' : 'No notifications'}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Mobile Hamburger Button */}
           <button
