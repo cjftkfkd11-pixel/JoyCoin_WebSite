@@ -1,6 +1,8 @@
 # backend/app/api/withdrawals.py
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from pydantic import BaseModel
 from typing import List
 
@@ -11,6 +13,17 @@ from app.models.joy_withdrawal import JoyWithdrawal
 from app.services.telegram import notify_withdrawal_request
 
 router = APIRouter(prefix="/withdrawals", tags=["withdrawals"])
+
+# ──────────────────────────────────────────────
+# 수령(Claim) 제한 설정
+# ──────────────────────────────────────────────
+CLAIM_MIN_AMOUNT = 200          # 최소 수령 수량 (JOY)
+CLAIM_OPEN_HOUR = 10            # 수령 가능 시작 시간 (KST)
+CLAIM_CLOSE_HOUR = 17           # 수령 가능 종료 시간 (KST)
+CLAIM_MAX_PER_DAY = 1           # 하루 최대 수령 신청 횟수
+
+# KST 타임존 (UTC+9)
+KST = timezone(timedelta(hours=9))
 
 
 class WithdrawalIn(BaseModel):
@@ -38,10 +51,32 @@ def request_withdrawal(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    # 수량 검증
-    if data.amount <= 0:
-        raise HTTPException(400, "출금 수량은 1 이상이어야 합니다.")
+    # ── 운영시간 검증 (KST 10:00 ~ 17:00) ──
+    now_kst = datetime.now(KST)
+    if now_kst.hour < CLAIM_OPEN_HOUR or now_kst.hour >= CLAIM_CLOSE_HOUR:
+        raise HTTPException(
+            400,
+            f"수령 가능 시간은 {CLAIM_OPEN_HOUR}:00 ~ {CLAIM_CLOSE_HOUR}:00 (KST)입니다. "
+            f"현재 시간: {now_kst.strftime('%H:%M')} KST"
+        )
 
+    # ── 최소 수령 수량 검증 ──
+    if data.amount < CLAIM_MIN_AMOUNT:
+        raise HTTPException(400, f"최소 수령 수량은 {CLAIM_MIN_AMOUNT:,} JOY입니다.")
+
+    # ── 하루 1번 제한 검증 ──
+    today_start_kst = now_kst.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start_utc = today_start_kst.astimezone(timezone.utc).replace(tzinfo=None)
+
+    today_count = db.query(func.count(JoyWithdrawal.id)).filter(
+        JoyWithdrawal.user_id == user.id,
+        JoyWithdrawal.created_at >= today_start_utc,
+    ).scalar()
+
+    if today_count >= CLAIM_MAX_PER_DAY:
+        raise HTTPException(400, "오늘은 이미 수령 신청을 하셨습니다. 내일 다시 신청해주세요.")
+
+    # ── 수량 검증 ──
     if data.amount > int(user.total_joy or 0):
         raise HTTPException(400, f"보유 JOY({int(user.total_joy or 0):,})가 부족합니다.")
 
@@ -55,7 +90,7 @@ def request_withdrawal(
     # JOY 차감
     user.total_joy = int(user.total_joy or 0) - data.amount
 
-    # 출금 요청 생성
+    # 수령 요청 생성
     withdrawal = JoyWithdrawal(
         user_id=user.id,
         amount=data.amount,
@@ -88,6 +123,36 @@ def request_withdrawal(
         admin_notes=withdrawal.admin_notes,
         created_at=withdrawal.created_at.isoformat(),
     )
+
+
+# ── 수령 가능 상태 조회 API (프론트에서 사용) ──
+@router.get("/claim-status")
+def get_claim_status(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """현재 수령 가능 여부를 반환 (운영시간, 오늘 신청 횟수)"""
+    now_kst = datetime.now(KST)
+    is_open = CLAIM_OPEN_HOUR <= now_kst.hour < CLAIM_CLOSE_HOUR
+
+    today_start_kst = now_kst.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start_utc = today_start_kst.astimezone(timezone.utc).replace(tzinfo=None)
+
+    today_count = db.query(func.count(JoyWithdrawal.id)).filter(
+        JoyWithdrawal.user_id == user.id,
+        JoyWithdrawal.created_at >= today_start_utc,
+    ).scalar()
+
+    return {
+        "is_open": is_open,
+        "current_time_kst": now_kst.strftime("%H:%M"),
+        "open_hour": CLAIM_OPEN_HOUR,
+        "close_hour": CLAIM_CLOSE_HOUR,
+        "today_count": today_count,
+        "max_per_day": CLAIM_MAX_PER_DAY,
+        "can_claim": is_open and today_count < CLAIM_MAX_PER_DAY,
+        "min_amount": CLAIM_MIN_AMOUNT,
+    }
 
 
 @router.get("/my", response_model=List[WithdrawalOut])

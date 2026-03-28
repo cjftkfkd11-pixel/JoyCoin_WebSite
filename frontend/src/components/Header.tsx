@@ -94,18 +94,18 @@ export default function Header() {
       const ko = locale === 'ko';
       if (notif.type === 'deposit_approved') {
         return {
-          title: ko ? '입금 승인 완료' : 'Deposit Approved',
+          title: ko ? '구매 확인 완료' : 'Purchase Confirmed',
           message: ko
-            ? `${data.amount} USDT 입금이 승인되었습니다. ${Number(data.joy).toLocaleString()} JOY가 지급되었습니다.`
-            : `${data.amount} USDT deposit approved. ${Number(data.joy).toLocaleString()} JOY has been credited.`,
+            ? `${data.amount} USDT 구매가 확인되었습니다. ${Number(data.joy).toLocaleString()} JOY가 배정되었습니다.`
+            : `${data.amount} USDT purchase confirmed. ${Number(data.joy).toLocaleString()} JOY has been allocated.`,
         };
       }
       if (notif.type === 'deposit_rejected') {
         return {
-          title: ko ? '입금 거절' : 'Deposit Rejected',
+          title: ko ? '구매 반려' : 'Purchase Declined',
           message: ko
-            ? `${data.amount} USDT 입금 요청이 거절되었습니다. 사유: ${data.reason}`
-            : `${data.amount} USDT deposit was rejected. Reason: ${data.reason}`,
+            ? `${data.amount} USDT 구매 요청이 반려되었습니다. 사유: ${data.reason}`
+            : `${data.amount} USDT purchase was declined. Reason: ${data.reason}`,
         };
       }
     } catch {}

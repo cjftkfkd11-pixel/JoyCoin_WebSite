@@ -15,9 +15,11 @@ router = APIRouter(prefix="/points", tags=["points"])
 
 # ---------- Schemas ----------
 class WithdrawalRequestIn(BaseModel):
-    amount: int = Field(..., gt=0, description="출금할 포인트")
-    method: str = Field(..., pattern="^(bank|usdt)$", description="출금 방법: bank 또는 usdt")
-    account_info: str = Field(..., min_length=5, max_length=255, description="계좌번호 또는 지갑주소")
+    amount: int = Field(..., gt=0, description="전환할 JOY 포인트")
+    # method: "joy" 고정 (JOY 코인으로 전환), 기존 bank/usdt 호환 유지
+    method: str = Field(default="joy", description="전환 방식 (joy)")
+    # account_info: 회원 지갑 주소 자동 사용 (프론트에서 전달)
+    account_info: str = Field(default="", max_length=255, description="수령 지갑 주소")
 
 
 class WithdrawalOut(BaseModel):
@@ -77,22 +79,27 @@ def request_withdrawal(
     ).scalar()
 
     if data.amount > balance:
-        raise HTTPException(400, f"포인트 잔액이 부족합니다. 현재 잔액: {balance}")
+        raise HTTPException(400, f"JOY 포인트가 부족합니다. 현재: {balance}")
 
-    # 대기 중인 출금 신청이 있는지 확인
+    # 대기 중인 전환 신청이 있는지 확인
     pending = db.query(PointWithdrawal).filter(
         PointWithdrawal.user_id == user.id,
         PointWithdrawal.status == "pending"
     ).first()
     if pending:
-        raise HTTPException(400, "이미 대기 중인 출금 신청이 있습니다.")
+        raise HTTPException(400, "이미 대기 중인 전환 신청이 있습니다.")
 
-    # 출금 신청 생성
+    # 지갑 주소: 전달된 값 또는 사용자 등록 지갑
+    wallet = data.account_info.strip() if data.account_info.strip() else (user.wallet_address or "")
+    if not wallet or len(wallet) < 6:
+        raise HTTPException(400, "유효한 지갑 주소가 없습니다. 마이페이지에서 지갑 주소를 등록해주세요.")
+
+    # 전환 신청 생성
     withdrawal = PointWithdrawal(
         user_id=user.id,
         amount=data.amount,
-        method=data.method,
-        account_info=data.account_info,
+        method="joy",
+        account_info=wallet,
         status="pending",
     )
     db.add(withdrawal)
@@ -103,7 +110,7 @@ def request_withdrawal(
         amount=-data.amount,
         balance_after=balance - data.amount,
         type="withdraw_pending",
-        description=f"출금 신청 ({data.method}): {data.amount} 포인트",
+        description=f"JOY 코인 전환 신청: {data.amount} 포인트",
     )
     db.add(point_record)
 
@@ -222,7 +229,7 @@ def admin_reject_withdrawal(
             amount=w.amount,
             balance_after=current_balance + w.amount,
             type="withdraw_refund",
-            description=f"출금 거절로 인한 환불: {w.amount} 포인트",
+            description=f"전환 거절로 인한 환불: {w.amount} JOY 포인트",
         )
         db.add(refund_point)
 

@@ -111,10 +111,10 @@ export default function UsAdminDashboard() {
         setWithdrawAmount('');
         setWithdrawNote('');
         loadData();
-        alert('출금 신청이 완료되었습니다. 슈퍼관리자 확정 후 처리됩니다.');
+        alert('수령 신청이 완료되었습니다. 슈퍼관리자 확정 후 처리됩니다.');
       } else {
         const data = await res.json();
-        setWithdrawError(data.detail || '출금 신청에 실패했습니다.');
+        setWithdrawError(data.detail || '수령 신청에 실패했습니다.');
       }
     } catch {
       setWithdrawError('서버 오류가 발생했습니다.');
@@ -159,14 +159,14 @@ export default function UsAdminDashboard() {
       {showWithdrawModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 p-6 rounded-2xl w-full max-w-md border border-blue-500/20">
-            <h3 className="text-lg font-bold text-blue-400 mb-4">USDT 출금 신청</h3>
+            <h3 className="text-lg font-bold text-blue-400 mb-4">USDT 수령 신청</h3>
             <div className="mb-2 p-3 bg-slate-800 rounded-xl text-sm">
               <span className="text-slate-400">가용 USDT: </span>
               <span className="text-green-400 font-bold">{usdtStats?.available_usdt.toFixed(2)} USDT</span>
             </div>
             <input
               type="number"
-              placeholder="출금 금액 (USDT)"
+              placeholder="수령 금액 (USDT)"
               value={withdrawAmount}
               onChange={e => setWithdrawAmount(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl mb-3 text-white outline-none focus:border-blue-500"
@@ -202,14 +202,14 @@ export default function UsAdminDashboard() {
       <div className="bg-slate-900/50 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-blue-400">미국 관리자 대시보드</h1>
-          <p className="text-xs text-slate-500 mt-0.5">조회 전용 · USDT 출금 신청 가능</p>
+          <p className="text-xs text-slate-500 mt-0.5">조회 전용 · USDT 수령 신청 가능</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={() => setShowWithdrawModal(true)}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold transition-all"
           >
-            💰 USDT 출금 신청
+            💰 USDT 수령 신청
           </button>
           <button onClick={loadData} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm transition-all">
             새로고침
@@ -229,11 +229,11 @@ export default function UsAdminDashboard() {
               <p className="text-2xl font-bold text-green-400">{usdtStats.total_received_usdt.toFixed(2)}</p>
             </div>
             <div className="bg-slate-900/50 border border-red-500/20 rounded-xl p-4">
-              <p className="text-xs text-slate-400 mb-1">확정 출금</p>
+              <p className="text-xs text-slate-400 mb-1">확정 수령</p>
               <p className="text-2xl font-bold text-red-400">{usdtStats.total_withdrawn_usdt.toFixed(2)}</p>
             </div>
             <div className="bg-slate-900/50 border border-yellow-500/20 rounded-xl p-4">
-              <p className="text-xs text-slate-400 mb-1">대기 중 출금</p>
+              <p className="text-xs text-slate-400 mb-1">대기 중 수령</p>
               <p className="text-2xl font-bold text-yellow-400">{usdtStats.pending_withdrawal_usdt.toFixed(2)}</p>
             </div>
             <div className="bg-slate-900/50 border border-blue-500/20 rounded-xl p-4">
@@ -246,8 +246,8 @@ export default function UsAdminDashboard() {
         {/* 탭 */}
         <div className="flex gap-2 mb-6">
           {[
-            { id: 'overview', label: '입금 현황' },
-            { id: 'withdrawals', label: '출금 내역' },
+            { id: 'overview', label: '구매 현황' },
+            { id: 'withdrawals', label: '수령 내역' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -280,7 +280,7 @@ export default function UsAdminDashboard() {
                 <option value="all">전체</option>
                 <option value="pending">대기</option>
                 <option value="approved">승인</option>
-                <option value="rejected">거절</option>
+                <option value="rejected">반려</option>
               </select>
             </div>
 
@@ -360,7 +360,7 @@ export default function UsAdminDashboard() {
                     </tr>
                   ))}
                   {withdrawals.length === 0 && (
-                    <tr><td colSpan={7} className="p-8 text-center text-slate-500">출금 내역 없음</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-slate-500">수령 내역 없음</td></tr>
                   )}
                 </tbody>
               </table>

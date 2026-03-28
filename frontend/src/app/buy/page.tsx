@@ -120,7 +120,7 @@ export default function BuyPage() {
         });
         setMessage({
           type: 'success',
-          text: locale === 'ko' ? '입금 요청이 생성되었습니다!' : 'Deposit request created!'
+          text: locale === 'ko' ? '구매 요청이 생성되었습니다!' : 'Purchase request created!'
         });
         resetSelection();
       } else if (response.status === 401) {
@@ -128,7 +128,7 @@ export default function BuyPage() {
         setTimeout(() => router.push('/auth/login'), 2000);
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: error.detail || (locale === 'ko' ? "입금 요청 실패" : "Deposit request failed") });
+        setMessage({ type: 'error', text: error.detail || (locale === 'ko' ? "구매 요청 실패" : "Purchase request failed") });
       }
     } catch {
       setMessage({ type: 'error', text: locale === 'ko' ? "서버 연결에 실패했습니다." : "Server connection failed." });
@@ -172,7 +172,7 @@ export default function BuyPage() {
             <button onClick={closeDepositInfo} className="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-500 hover:text-white text-2xl">×</button>
 
             <h2 className="text-xl sm:text-2xl font-bold text-blue-400 mb-4 sm:mb-6 text-center">
-              {locale === 'ko' ? '입금 정보' : 'Deposit Info'}
+              {locale === 'ko' ? '구매 정보' : 'Purchase Info'}
             </h2>
 
             <div className="bg-white p-3 sm:p-4 rounded-xl mb-4 flex justify-center">
@@ -186,7 +186,7 @@ export default function BuyPage() {
             <div className="space-y-3">
               <div className="bg-slate-800 p-4 rounded-xl">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-slate-400">{locale === 'ko' ? `USDT 입금 주소 (Solana 네트워크)` : `USDT Address (Solana Network)`}</span>
+                  <span className="text-xs text-slate-400">{locale === 'ko' ? `USDT 전송 주소 (Solana 네트워크)` : `USDT Address (Solana Network)`}</span>
                   <button type="button" onClick={copyAddress} className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 bg-blue-500/10 rounded touch-manipulation">
                     {locale === 'ko' ? '복사' : 'Copy'}
                   </button>
@@ -196,7 +196,7 @@ export default function BuyPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-slate-800 p-4 rounded-xl text-center">
-                  <p className="text-xs text-slate-400 mb-1">{locale === 'ko' ? '입금 금액' : 'Amount'}</p>
+                  <p className="text-xs text-slate-400 mb-1">{locale === 'ko' ? '구매 금액' : 'Amount'}</p>
                   <p className="text-base sm:text-xl font-bold">{depositInfo.amount} USDT</p>
                 </div>
                 <div className="bg-blue-600/20 border border-blue-500/30 p-4 rounded-xl text-center">
@@ -208,7 +208,7 @@ export default function BuyPage() {
               <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-xl text-xs text-yellow-400">
                 <p className="font-semibold mb-1">{locale === 'ko' ? '⚠️ 주의사항' : '⚠️ Important'}</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>{locale === 'ko' ? `반드시 Solana 네트워크로 입금해주세요 (SPL USDT)` : `Send via Solana network only (SPL USDT)`}</li>
+                  <li>{locale === 'ko' ? `반드시 Solana 네트워크로 전송해주세요 (SPL USDT)` : `Send via Solana network only (SPL USDT)`}</li>
                   <li>{locale === 'ko' ? '소수점 포함 정확한 금액을 입금해주세요 (예: 200.37 USDT)' : 'Send the exact amount including decimals (e.g. 200.37 USDT)'}</li>
                   <li>{locale === 'ko' ? '다른 네트워크로 전송 시 복구 불가' : 'Wrong network = unrecoverable'}</li>
                 </ul>

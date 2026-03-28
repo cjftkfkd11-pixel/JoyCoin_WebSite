@@ -370,7 +370,7 @@ export default function AdminDashboard() {
     if (!rejectModal) return;
     const { id, userEmail } = rejectModal;
     if (!rejectReason.trim()) {
-      toast(locale === 'ko' ? '거절 사유를 입력해주세요.' : 'Please enter a reason.', 'warning');
+      toast(locale === 'ko' ? '반려 사유를 입력해주세요.' : 'Please enter a reason.', 'warning');
       return;
     }
     setRejectModal(null);
@@ -407,7 +407,7 @@ export default function AdminDashboard() {
   };
 
   const handleWithdrawalApprove = async (w: JoyWithdrawal) => {
-    if (!confirm(`${w.user.email} 의 ${w.amount.toLocaleString()} JOY 출금을 승인하시겠습니까?\n지갑: ${w.wallet_address}`)) return;
+    if (!confirm(`${w.user.email} 의 ${w.amount.toLocaleString()} JOY 수령을 승인하시겠습니까?\n지갑: ${w.wallet_address}`)) return;
     try {
       setWithdrawalProcessingId(w.id);
       const res = await fetch(`${API_BASE_URL}/admin/withdrawals/${w.id}/approve`, {
@@ -415,23 +415,23 @@ export default function AdminDashboard() {
         body: JSON.stringify({ admin_notes: '승인' })
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
-      toast('출금 승인 완료', 'success');
+      toast('수령 승인 완료', 'success');
       fetchWithdrawals();
     } catch (err: any) { toast(err.message, 'error'); }
     finally { setWithdrawalProcessingId(null); }
   };
 
   const handleWithdrawalReject = async (w: JoyWithdrawal) => {
-    const reason = prompt(`${w.user.email} 의 출금 요청을 거절하시겠습니까?\n거절 사유 입력:`);
+    const reason = prompt(`${w.user.email} 의 수령 요청을 반려하시겠습니까?\n반려 사유 입력:`);
     if (reason === null) return;
     try {
       setWithdrawalProcessingId(w.id);
       const res = await fetch(`${API_BASE_URL}/admin/withdrawals/${w.id}/reject`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ admin_notes: reason || '관리자 거절' })
+        body: JSON.stringify({ admin_notes: reason || '관리자 반려' })
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.detail); }
-      toast('출금 거절 완료 (JOY 복구됨)', 'info');
+      toast('수령 반려 완료 (JOY 복구됨)', 'info');
       fetchWithdrawals();
     } catch (err: any) { toast(err.message, 'error'); }
     finally { setWithdrawalProcessingId(null); }
@@ -583,7 +583,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab('payouts')}
             className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${activeTab === 'payouts' ? 'bg-orange-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
           >
-            출금 관리
+            수령 관리
             {(withdrawals.filter(w => w.status === 'pending').length + usdtWithdrawals.filter(w => w.status === 'pending').length + pointWithdrawals.filter(w => w.status === 'pending').length) > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                 {withdrawals.filter(w => w.status === 'pending').length + usdtWithdrawals.filter(w => w.status === 'pending').length + pointWithdrawals.filter(w => w.status === 'pending').length}
@@ -1140,7 +1140,7 @@ export default function AdminDashboard() {
                   onClick={() => setPayoutsSubTab('usdt')}
                   className={`px-5 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${payoutsSubTab === 'usdt' ? 'bg-green-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
                 >
-                  💰 USDT 출금 관리
+                  💰 USDT 수령 관리
                   {usdtWithdrawals.filter(w => w.status === 'pending').length > 0 && (
                     <span className="ml-2 text-yellow-300">({usdtWithdrawals.filter(w => w.status === 'pending').length})</span>
                   )}
@@ -1149,7 +1149,7 @@ export default function AdminDashboard() {
                   onClick={() => setPayoutsSubTab('points')}
                   className={`px-5 py-2 rounded-xl text-xs font-black uppercase transition-all relative ${payoutsSubTab === 'points' ? 'bg-emerald-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
                 >
-                  🟢 포인트 출금
+                  🟢 JOY 포인트 전환
                   {pointWithdrawals.filter(w => w.status === 'pending').length > 0 && (
                     <span className="ml-2 text-yellow-300">({pointWithdrawals.filter(w => w.status === 'pending').length})</span>
                   )}
@@ -1183,7 +1183,7 @@ export default function AdminDashboard() {
                         onClick={() => setWithdrawalStatusFilter(s)}
                         className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${withdrawalStatusFilter === s ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'}`}
                       >
-                        {s === 'pending' ? '대기' : s === 'approved' ? '승인' : '거절'}
+                        {s === 'pending' ? '대기' : s === 'approved' ? '승인' : '반려'}
                         {s === 'pending' && withdrawals.filter(w => w.status === 'pending').length > 0 && (
                           <span className="ml-1 text-yellow-400">({withdrawals.filter(w => w.status === 'pending').length})</span>
                         )}
@@ -1207,7 +1207,7 @@ export default function AdminDashboard() {
                       </thead>
                       <tbody className="text-xs divide-y divide-slate-800/30">
                         {withdrawals.filter(w => w.status === withdrawalStatusFilter).length === 0 ? (
-                          <tr><td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">출금 요청 없음</td></tr>
+                          <tr><td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">수령 요청 없음</td></tr>
                         ) : withdrawals.filter(w => w.status === withdrawalStatusFilter).map(w => (
                           <tr key={w.id} className="hover:bg-white/5 transition-colors">
                             <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
@@ -1229,7 +1229,7 @@ export default function AdminDashboard() {
                               {w.status === 'approved' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20">승인완료</span>}
                               {w.status === 'rejected' && (
                                 <div>
-                                  <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">거절</span>
+                                  <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">반려</span>
                                   {w.admin_notes && <p className="text-[9px] text-slate-500 mt-1">{w.admin_notes}</p>}
                                 </div>
                               )}
@@ -1243,7 +1243,7 @@ export default function AdminDashboard() {
                                   <button onClick={() => handleWithdrawalApprove(w)} disabled={withdrawalProcessingId === w.id}
                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 rounded-lg text-[10px] font-black transition-all">승인</button>
                                   <button onClick={() => handleWithdrawalReject(w)} disabled={withdrawalProcessingId === w.id}
-                                    className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all">거절</button>
+                                    className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all">반려</button>
                                 </div>
                               </td>
                             )}
@@ -1263,11 +1263,11 @@ export default function AdminDashboard() {
                         <p className="text-2xl font-black text-green-400">{usdtStats.total_received_usdt.toFixed(2)}</p>
                       </div>
                       <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5">
-                        <p className="text-[10px] text-slate-400 uppercase mb-1">확정 출금</p>
+                        <p className="text-[10px] text-slate-400 uppercase mb-1">확정 수령</p>
                         <p className="text-2xl font-black text-red-400">{usdtStats.total_withdrawn_usdt.toFixed(2)}</p>
                       </div>
                       <div className="p-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
-                        <p className="text-[10px] text-slate-400 uppercase mb-1">대기 중 출금</p>
+                        <p className="text-[10px] text-slate-400 uppercase mb-1">대기 중 수령</p>
                         <p className="text-2xl font-black text-yellow-400">{usdtStats.pending_withdrawal_usdt.toFixed(2)}</p>
                       </div>
                       <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
@@ -1278,7 +1278,7 @@ export default function AdminDashboard() {
                   )}
                   {/* USDT 출금 신청 목록 */}
                   <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">미국어드민 출금 신청 내역</h3>
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">미국어드민 수령 신청 내역</h3>
                     <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
                       <table className="w-full text-left text-xs">
                         <thead>
@@ -1294,7 +1294,7 @@ export default function AdminDashboard() {
                         </thead>
                         <tbody className="divide-y divide-slate-800/30">
                           {usdtWithdrawals.length === 0 ? (
-                            <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600 italic">출금 신청 내역 없음</td></tr>
+                            <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600 italic">수령 신청 내역 없음</td></tr>
                           ) : usdtWithdrawals.map(w => (
                             <tr key={w.id} className="hover:bg-white/5 transition-colors">
                               <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
@@ -1307,7 +1307,7 @@ export default function AdminDashboard() {
                                   w.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
                                   'bg-red-500/20 text-red-400'
                                 }`}>
-                                  {w.status === 'pending' ? '대기' : w.status === 'confirmed' ? '확정' : '거절'}
+                                  {w.status === 'pending' ? '대기' : w.status === 'confirmed' ? '확정' : '반려'}
                                 </span>
                               </td>
                               <td className="px-4 py-4 text-slate-500">{new Date(w.created_at).toLocaleDateString('ko-KR')}</td>
@@ -1316,32 +1316,32 @@ export default function AdminDashboard() {
                                   <div className="flex gap-2 justify-end">
                                     <button disabled={usdtProcessingId === w.id}
                                       onClick={async () => {
-                                        if (!confirm(`${w.amount.toFixed(2)} USDT 출금을 확정하시겠습니까?`)) return;
+                                        if (!confirm(`${w.amount.toFixed(2)} USDT 수령을 확정하시겠습니까?`)) return;
                                         setUsdtProcessingId(w.id);
                                         try {
                                           const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/confirm`, {
                                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                                             credentials: 'include', body: JSON.stringify({ admin_notes: null }),
                                           });
-                                          if (res.ok) { toast('출금 확정 완료', 'success'); fetchUsdtData(); }
+                                          if (res.ok) { toast('수령 확정 완료', 'success'); fetchUsdtData(); }
                                           else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
                                         } finally { setUsdtProcessingId(null); }
                                       }}
                                       className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50">확정</button>
                                     <button disabled={usdtProcessingId === w.id}
                                       onClick={async () => {
-                                        if (!confirm('출금 신청을 거절하시겠습니까?')) return;
+                                        if (!confirm('수령 신청을 반려하시겠습니까?')) return;
                                         setUsdtProcessingId(w.id);
                                         try {
                                           const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/reject`, {
                                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                                             credentials: 'include', body: JSON.stringify({ admin_notes: null }),
                                           });
-                                          if (res.ok) { toast('거절 처리 완료', 'success'); fetchUsdtData(); }
+                                          if (res.ok) { toast('반려 처리 완료', 'success'); fetchUsdtData(); }
                                           else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
                                         } finally { setUsdtProcessingId(null); }
                                       }}
-                                      className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50">거절</button>
+                                      className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50">반려</button>
                                   </div>
                                 )}
                               </td>
@@ -1355,7 +1355,7 @@ export default function AdminDashboard() {
               ) : (
                 /* 포인트 출금 관리 */
                 <div className="space-y-4">
-                  <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">포인트 출금 신청 내역</h3>
+                  <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">JOY 포인트 전환 신청 내역</h3>
                   <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
                     <table className="w-full text-left text-xs">
                       <thead>
@@ -1372,7 +1372,7 @@ export default function AdminDashboard() {
                       </thead>
                       <tbody className="divide-y divide-slate-800/30">
                         {pointWithdrawals.length === 0 ? (
-                          <tr><td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">포인트 출금 신청 없음</td></tr>
+                          <tr><td colSpan={8} className="px-4 py-16 text-center text-slate-600 italic">JOY 포인트 전환 신청 없음</td></tr>
                         ) : pointWithdrawals.map(pw => (
                           <tr key={pw.id} className="hover:bg-white/5 transition-colors">
                             <td className="px-4 py-4 font-mono text-slate-500">#{pw.id}</td>
@@ -1385,7 +1385,7 @@ export default function AdminDashboard() {
                               {pw.status === 'approved' && <span className="px-2 py-1 rounded-full text-[10px] font-black bg-green-500/10 text-green-400 border border-green-500/20">승인완료</span>}
                               {pw.status === 'rejected' && (
                                 <div>
-                                  <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">거절</span>
+                                  <span className="px-2 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">반려</span>
                                   {pw.admin_notes && <p className="text-[9px] text-slate-500 mt-1">{pw.admin_notes}</p>}
                                 </div>
                               )}
@@ -1399,13 +1399,13 @@ export default function AdminDashboard() {
                                   <button
                                     disabled={pointProcessingId === pw.id}
                                     onClick={async () => {
-                                      if (!confirm(`${pw.amount.toLocaleString()}P 출금을 승인하시겠습니까?`)) return;
+                                      if (!confirm(`${pw.amount.toLocaleString()}P 전환을 승인하시겠습니까?`)) return;
                                       setPointProcessingId(pw.id);
                                       try {
                                         const res = await fetch(`${API_BASE_URL}/points/admin/withdrawals/${pw.id}/approve`, {
                                           method: 'POST', credentials: 'include',
                                         });
-                                        if (res.ok) { toast('포인트 출금 승인 완료', 'success'); fetchPointWithdrawals(); }
+                                        if (res.ok) { toast('포인트 전환 승인 완료', 'success'); fetchPointWithdrawals(); }
                                         else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
                                       } finally { setPointProcessingId(null); }
                                     }}
@@ -1413,17 +1413,17 @@ export default function AdminDashboard() {
                                   <button
                                     disabled={pointProcessingId === pw.id}
                                     onClick={async () => {
-                                      if (!confirm('포인트 출금 신청을 거절하시겠습니까?')) return;
+                                      if (!confirm('포인트 전환 신청을 반려하시겠습니까?')) return;
                                       setPointProcessingId(pw.id);
                                       try {
                                         const res = await fetch(`${API_BASE_URL}/points/admin/withdrawals/${pw.id}/reject`, {
                                           method: 'POST', credentials: 'include',
                                         });
-                                        if (res.ok) { toast('거절 처리 완료', 'success'); fetchPointWithdrawals(); }
+                                        if (res.ok) { toast('반려 처리 완료', 'success'); fetchPointWithdrawals(); }
                                         else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
                                       } finally { setPointProcessingId(null); }
                                     }}
-                                    className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all">거절</button>
+                                    className="px-3 py-1.5 bg-red-600/30 hover:bg-red-600 disabled:opacity-50 rounded-lg text-[10px] font-black text-red-400 hover:text-white transition-all">반려</button>
                                 </div>
                               )}
                             </td>

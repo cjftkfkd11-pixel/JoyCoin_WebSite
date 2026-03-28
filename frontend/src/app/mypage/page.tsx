@@ -32,13 +32,15 @@ export default function MyPage() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletMessage, setWalletMessage] = useState({ type: '', text: '' });
 
-  // 출금 상태
+  // 수령 상태
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [withdrawalChain, setWithdrawalChain] = useState('Solana');
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [withdrawalMessage, setWithdrawalMessage] = useState({ type: '', text: '' });
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  // 수령 가능 상태
+  const [claimStatus, setClaimStatus] = useState<any>(null);
 
   // 알림 상태
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -74,10 +76,16 @@ export default function MyPage() {
           }
         }
 
-        // 출금 내역 로드
+        // 수령 내역 로드
         const withdrawalRes = await fetch(`${API_BASE_URL}/withdrawals/my`, { credentials: 'include' });
         if (withdrawalRes.ok) {
           setWithdrawals(await withdrawalRes.json());
+        }
+
+        // 수령 가능 상태 로드
+        const claimRes = await fetch(`${API_BASE_URL}/withdrawals/claim-status`, { credentials: 'include' });
+        if (claimRes.ok) {
+          setClaimStatus(await claimRes.json());
         }
       } catch (err) {
         console.error("데이터 로드 실패:", err);
@@ -107,7 +115,12 @@ export default function MyPage() {
   const handleWithdrawal = async () => {
     const amount = parseInt(withdrawalAmount);
     if (!amount || amount <= 0) {
-      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? '출금 수량을 입력하세요.' : 'Enter withdrawal amount.' });
+      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? '수령 수량을 입력하세요.' : 'Enter claim amount.' });
+      return;
+    }
+    const MIN_CLAIM = claimStatus?.min_amount || 200;
+    if (amount < MIN_CLAIM) {
+      setWithdrawalMessage({ type: 'error', text: locale === 'ko' ? `최소 수령 수량은 ${MIN_CLAIM.toLocaleString()} JOY입니다.` : `Minimum claim amount is ${MIN_CLAIM.toLocaleString()} JOY.` });
       return;
     }
     if (amount > (user?.total_joy || 0)) {
@@ -236,9 +249,43 @@ export default function MyPage() {
               {locale === 'ko' ? 'JOY 수령 신청' : 'JOY Claim Request'}
             </h2>
             <div className="space-y-4">
+              {/* 수령 안내 */}
+              <div className="p-3 bg-slate-800/50 border border-slate-700 rounded-xl space-y-1">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-500">{locale === 'ko' ? '수령 가능 시간' : 'Claim Hours'}</span>
+                  <span className={claimStatus?.is_open ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
+                    {claimStatus?.open_hour || 10}:00 ~ {claimStatus?.close_hour || 17}:00 KST
+                    {claimStatus?.is_open
+                      ? (locale === 'ko' ? ' (운영중)' : ' (OPEN)')
+                      : (locale === 'ko' ? ' (운영종료)' : ' (CLOSED)')}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-500">{locale === 'ko' ? '최소 수령 수량' : 'Min Amount'}</span>
+                  <span className="text-slate-300 font-bold">{(claimStatus?.min_amount || 200).toLocaleString()} JOY</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-500">{locale === 'ko' ? '오늘 신청' : 'Today'}</span>
+                  <span className={`font-bold ${(claimStatus?.today_count || 0) >= (claimStatus?.max_per_day || 1) ? 'text-red-400' : 'text-green-400'}`}>
+                    {claimStatus?.today_count || 0} / {claimStatus?.max_per_day || 1}{locale === 'ko' ? '회' : 'x'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 수령 불가 시 안내 */}
+              {claimStatus && !claimStatus.can_claim && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+                  <p className="text-xs font-bold text-red-400">
+                    {!claimStatus.is_open
+                      ? (locale === 'ko' ? `현재 수령 가능 시간이 아닙니다 (${claimStatus.open_hour}:00~${claimStatus.close_hour}:00 KST)` : `Claim is available ${claimStatus.open_hour}:00~${claimStatus.close_hour}:00 KST only`)
+                      : (locale === 'ko' ? '오늘은 이미 수령 신청을 하셨습니다. 내일 다시 신청해주세요.' : 'You have already claimed today. Please try again tomorrow.')}
+                  </p>
+                </div>
+              )}
+
               {/* 보유 JOY */}
               <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
-                <span className="text-xs text-slate-400">{locale === 'ko' ? '구매한 JOY' : 'My JOY'}</span>
+                <span className="text-xs text-slate-400">{locale === 'ko' ? '보유 JOY' : 'My JOY'}</span>
                 <span className="font-black text-blue-400">{user?.total_joy?.toLocaleString() || '0'} JOY</span>
               </div>
               {/* 수량 입력 */}
@@ -251,8 +298,8 @@ export default function MyPage() {
                     type="number"
                     value={withdrawalAmount}
                     onChange={(e) => setWithdrawalAmount(e.target.value)}
-                    placeholder="0"
-                    min="1"
+                    placeholder={`${locale === 'ko' ? '최소' : 'Min'} ${(claimStatus?.min_amount || 200).toLocaleString()}`}
+                    min={claimStatus?.min_amount || 200}
                     max={user?.total_joy || 0}
                     className="flex-1 bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-mono"
                   />
@@ -270,7 +317,7 @@ export default function MyPage() {
                   {locale === 'ko' ? '네트워크' : 'Network'}
                 </label>
                 <div className="py-2 px-4 rounded-xl text-xs font-bold bg-blue-600 text-white border border-blue-500 text-center">
-                  Solana (USDT)
+                  Solana
                 </div>
               </div>
               {/* 지갑 주소 */}
@@ -296,7 +343,7 @@ export default function MyPage() {
               )}
               <button
                 onClick={handleWithdrawal}
-                disabled={withdrawalLoading || !user?.wallet_address}
+                disabled={withdrawalLoading || !user?.wallet_address || (claimStatus && !claimStatus.can_claim)}
                 className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl font-black transition-all"
               >
                 {withdrawalLoading ? (locale === 'ko' ? '처리 중...' : 'Processing...') : (locale === 'ko' ? '수령 신청' : 'Request Claim')}
@@ -328,8 +375,8 @@ export default function MyPage() {
                     <span className="text-lg">{notif.status === 'approved' ? '✅' : '❌'}</span>
                     <span className={`text-sm font-black ${notif.status === 'approved' ? 'text-green-400' : 'text-red-400'}`}>
                       {notif.status === 'approved'
-                        ? (locale === 'ko' ? '입금 승인됨' : 'Deposit Approved')
-                        : (locale === 'ko' ? '입금 거절됨' : 'Deposit Rejected')
+                        ? (locale === 'ko' ? '구매 확인 완료' : 'Purchase Confirmed')
+                        : (locale === 'ko' ? '구매 반려' : 'Purchase Declined')
                       }
                     </span>
                   </div>
@@ -716,7 +763,7 @@ export default function MyPage() {
                       <td className="py-3 sm:py-4 pr-2">
                         {w.status === 'pending' && <span className="px-2 py-1 bg-yellow-500/20 text-yellow-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '처리중' : 'PENDING'}</span>}
                         {w.status === 'approved' && <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '완료' : 'DONE'}</span>}
-                        {w.status === 'rejected' && <span className="px-2 py-1 bg-red-500/20 text-red-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '거절' : 'REJECTED'}</span>}
+                        {w.status === 'rejected' && <span className="px-2 py-1 bg-red-500/20 text-red-500 text-[10px] font-bold rounded-md">{locale === 'ko' ? '반려' : 'DECLINED'}</span>}
                       </td>
                       <td className="py-3 sm:py-4 text-right text-slate-500 whitespace-nowrap">
                         {new Date(w.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
