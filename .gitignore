@@ -7,6 +7,7 @@ build/
 # Frontend subdir (explicit)
 frontend/node_modules/
 frontend/.next/
+frontend/next-env.d.ts
 frontend/.next-dev/
 frontend/.next_*/
 frontend/dev*.log
@@ -17,6 +18,10 @@ frontend/out/
 .env
 .env.*
 *.env
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/
 
 # OS/editor
 .DS_Store
