@@ -147,6 +147,16 @@ export default function UsAdminDashboard() {
     return map[status] || 'bg-slate-700 text-slate-400';
   };
 
+  const statusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      pending: '확인 중',
+      approved: '확인 완료',
+      rejected: '반려',
+      confirmed: '확정',
+    };
+    return map[status] || status;
+  };
+
   if (isLoading) return (
     <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
       <p className="text-slate-400">로딩 중...</p>
@@ -311,7 +321,7 @@ export default function UsAdminDashboard() {
                         <td className="p-3 text-right text-blue-400">{d.joy_amount.toLocaleString()}</td>
                         <td className="p-3 text-center">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusBadge(d.status)}`}>
-                            {d.status}
+                            {statusLabel(d.status)}
                           </span>
                         </td>
                         <td className="p-3 text-slate-500 text-xs">{new Date(d.created_at).toLocaleDateString('ko-KR')}</td>
@@ -352,7 +362,7 @@ export default function UsAdminDashboard() {
                       <td className="p-3 text-slate-400 text-xs">{w.note || '-'}</td>
                       <td className="p-3 text-center">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusBadge(w.status)}`}>
-                          {w.status}
+                          {statusLabel(w.status)}
                         </span>
                       </td>
                       <td className="p-3 text-slate-500 text-xs">{new Date(w.created_at).toLocaleDateString('ko-KR')}</td>
