@@ -11,6 +11,7 @@ frontend/.next-dev/
 frontend/.next_*/
 frontend/dev*.log
 frontend/start*.log
+frontend/out/
 
 # Env files
 .env
