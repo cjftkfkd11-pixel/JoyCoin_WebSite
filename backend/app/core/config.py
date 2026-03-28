@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # 블록체인 API 키
     POLYGONSCAN_API_KEY: str | None = None         # Etherscan V2 (Polygon + Ethereum)
     TRONGRID_API_KEY: str | None = None            # TronGrid (TRON)
-    WALLET_POLL_INTERVAL_SECONDS: int = 60
+    WALLET_POLL_INTERVAL_SECONDS: int = 90  # 무료 RPC 안정성 위해 90초 (기존 60초)
 
 
 settings = Settings()

@@ -2,6 +2,7 @@
 import time
 import logging
 import requests
+from collections import OrderedDict
 from app.core.config import settings
 from app.services.telegram import (
     notify_deposit_detected,
@@ -16,15 +17,48 @@ logger = logging.getLogger(__name__)
 SOLANA_USDT_MINT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
 SOLANA_RPC = "https://api.mainnet-beta.solana.com"
 
-# 이미 처리한 tx_hash (중복 방지)
-_notified_txs: set[str] = set()
+# ──────────────────────────────────────────────
+# [개선 1] LRU 방식 중복 방지 (기존: set → clear 시 전체 삭제 위험)
+# OrderedDict를 사용해 오래된 것부터 제거하여 메모리 누수 없이 중복 방지
+# ──────────────────────────────────────────────
+_MAX_KNOWN_TXS = 2000  # 최대 저장 개수
+_notified_txs: OrderedDict[str, bool] = OrderedDict()
+
+
+def _add_known_tx(key: str):
+    """처리 완료된 tx를 LRU 캐시에 추가 (오래된 것부터 자동 제거)"""
+    _notified_txs[key] = True
+    # 최대 개수를 넘으면 가장 오래된 것부터 제거 (clear 대신 점진적 삭제)
+    while len(_notified_txs) > _MAX_KNOWN_TXS:
+        _notified_txs.popitem(last=False)
+
+
+def _is_known_tx(key: str) -> bool:
+    """이미 처리한 tx인지 확인"""
+    return key in _notified_txs
+
 
 # 관리자 USDT 토큰 계정 주소 (캐시)
 _solana_token_account: str | None = None
 
+# [개선 2] 마지막으로 확인한 signature 저장 → 이후 새 tx만 조회
+_last_known_signature: str | None = None
+
+# [개선 3] 연속 에러 카운터 → 에러 시 폴링 간격 자동 증가
+_consecutive_errors: int = 0
 
 # ──────────────────────────────────────────────
-# 입금 매칭 로직 (공통)
+# [개선 4] RPC 호출 간 딜레이 설정
+# 무료 Solana RPC는 초당 ~10회 제한
+# 호출 사이에 최소 딜레이를 두어 rate limit 회피
+# ──────────────────────────────────────────────
+_RPC_CALL_DELAY = 0.3        # RPC 호출 사이 최소 대기 시간 (초)
+_BACKOFF_MAX_WAIT = 60       # exponential backoff 최대 대기 시간 (초)
+_BACKOFF_MAX_RETRIES = 4     # 최대 재시도 횟수 (1→2→4→8초 후 포기)
+
+
+# ──────────────────────────────────────────────
+# 입금 매칭 로직 (공통) — 변경 없음
 # ──────────────────────────────────────────────
 def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: str):
     """
@@ -153,11 +187,61 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
 # ──────────────────────────────────────────────
 # Solana SPL USDT 모니터링
 # ──────────────────────────────────────────────
+
 def _solana_rpc(method: str, params: list) -> dict:
-    payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-    resp = requests.post(SOLANA_RPC, json=payload, timeout=20)
-    resp.raise_for_status()
-    return resp.json()
+    """
+    [개선 5] Solana RPC 호출 + exponential backoff 재시도
+
+    429 (Too Many Requests) 발생 시:
+      1차 재시도: 1초 대기
+      2차 재시도: 2초 대기
+      3차 재시도: 4초 대기
+      4차 재시도: 8초 대기
+      → 그래도 실패하면 예외 발생 (다음 폴링 주기에 재시도)
+
+    모든 RPC 호출 후 _RPC_CALL_DELAY만큼 대기하여 초당 호출 수 제한
+    """
+    last_error = None
+
+    for attempt in range(_BACKOFF_MAX_RETRIES + 1):
+        try:
+            payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+            resp = requests.post(SOLANA_RPC, json=payload, timeout=20)
+
+            # 429 발생 → backoff 후 재시도
+            if resp.status_code == 429:
+                wait = min(2 ** attempt, _BACKOFF_MAX_WAIT)
+                logger.warning(
+                    f"RPC 429 rate limited ({method}), "
+                    f"attempt {attempt + 1}/{_BACKOFF_MAX_RETRIES + 1}, "
+                    f"waiting {wait}s..."
+                )
+                time.sleep(wait)
+                continue
+
+            resp.raise_for_status()
+
+            # [개선 6] 호출 성공 후 다음 호출까지 딜레이
+            # 연속 호출로 rate limit에 걸리는 것을 방지
+            time.sleep(_RPC_CALL_DELAY)
+
+            return resp.json()
+
+        except requests.exceptions.HTTPError as e:
+            if resp.status_code == 429:
+                last_error = e
+                continue  # 위에서 이미 처리됨
+            raise  # 429 이외의 HTTP 에러는 즉시 발생
+        except requests.exceptions.RequestException as e:
+            # 네트워크 에러 (타임아웃 등)도 backoff 적용
+            wait = min(2 ** attempt, _BACKOFF_MAX_WAIT)
+            logger.warning(f"RPC network error ({method}): {e}, waiting {wait}s...")
+            last_error = e
+            time.sleep(wait)
+
+    # 모든 재시도 실패
+    logger.error(f"RPC {method} failed after {_BACKOFF_MAX_RETRIES + 1} attempts")
+    raise last_error or Exception(f"RPC {method} failed")
 
 
 def get_solana_usdt_token_account(wallet_address: str) -> str | None:
@@ -178,93 +262,145 @@ def get_solana_usdt_token_account(wallet_address: str) -> str | None:
         return None
 
 
-def fetch_solana_usdt_transfers(token_account: str, limit: int = 30) -> list[dict]:
-    """Solana USDT 입금 내역 조회"""
+def _fetch_new_signatures(token_account: str, limit: int = 15) -> list[dict]:
+    """
+    [개선 7] 새로운 signature만 가져오기
+
+    기존 문제: 매번 최근 30개 signature를 전부 가져와서,
+    각각에 대해 getTransaction을 호출 → 대부분 이미 처리한 tx를 중복 조회
+
+    개선: _last_known_signature 이후의 새 tx만 조회
+    - until 파라미터: 마지막으로 본 signature 이후만 가져옴
+    - limit도 30 → 15로 줄임 (90초 간격이면 15개면 충분)
+    """
+    global _last_known_signature
+
     try:
-        # 최근 서명 목록
+        # until 파라미터로 마지막 확인 이후의 새 tx만 가져오기
+        params: dict = {"limit": limit}
+        if _last_known_signature:
+            params["until"] = _last_known_signature
+
         sig_result = _solana_rpc("getSignaturesForAddress", [
             token_account,
-            {"limit": limit},
+            params,
         ])
         signatures = sig_result.get("result", [])
 
-        transfers = []
-        for sig_info in signatures:
-            sig = sig_info.get("signature")
-            if not sig or sig_info.get("err"):
-                continue
+        # 새 signature가 있으면 가장 최신 것을 기록
+        # (signatures는 최신순 정렬이므로 첫 번째가 가장 최신)
+        if signatures:
+            _last_known_signature = signatures[0].get("signature")
 
-            key = f"Solana:{sig}"
-            if key in _notified_txs:
-                continue
-
-            try:
-                tx_result = _solana_rpc("getTransaction", [
-                    sig,
-                    {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0},
-                ])
-                tx = tx_result.get("result")
-                if not tx:
-                    continue
-
-                # SPL 토큰 transfer 명령어 파싱
-                instructions = (
-                    tx.get("transaction", {})
-                    .get("message", {})
-                    .get("instructions", [])
-                )
-                # inner instructions도 확인
-                inner = tx.get("meta", {}).get("innerInstructions", [])
-                all_instructions = list(instructions)
-                for inner_group in inner:
-                    all_instructions.extend(inner_group.get("instructions", []))
-
-                for ix in all_instructions:
-                    if ix.get("program") != "spl-token":
-                        continue
-                    parsed = ix.get("parsed", {})
-                    if parsed.get("type") not in ("transfer", "transferChecked"):
-                        continue
-                    info = parsed.get("info", {})
-                    dest = info.get("destination") or info.get("destination", "")
-                    if dest != token_account:
-                        continue
-
-                    # 금액 파싱
-                    token_amount = info.get("tokenAmount", {})
-                    ui_amount = token_amount.get("uiAmount") if token_amount else None
-                    if ui_amount is None:
-                        raw = int(info.get("amount", 0))
-                        ui_amount = raw / 1_000_000  # USDT 6 decimals
-
-                    sender = info.get("authority") or info.get("source", "unknown")
-                    transfers.append({
-                        "tx_hash": sig,
-                        "amount": round(float(ui_amount), 2),
-                        "sender": sender,
-                    })
-                    break  # 같은 tx에서 첫 번째 매칭만
-
-            except Exception as e:
-                logger.error(f"Solana tx parse error ({sig[:16]}...): {e}")
-                continue
-
-        return transfers
+        return signatures
 
     except Exception as e:
-        logger.error(f"Solana fetch error: {e}")
+        logger.error(f"Solana getSignaturesForAddress error: {e}")
         return []
 
 
+def fetch_solana_usdt_transfers(token_account: str, limit: int = 15) -> list[dict]:
+    """
+    [개선 8] Solana USDT 입금 내역 조회 (최적화)
+
+    변경점:
+    - _fetch_new_signatures()로 새 tx만 가져옴 (중복 조회 제거)
+    - getTransaction 호출 사이에 딜레이 (_solana_rpc 내부에서 처리)
+    - 이미 알려진 tx는 건너뜀
+    """
+    signatures = _fetch_new_signatures(token_account, limit=limit)
+
+    if not signatures:
+        return []
+
+    # 새 signature 중 아직 처리 안 한 것만 필터링
+    new_sigs = []
+    for sig_info in signatures:
+        sig = sig_info.get("signature")
+        if not sig or sig_info.get("err"):
+            continue
+        key = f"Solana:{sig}"
+        if _is_known_tx(key):
+            continue
+        new_sigs.append(sig)
+
+    if not new_sigs:
+        logger.debug("No new signatures to process")
+        return []
+
+    logger.info(f"Found {len(new_sigs)} new signatures to check")
+
+    # [개선 9] 새 tx만 getTransaction 호출 (딜레이는 _solana_rpc 내부에서 처리)
+    transfers = []
+    for sig in new_sigs:
+        try:
+            tx_result = _solana_rpc("getTransaction", [
+                sig,
+                {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0},
+            ])
+            tx = tx_result.get("result")
+            if not tx:
+                # tx가 없으면 이미 알려진 것으로 표시 (다음에 다시 조회 안 함)
+                _add_known_tx(f"Solana:{sig}")
+                continue
+
+            # SPL 토큰 transfer 명령어 파싱
+            instructions = (
+                tx.get("transaction", {})
+                .get("message", {})
+                .get("instructions", [])
+            )
+            inner = tx.get("meta", {}).get("innerInstructions", [])
+            all_instructions = list(instructions)
+            for inner_group in inner:
+                all_instructions.extend(inner_group.get("instructions", []))
+
+            for ix in all_instructions:
+                if ix.get("program") != "spl-token":
+                    continue
+                parsed = ix.get("parsed", {})
+                if parsed.get("type") not in ("transfer", "transferChecked"):
+                    continue
+                info = parsed.get("info", {})
+                dest = info.get("destination") or info.get("destination", "")
+                if dest != token_account:
+                    continue
+
+                # 금액 파싱
+                token_amount = info.get("tokenAmount", {})
+                ui_amount = token_amount.get("uiAmount") if token_amount else None
+                if ui_amount is None:
+                    raw = int(info.get("amount", 0))
+                    ui_amount = raw / 1_000_000  # USDT 6 decimals
+
+                sender = info.get("authority") or info.get("source", "unknown")
+                transfers.append({
+                    "tx_hash": sig,
+                    "amount": round(float(ui_amount), 2),
+                    "sender": sender,
+                })
+                break  # 같은 tx에서 첫 번째 매칭만
+
+        except Exception as e:
+            logger.error(f"Solana tx parse error ({sig[:16]}...): {e}")
+            # 에러 발생한 tx도 기록하여 다음에 다시 시도하지 않음
+            # (단, 429 에러는 _solana_rpc 내부에서 재시도하므로 여기 도달 시 진짜 실패)
+            _add_known_tx(f"Solana:{sig}")
+            continue
+
+    return transfers
+
+
 def _process_solana_txs(transfers: list[dict]):
+    """감지된 입금을 DB와 매칭하고 처리 완료 표시"""
     for t in transfers:
         key = f"Solana:{t['tx_hash']}"
-        if key in _notified_txs:
+        if _is_known_tx(key):
             continue
 
         amount = t["amount"]
         if amount <= 0:
-            _notified_txs.add(key)
+            _add_known_tx(key)
             continue
 
         logger.info(f"[Solana] USDT deposit: {amount} from {t['sender']} (tx: {t['tx_hash'][:16]}...)")
@@ -274,32 +410,69 @@ def _process_solana_txs(transfers: list[dict]):
             tx_hash=t["tx_hash"],
             chain="Solana",
         )
-        _notified_txs.add(key)
+        _add_known_tx(key)
 
 
 # ──────────────────────────────────────────────
 # 통합 폴링
 # ──────────────────────────────────────────────
 def _init_known_txs():
-    """서버 시작 시 기존 트랜잭션 등록 (중복 알림 방지)"""
-    global _solana_token_account
+    """
+    [개선 10] 서버 시작 시 기존 트랜잭션 등록 (중복 알림 방지)
+
+    기존 문제: 시작할 때 50개 signature를 가져와서 각각 getTransaction 호출
+    → 서버 시작마다 최대 52회 RPC 호출 → 429 위험
+
+    개선: signature 목록만 가져와서 "이미 처리한 것"으로 등록
+    → getTransaction 호출 0회 (2회만 사용: getTokenAccountsByOwner + getSignaturesForAddress)
+    → 시작 직후에는 새 tx만 감지
+    """
+    global _solana_token_account, _last_known_signature
 
     solana_addr = settings.USDT_ADMIN_ADDRESS_SOLANA
-    if solana_addr:
-        try:
-            _solana_token_account = get_solana_usdt_token_account(solana_addr)
-            if _solana_token_account:
-                transfers = fetch_solana_usdt_transfers(_solana_token_account, limit=50)
-                for t in transfers:
-                    _notified_txs.add(f"Solana:{t['tx_hash']}")
-                logger.info(f"Solana: {len(transfers)} existing txs marked as known")
-        except Exception as e:
-            logger.error(f"Solana init error: {e}")
+    if not solana_addr:
+        return
+
+    try:
+        _solana_token_account = get_solana_usdt_token_account(solana_addr)
+        if not _solana_token_account:
+            return
+
+        # signature 목록만 가져오기 (getTransaction 호출 안 함!)
+        sig_result = _solana_rpc("getSignaturesForAddress", [
+            _solana_token_account,
+            {"limit": 30},
+        ])
+        signatures = sig_result.get("result", [])
+
+        # 모든 기존 signature를 "이미 처리한 것"으로 등록
+        for sig_info in signatures:
+            sig = sig_info.get("signature")
+            if sig:
+                _add_known_tx(f"Solana:{sig}")
+
+        # 가장 최신 signature 기록 → 다음 폴링부터 이후만 조회
+        if signatures:
+            _last_known_signature = signatures[0].get("signature")
+
+        logger.info(
+            f"Solana init: {len(signatures)} existing signatures marked as known "
+            f"(RPC calls: 2, getTransaction: 0)"
+        )
+
+    except Exception as e:
+        logger.error(f"Solana init error: {e}")
 
 
 def poll_wallet_once():
-    """1회 폴링: Solana USDT 입금 감지"""
-    global _solana_token_account
+    """
+    [개선 11] 1회 폴링: Solana USDT 입금 감지
+
+    변경점:
+    - 에러 발생 시 _consecutive_errors 증가 → 폴링 간격 자동 증가
+    - 성공 시 에러 카운터 초기화
+    """
+    global _solana_token_account, _consecutive_errors
 
     solana_addr = settings.USDT_ADMIN_ADDRESS_SOLANA
     if not solana_addr:
@@ -312,16 +485,23 @@ def poll_wallet_once():
     if _solana_token_account:
         transfers = fetch_solana_usdt_transfers(_solana_token_account)
         _process_solana_txs(transfers)
-
-    # 메모리 관리
-    if len(_notified_txs) > 3000:
-        _notified_txs.clear()
+        # 성공 시 에러 카운터 초기화
+        _consecutive_errors = 0
 
 
 def wallet_monitor_loop():
-    """백그라운드 스레드: 주기적으로 Solana 폴링"""
-    interval = settings.WALLET_POLL_INTERVAL_SECONDS or 60
-    logger.info(f"Wallet monitor started (Solana, polling every {interval}s)")
+    """
+    [개선 12] 백그라운드 스레드: 주기적으로 Solana 폴링
+
+    변경점:
+    - 기본 폴링 간격: 90초 (기존 60초)
+    - 에러 발생 시 간격 자동 증가 (90→180→360초, 최대 600초)
+    - 연속 성공 시 기본 간격으로 복귀
+    """
+    global _consecutive_errors
+
+    base_interval = settings.WALLET_POLL_INTERVAL_SECONDS or 90
+    logger.info(f"Wallet monitor started (Solana, base polling every {base_interval}s)")
 
     _init_known_txs()
 
@@ -329,5 +509,15 @@ def wallet_monitor_loop():
         try:
             poll_wallet_once()
         except Exception as e:
-            logger.error(f"Wallet monitor error: {e}")
+            _consecutive_errors += 1
+            logger.error(f"Wallet monitor error (consecutive: {_consecutive_errors}): {e}")
+
+        # [개선 13] 에러 시 폴링 간격 자동 증가 (adaptive interval)
+        # 연속 에러가 많을수록 대기 시간 증가 → RPC 서버 부담 감소
+        if _consecutive_errors > 0:
+            interval = min(base_interval * (2 ** _consecutive_errors), 600)
+            logger.info(f"Increased polling interval to {interval}s (errors: {_consecutive_errors})")
+        else:
+            interval = base_interval
+
         time.sleep(interval)
