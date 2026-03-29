@@ -22,6 +22,8 @@ export default function Footer() {
           <Link href="/legal/privacy" className="hover:text-cyan-400 transition-colors py-1">Privacy Policy</Link>
           <span>·</span>
           <Link href="/legal/token" className="hover:text-cyan-400 transition-colors py-1">Token Nature</Link>
+          <span>·</span>
+          <Link href="/legal/disclaimer" className="hover:text-cyan-400 transition-colors py-1">Disclaimer</Link>
         </div>
       </div>
     </footer>
