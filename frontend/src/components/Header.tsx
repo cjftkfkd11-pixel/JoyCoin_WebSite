@@ -94,18 +94,18 @@ export default function Header() {
       const ko = locale === 'ko';
       if (notif.type === 'deposit_approved') {
         return {
-          title: ko ? '구매 확인 완료' : 'Purchase Confirmed',
+          title: ko ? '입금 승인 완료' : 'Deposit Approved',
           message: ko
-            ? `${data.amount} USDT 구매가 확인되었습니다. ${Number(data.joy).toLocaleString()} JOY가 배정되었습니다.`
-            : `${data.amount} USDT purchase confirmed. ${Number(data.joy).toLocaleString()} JOY has been allocated.`,
+            ? `${data.amount} USDT 입금이 승인되었습니다. ${Number(data.joy).toLocaleString()} JOY가 지급되었습니다.`
+            : `${data.amount} USDT deposit approved. ${Number(data.joy).toLocaleString()} JOY has been credited.`,
         };
       }
       if (notif.type === 'deposit_rejected') {
         return {
-          title: ko ? '구매 반려' : 'Purchase Declined',
+          title: ko ? '입금 거절' : 'Deposit Rejected',
           message: ko
-            ? `${data.amount} USDT 구매 요청이 반려되었습니다. 사유: ${data.reason}`
-            : `${data.amount} USDT purchase was declined. Reason: ${data.reason}`,
+            ? `${data.amount} USDT 입금 요청이 거절되었습니다. 사유: ${data.reason}`
+            : `${data.amount} USDT deposit was rejected. Reason: ${data.reason}`,
         };
       }
     } catch {}
@@ -140,8 +140,18 @@ export default function Header() {
               <>
                 <a href="/mypage" className="hover:text-blue-400 transition-colors">{t("myPage")}</a>
                 <a href="/buy" className="hover:text-blue-400 transition-colors">{t("buy")}</a>
-                {user?.role === "admin" && (
-                  <a href="/admin/dashboard" className="hover:text-yellow-400 transition-colors text-yellow-500">{t("admin")}</a>
+                {(user?.role === "admin" || user?.role === "us_admin" || user?.role === "sector_manager") && (
+                  <a href="/admin/dashboard" className={`transition-colors font-semibold ${
+                    user?.role === "sector_manager" ? "text-cyan-400 hover:text-cyan-300" :
+                    user?.role === "us_admin" ? "text-green-400 hover:text-green-300" :
+                    "text-yellow-500 hover:text-yellow-400"
+                  }`}>
+                    {user?.role === "sector_manager"
+                      ? (locale === "ko" ? "섹터관리" : "Sector")
+                      : user?.role === "us_admin"
+                      ? (locale === "ko" ? "US관리자" : "US Admin")
+                      : t("admin")}
+                  </a>
                 )}
               </>
             ) : (
@@ -309,9 +319,17 @@ export default function Header() {
                   <a href="/buy" onClick={closeMobileMenu} className="text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-800/50 transition-colors">
                     {t("buy")}
                   </a>
-                  {user?.role === "admin" && (
-                    <a href="/admin/dashboard" onClick={closeMobileMenu} className="text-yellow-500 font-semibold py-3 px-4 rounded-xl hover:bg-slate-800/50 transition-colors">
-                      {t("admin")}
+                  {(user?.role === "admin" || user?.role === "us_admin" || user?.role === "sector_manager") && (
+                    <a href="/admin/dashboard" onClick={closeMobileMenu} className={`font-semibold py-3 px-4 rounded-xl hover:bg-slate-800/50 transition-colors ${
+                      user?.role === "sector_manager" ? "text-cyan-400" :
+                      user?.role === "us_admin" ? "text-green-400" :
+                      "text-yellow-500"
+                    }`}>
+                      {user?.role === "sector_manager"
+                        ? (locale === "ko" ? "섹터관리" : "Sector")
+                        : user?.role === "us_admin"
+                        ? (locale === "ko" ? "US관리자" : "US Admin")
+                        : t("admin")}
                     </a>
                   )}
                   <button
