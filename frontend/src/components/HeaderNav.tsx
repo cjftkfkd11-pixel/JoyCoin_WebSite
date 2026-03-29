@@ -25,14 +25,13 @@ export default function HeaderNav() {
             <a href="/buy" className="hover:text-blue-400 transition-colors">
               {t("buy")}
             </a>
-            {user?.role === 'admin' && (
-              <a href="/admin/dashboard" className="text-yellow-400 hover:text-yellow-300 transition-colors">
-                {locale === 'ko' ? '관리자' : 'Admin'}
-              </a>
-            )}
-            {user?.role === 'sector_manager' && (
-              <a href="/sector/dashboard" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                {locale === 'ko' ? '섹터관리' : 'Sector'}
+            {(user?.role === 'admin' || user?.role === 'us_admin' || user?.role === 'sector_manager') && (
+              <a href="/admin/dashboard" className={`transition-colors ${user?.role === 'sector_manager' ? 'text-cyan-400 hover:text-cyan-300' : user?.role === 'us_admin' ? 'text-green-400 hover:text-green-300' : 'text-yellow-400 hover:text-yellow-300'}`}>
+                {user?.role === 'sector_manager'
+                  ? (locale === 'ko' ? '섹터관리' : 'Sector')
+                  : user?.role === 'us_admin'
+                  ? (locale === 'ko' ? 'US관리자' : 'US Admin')
+                  : (locale === 'ko' ? '관리자' : 'Admin')}
               </a>
             )}
             <button onClick={handleLogout} className="hover:text-red-400 transition-colors">

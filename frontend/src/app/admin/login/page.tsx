@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
         const meRes = await fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' });
         if (meRes.ok) {
           const me = await meRes.json();
-          if (me.role !== 'admin') {
+          if (!['admin', 'us_admin', 'sector_manager'].includes(me.role)) {
             // 권한 없으면 로그아웃 후 에러 표시
             await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
             toast(t("notAdminRole"), "error");
