@@ -85,6 +85,7 @@ interface UsdtStats {
 interface UsdtWithdrawal {
   id: number;
   amount: number;
+  to_address: string | null;
   note: string | null;
   status: string;
   admin_notes: string | null;
@@ -152,6 +153,11 @@ export default function AdminDashboard() {
   // 거절 모달 상태
   const [rejectModal, setRejectModal] = useState<{ id: number; userEmail: string } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+
+  // us_admin USDT 출금 신청 폼 상태
+  const [withdrawForm, setWithdrawForm] = useState({ amount: '', wallet_address: '', note: '' });
+  const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+  const [showLastAddressModal, setShowLastAddressModal] = useState(false);
 
   const API_BASE_URL = getApiBaseUrl();
 
@@ -1448,9 +1454,92 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   )}
+
+                  {/* us_admin 전용: 출금 신청 폼 */}
+                  {userRole === 'us_admin' && (
+                    <div className="p-5 rounded-2xl border border-green-500/30 bg-green-500/5">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-black text-green-400 uppercase tracking-widest">USDT 출금 신청</h3>
+                        {usdtWithdrawals.some(w => w.to_address) && (
+                          <button
+                            onClick={() => setShowLastAddressModal(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-black text-slate-300 transition-all border border-slate-600"
+                          >
+                            <span>⏱</span> 이전 주소 사용
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[10px] text-slate-400 uppercase mb-1.5 font-black">출금 금액 (USDT)</label>
+                          <input
+                            type="number" step="0.01" min="0.01"
+                            value={withdrawForm.amount}
+                            onChange={e => setWithdrawForm(f => ({ ...f, amount: e.target.value }))}
+                            placeholder={`최대 ${usdtStats ? usdtStats.available_usdt.toFixed(2) : '0'} USDT`}
+                            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-green-500/50"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-[10px] text-slate-400 uppercase mb-1.5 font-black">수신 지갑 주소 (TRC-20 USDT)</label>
+                          <input
+                            type="text"
+                            value={withdrawForm.wallet_address}
+                            onChange={e => setWithdrawForm(f => ({ ...f, wallet_address: e.target.value }))}
+                            placeholder="T로 시작하는 TRON 지갑 주소 입력"
+                            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono placeholder-slate-600 focus:outline-none focus:border-green-500/50"
+                          />
+                        </div>
+                        <div className="md:col-span-3">
+                          <label className="block text-[10px] text-slate-400 uppercase mb-1.5 font-black">메모 (선택)</label>
+                          <input
+                            type="text"
+                            value={withdrawForm.note}
+                            onChange={e => setWithdrawForm(f => ({ ...f, note: e.target.value }))}
+                            placeholder="출금 메모 (선택사항)"
+                            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-green-500/50"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-[11px] text-yellow-300 space-y-1">
+                        <p className="font-black">⚠ 출금 전 주의사항</p>
+                        <p>• 입력한 지갑 주소로 USDT(TRC-20)가 전송됩니다. 주소를 반드시 확인하세요.</p>
+                        <p>• 잘못된 주소로 전송된 USDT는 복구할 수 없습니다.</p>
+                        <p>• 신청 후 관리자(admin) 확정 시 실제 전송이 이루어집니다.</p>
+                      </div>
+                      <button
+                        disabled={isSubmittingWithdraw || !withdrawForm.amount || !withdrawForm.wallet_address}
+                        onClick={async () => {
+                          const amount = parseFloat(withdrawForm.amount);
+                          if (isNaN(amount) || amount <= 0) { toast('금액을 올바르게 입력하세요.', 'error'); return; }
+                          if (!withdrawForm.wallet_address.trim()) { toast('지갑 주소를 입력하세요.', 'error'); return; }
+                          if (usdtStats && amount > usdtStats.available_usdt) { toast(`가용 USDT(${usdtStats.available_usdt.toFixed(2)})를 초과합니다.`, 'error'); return; }
+                          setIsSubmittingWithdraw(true);
+                          try {
+                            const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-request`, {
+                              method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                              body: JSON.stringify({ amount, wallet_address: withdrawForm.wallet_address.trim(), note: withdrawForm.note || null }),
+                            });
+                            if (res.ok) {
+                              toast('출금 신청이 완료되었습니다. 관리자 확정을 기다려주세요.', 'success');
+                              setWithdrawForm({ amount: '', wallet_address: '', note: '' });
+                              fetchUsdtData();
+                            } else {
+                              const e = await res.json();
+                              toast(e.detail || '출금 신청 실패', 'error');
+                            }
+                          } finally { setIsSubmittingWithdraw(false); }
+                        }}
+                        className="mt-3 w-full py-3 rounded-xl font-black text-sm bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmittingWithdraw ? '신청 중...' : '출금 신청하기'}
+                      </button>
+                    </div>
+                  )}
+
                   {/* USDT 출금 신청 목록 */}
                   <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">미국어드민 출금 신청 내역</h3>
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3">출금 신청 내역</h3>
                     <div className="rounded-2xl border border-slate-800/50 bg-slate-900/20 overflow-hidden">
                       <table className="w-full text-left text-xs">
                         <thead>
@@ -1458,20 +1547,26 @@ export default function AdminDashboard() {
                             <th className="px-4 py-3 font-black">ID</th>
                             <th className="px-4 py-3 font-black">신청자</th>
                             <th className="px-4 py-3 font-black">금액</th>
+                            <th className="px-4 py-3 font-black">수신 주소</th>
                             <th className="px-4 py-3 font-black">메모</th>
                             <th className="px-4 py-3 font-black">상태</th>
                             <th className="px-4 py-3 font-black">신청일</th>
-                            <th className="px-4 py-3 font-black text-right">처리</th>
+                            {userRole === 'admin' && <th className="px-4 py-3 font-black text-right">처리</th>}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/30">
                           {usdtWithdrawals.length === 0 ? (
-                            <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600 italic">출금 신청 내역 없음</td></tr>
+                            <tr><td colSpan={userRole === 'admin' ? 8 : 7} className="px-4 py-12 text-center text-slate-600 italic">출금 신청 내역 없음</td></tr>
                           ) : usdtWithdrawals.map(w => (
                             <tr key={w.id} className="hover:bg-white/5 transition-colors">
                               <td className="px-4 py-4 font-mono text-slate-500">#{w.id}</td>
                               <td className="px-4 py-4 text-blue-300">{w.requester_email || '-'}</td>
                               <td className="px-4 py-4 font-black text-green-400">{w.amount.toFixed(2)} USDT</td>
+                              <td className="px-4 py-4 font-mono text-slate-300 max-w-[160px]">
+                                {w.to_address ? (
+                                  <span className="truncate block" title={w.to_address}>{w.to_address.slice(0, 8)}...{w.to_address.slice(-6)}</span>
+                                ) : '-'}
+                              </td>
                               <td className="px-4 py-4 text-slate-400">{w.note || '-'}</td>
                               <td className="px-4 py-4">
                                 <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
@@ -1483,46 +1578,83 @@ export default function AdminDashboard() {
                                 </span>
                               </td>
                               <td className="px-4 py-4 text-slate-500">{new Date(w.created_at).toLocaleDateString('ko-KR')}</td>
-                              <td className="px-4 py-4 text-right">
-                                {w.status === 'pending' && (
-                                  <div className="flex gap-2 justify-end">
-                                    <button disabled={usdtProcessingId === w.id}
-                                      onClick={async () => {
-                                        if (!confirm(`${w.amount.toFixed(2)} USDT 출금을 확정하시겠습니까?`)) return;
-                                        setUsdtProcessingId(w.id);
-                                        try {
-                                          const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/confirm`, {
-                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                            credentials: 'include', body: JSON.stringify({ admin_notes: null }),
-                                          });
-                                          if (res.ok) { toast('출금 확정 완료', 'success'); fetchUsdtData(); }
-                                          else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
-                                        } finally { setUsdtProcessingId(null); }
-                                      }}
-                                      className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50">확정</button>
-                                    <button disabled={usdtProcessingId === w.id}
-                                      onClick={async () => {
-                                        if (!confirm('출금 신청을 거절하시겠습니까?')) return;
-                                        setUsdtProcessingId(w.id);
-                                        try {
-                                          const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/reject`, {
-                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                            credentials: 'include', body: JSON.stringify({ admin_notes: null }),
-                                          });
-                                          if (res.ok) { toast('거절 처리 완료', 'success'); fetchUsdtData(); }
-                                          else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
-                                        } finally { setUsdtProcessingId(null); }
-                                      }}
-                                      className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50">거절</button>
-                                  </div>
-                                )}
-                              </td>
+                              {userRole === 'admin' && (
+                                <td className="px-4 py-4 text-right">
+                                  {w.status === 'pending' && (
+                                    <div className="flex gap-2 justify-end">
+                                      <button disabled={usdtProcessingId === w.id}
+                                        onClick={async () => {
+                                          if (!confirm(`${w.amount.toFixed(2)} USDT 출금을 확정하시겠습니까?\n수신 주소: ${w.to_address || '없음'}`)) return;
+                                          setUsdtProcessingId(w.id);
+                                          try {
+                                            const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/confirm`, {
+                                              method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                              credentials: 'include', body: JSON.stringify({ admin_notes: null }),
+                                            });
+                                            if (res.ok) { toast('출금 확정 완료', 'success'); fetchUsdtData(); }
+                                            else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                          } finally { setUsdtProcessingId(null); }
+                                        }}
+                                        className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50">확정</button>
+                                      <button disabled={usdtProcessingId === w.id}
+                                        onClick={async () => {
+                                          if (!confirm('출금 신청을 거절하시겠습니까?')) return;
+                                          setUsdtProcessingId(w.id);
+                                          try {
+                                            const res = await fetch(`${API_BASE_URL}/us-admin/withdraw-requests/${w.id}/reject`, {
+                                              method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                              credentials: 'include', body: JSON.stringify({ admin_notes: null }),
+                                            });
+                                            if (res.ok) { toast('거절 처리 완료', 'success'); fetchUsdtData(); }
+                                            else { const e = await res.json(); toast(e.detail || '처리 실패', 'error'); }
+                                          } finally { setUsdtProcessingId(null); }
+                                        }}
+                                        className="px-3 py-1.5 text-[10px] font-black rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all disabled:opacity-50">거절</button>
+                                    </div>
+                                  )}
+                                </td>
+                              )}
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
+
+                  {/* 이전 주소 사용 모달 */}
+                  {showLastAddressModal && (() => {
+                    const lastAddr = usdtWithdrawals.find(w => w.to_address)?.to_address ?? null;
+                    return (
+                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                        <div className="w-full max-w-md mx-4 p-6 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl">
+                          <h3 className="text-base font-black text-white mb-4">이전 출금 주소 사용</h3>
+                          <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 mb-4">
+                            <p className="text-[10px] text-slate-400 uppercase mb-1 font-black">마지막 사용 주소</p>
+                            <p className="font-mono text-sm text-green-300 break-all">{lastAddr}</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[11px] text-red-300 space-y-1 mb-4">
+                            <p className="font-black">⚠ 주의사항</p>
+                            <p>• 이 주소는 이전 출금 신청에서 사용된 주소입니다.</p>
+                            <p>• 주소가 현재도 유효한지 반드시 확인하세요.</p>
+                            <p>• 잘못된 주소로 전송된 USDT는 복구할 수 없습니다.</p>
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => setShowLastAddressModal(false)}
+                              className="flex-1 py-3 rounded-xl font-black text-sm bg-slate-700 hover:bg-slate-600 text-white transition-all"
+                            >취소</button>
+                            <button
+                              onClick={() => {
+                                if (lastAddr) setWithdrawForm(f => ({ ...f, wallet_address: lastAddr }));
+                                setShowLastAddressModal(false);
+                              }}
+                              className="flex-1 py-3 rounded-xl font-black text-sm bg-green-600 hover:bg-green-500 text-white transition-all"
+                            >이 주소 사용</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 /* 포인트 출금 관리 */

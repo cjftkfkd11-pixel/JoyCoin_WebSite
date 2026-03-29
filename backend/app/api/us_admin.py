@@ -55,6 +55,7 @@ def get_usdt_stats(
 # ── 미국어드민: USDT 출금 신청 ──
 class WithdrawIn(BaseModel):
     amount: float
+    wallet_address: str
     note: Optional[str] = None
 
 
@@ -90,6 +91,7 @@ def request_usdt_withdrawal(
     withdrawal = UsdtWithdrawal(
         requested_by=admin.id,
         amount=data.amount,
+        to_address=data.wallet_address,
         note=data.note,
         status="pending",
     )
@@ -122,6 +124,7 @@ def list_withdrawal_requests(
         {
             "id": w.id,
             "amount": float(w.amount),
+            "to_address": w.to_address,
             "note": w.note,
             "status": w.status,
             "admin_notes": w.admin_notes,

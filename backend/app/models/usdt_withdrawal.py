@@ -16,6 +16,7 @@ class UsdtWithdrawal(Base):
     requested_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     amount: Mapped[float] = mapped_column(Numeric(14, 2), nullable=False)
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    to_address: Mapped[str | None] = mapped_column(String(255), nullable=True)  # 수신 지갑주소
 
     # 슈퍼어드민 확정
     status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)  # pending / confirmed / rejected
