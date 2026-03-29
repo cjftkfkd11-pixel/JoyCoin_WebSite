@@ -18,32 +18,90 @@ export default function DisclaimerPage() {
           </h1>
           <p className="text-sm text-cyan-400 font-medium mb-8 border-b border-slate-700/50 pb-6">
             {ko
-              ? "본 문서는 JOY COIN 플랫폼 이용에 관한 책임 범위와 면책 조항을 명시합니다."
-              : "This document specifies the scope of liability and disclaimer clauses relating to the use of the JOY COIN platform."}
+              ? "본 문서는 JOY COIN 플랫폼의 운영 책임자 및 법적 책임 범위를 명시합니다."
+              : "This document identifies the responsible party for the JOY COIN platform and defines the scope of legal liability."}
           </p>
 
           <div className="space-y-8 text-slate-300 text-sm leading-relaxed">
 
+            {/* 운영 책임자 */}
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                {ko ? "1. 법인 정보" : "1. Entity Information"}
+                {ko ? "1. 운영 책임자" : "1. Responsible Party"}
               </h2>
-              <p>
+              <p className="mb-4">
                 {ko
-                  ? "JOY COIN은 미국 와이오밍주에 등록된 법인으로, IRS로부터 EIN(Employer Identification Number)을 부여받은 합법적 사업체입니다."
-                  : "JOY COIN is a legally registered entity in the state of Wyoming, USA, and has been assigned an Employer Identification Number (EIN) by the IRS."}
+                  ? "JOY COIN 플랫폼은 아래 명시된 책임자에 의해 운영됩니다. 본 플랫폼과 관련한 모든 법적 책임은 해당 책임자에게 귀속됩니다."
+                  : "The JOY COIN platform is operated by the responsible party identified below. All legal responsibilities related to this platform are attributed to said party."}
               </p>
-              <div className="mt-3 p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs space-y-1 font-mono">
-                <p><span className="text-slate-400">{ko ? "법인명" : "Entity Name"}:</span> <span className="text-white">JOY COIN</span></p>
-                <p><span className="text-slate-400">EIN:</span> <span className="text-white">35-2900714</span></p>
-                <p><span className="text-slate-400">{ko ? "등록 주소" : "Registered Address"}:</span> <span className="text-white">30 N Gould St Ste R, Sheridan, WY 82801</span></p>
-                <p><span className="text-slate-400">{ko ? "등록일" : "Notice Date"}:</span> <span className="text-white">06-04-2025</span></p>
+              <div className="p-5 rounded-xl bg-slate-800/60 border border-cyan-500/20 space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-cyan-400 text-xl">👤</span>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-black mb-0.5">{ko ? "책임자" : "Responsible Person"}</p>
+                    <p className="text-white font-bold text-lg">SEUNGCHUL YOO</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-cyan-400 text-xl">🏢</span>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-black mb-0.5">{ko ? "운영 법인" : "Operating Entity"}</p>
+                    <p className="text-white font-bold">JOY COIN</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-cyan-400 text-xl">📍</span>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-black mb-0.5">{ko ? "등록 주소" : "Registered Address"}</p>
+                    <p className="text-white font-mono text-sm">30 N Gould St Ste R, Sheridan, WY 82801, USA</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-cyan-400 text-xl">🔢</span>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-black mb-0.5">EIN (Employer Identification Number)</p>
+                    <p className="text-white font-mono font-bold">35-2900714</p>
+                  </div>
+                </div>
               </div>
             </section>
 
+            {/* 책임자 운영 기관 */}
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                {ko ? "2. 플랫폼 성격 및 면책" : "2. Platform Nature & Disclaimer"}
+                {ko ? "2. 책임자 운영 기관" : "2. Organization Operated by Responsible Party"}
+              </h2>
+              <p className="mb-4">
+                {ko
+                  ? "위 책임자(SEUNGCHUL YOO)는 아래 기관의 대표로서 JOY COIN 플랫폼에 대한 전반적인 운영 책임을 집니다."
+                  : "The above responsible party (SEUNGCHUL YOO), as the representative of the organization below, bears overall operational responsibility for the JOY COIN platform."}
+              </p>
+              <a
+                href="https://www.spsi.solar/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 p-5 rounded-xl bg-slate-800/60 border border-slate-700/50 hover:border-cyan-500/40 hover:bg-slate-800 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">☀️</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white group-hover:text-cyan-400 transition-colors">SPSI Solar</p>
+                  <p className="text-xs text-slate-400">www.spsi.solar</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {ko ? "책임자 SEUNGCHUL YOO 대표 운영 기관" : "Organization represented by SEUNGCHUL YOO"}
+                  </p>
+                </div>
+                <svg className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </section>
+
+            {/* 면책 조항 */}
+            <section>
+              <h2 className="text-lg font-semibold text-white mb-3">
+                {ko ? "3. 플랫폼 성격 및 면책" : "3. Platform Nature & Disclaimer"}
               </h2>
               <p className="mb-3">
                 {ko
@@ -52,27 +110,12 @@ export default function DisclaimerPage() {
               </p>
               <p>
                 {ko
-                  ? "플랫폼 이용 중 발생하는 손실, 데이터 손상, 서비스 중단 등에 대해 JOY COIN은 법률이 허용하는 최대 범위 내에서 책임을 지지 않습니다."
-                  : "JOY COIN shall not be liable, to the fullest extent permitted by law, for any losses, data corruption, or service interruptions arising from the use of the platform."}
+                  ? "플랫폼 이용 중 발생하는 손실, 데이터 손상, 서비스 중단 등에 대해 운영 책임자는 법률이 허용하는 최대 범위 내에서 책임의 한계를 가질 수 있습니다."
+                  : "The responsible party may have limits of liability, to the fullest extent permitted by law, for any losses, data corruption, or service interruptions arising from the use of the platform."}
               </p>
             </section>
 
-            <section>
-              <h2 className="text-lg font-semibold text-white mb-3">
-                {ko ? "3. 이용자 책임" : "3. User Responsibility"}
-              </h2>
-              <p className="mb-3">
-                {ko
-                  ? "이용자는 플랫폼 이용 전 관련 약관 및 위험 고지 내용을 충분히 숙지해야 하며, 자신의 판단과 책임 하에 서비스를 이용합니다."
-                  : "Users must thoroughly review the relevant terms and risk disclosures before using the platform and use the service at their own judgment and responsibility."}
-              </p>
-              <p>
-                {ko
-                  ? "이용자가 제공한 지갑 주소, 개인 정보 등의 오류로 인해 발생한 손해는 이용자 본인이 책임집니다."
-                  : "Users are solely responsible for any damages arising from errors in wallet addresses, personal information, or other information provided by the user."}
-              </p>
-            </section>
-
+            {/* 준거법 */}
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
                 {ko ? "4. 준거법 및 분쟁 해결" : "4. Governing Law & Dispute Resolution"}
@@ -87,55 +130,26 @@ export default function DisclaimerPage() {
           </div>
         </div>
 
-        {/* 법인 등록증 (EIN 통지서) */}
+        {/* IRS EIN 증빙 문서 */}
         <div className="bg-slate-900/80 border border-slate-700/50 rounded-2xl p-8 md:p-12 backdrop-blur-sm">
           <h2 className="text-xl font-bold text-white mb-2">
-            {ko ? "법인 등록 확인서 (IRS EIN 통지서)" : "Entity Registration Certificate (IRS EIN Notice)"}
+            {ko ? "운영 책임자 법인 등록 증빙" : "Responsible Party — Legal Entity Registration"}
           </h2>
           <p className="text-sm text-slate-400 mb-6">
             {ko
-              ? "아래는 미국 국세청(IRS)으로부터 발급받은 고용주 식별 번호(EIN) 공식 통지서입니다."
-              : "The following is the official Employer Identification Number (EIN) notice issued by the U.S. Internal Revenue Service (IRS)."}
+              ? "아래는 책임자 SEUNGCHUL YOO 명의로 미국 국세청(IRS)에 등록된 JOY COIN의 공식 EIN 통지서입니다. 본 문서는 운영 책임자의 법적 실체를 증명합니다."
+              : "Below is the official IRS EIN notice for JOY COIN, registered under the name of responsible party SEUNGCHUL YOO. This document certifies the legal identity of the responsible operator."}
           </p>
           <div className="rounded-xl overflow-hidden border border-slate-700/50">
             <Image
               src="/images/ein-notice.jpg"
-              alt="IRS EIN Notice - JOY COIN EIN 35-2900714"
+              alt="IRS EIN Notice - JOY COIN, SEUNGCHUL YOO, EIN 35-2900714"
               width={900}
               height={1200}
               className="w-full h-auto"
               priority
             />
           </div>
-        </div>
-
-        {/* SPSI Solar 파트너 링크 */}
-        <div className="bg-slate-900/80 border border-slate-700/50 rounded-2xl p-8 md:p-12 backdrop-blur-sm">
-          <h2 className="text-xl font-bold text-white mb-2">
-            {ko ? "관련 파트너 정보" : "Partner Information"}
-          </h2>
-          <p className="text-sm text-slate-400 mb-6">
-            {ko
-              ? "JOY COIN은 아래 파트너사와 협력 관계에 있습니다. 파트너사의 공식 웹사이트에서 추가 정보를 확인하실 수 있습니다."
-              : "JOY COIN is in partnership with the following partner. You can find additional information on the partner's official website."}
-          </p>
-          <a
-            href="https://www.spsi.solar/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-4 p-5 rounded-xl bg-slate-800/60 border border-slate-700/50 hover:border-cyan-500/40 hover:bg-slate-800 transition-all group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl">☀️</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-white group-hover:text-cyan-400 transition-colors">SPSI Solar</p>
-              <p className="text-xs text-slate-400 truncate">https://www.spsi.solar/</p>
-            </div>
-            <svg className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
         </div>
 
       </div>
