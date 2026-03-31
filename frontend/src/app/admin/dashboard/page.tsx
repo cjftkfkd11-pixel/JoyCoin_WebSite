@@ -39,6 +39,8 @@ interface Sector {
   id: number;
   name: string;
   fee_percent: number;
+  manager_email: string | null;
+  manager_id: number | null;
 }
 
 interface Stats {
@@ -158,6 +160,12 @@ export default function AdminDashboard() {
   const [withdrawForm, setWithdrawForm] = useState({ amount: '', wallet_address: '', note: '' });
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
   const [showLastAddressModal, setShowLastAddressModal] = useState(false);
+
+  // 섹터 편집 모달 상태
+  const [editingSector, setEditingSector] = useState<Sector | null>(null);
+  const [sectorEditName, setSectorEditName] = useState('');
+  const [sectorEditEmail, setSectorEditEmail] = useState('');
+  const [sectorEditSaving, setSectorEditSaving] = useState(false);
 
   const API_BASE_URL = getApiBaseUrl();
 
@@ -461,6 +469,28 @@ export default function AdminDashboard() {
       if (!response.ok) throw new Error(t("sectorFeeUpdateFailed"));
       fetchSectors();
     } catch (err: any) { toast(err.message, "error"); }
+  };
+
+  const handleSectorUpdate = async () => {
+    if (!editingSector) return;
+    setSectorEditSaving(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/sectors/${editingSector.id}/update`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({
+          name: sectorEditName,
+          manager_email: sectorEditEmail || null,
+        }),
+      });
+      if (res.ok) {
+        toast('섹터가 업데이트되었습니다.', 'success');
+        setEditingSector(null);
+        fetchSectors();
+      } else {
+        const e = await res.json();
+        toast(e.detail || '업데이트 실패', 'error');
+      }
+    } finally { setSectorEditSaving(false); }
   };
 
   const fetchWithdrawals = async () => {
@@ -1275,8 +1305,24 @@ export default function AdminDashboard() {
                     <div key={sector.id} className="p-6 rounded-2xl border border-white/5 bg-slate-900/40 space-y-4">
                       <div className="flex justify-between items-center">
                         <h3 className="text-2xl font-black italic text-blue-400">Sector {sector.name}</h3>
-                        <span className="text-xl font-black text-green-400">{sector.fee_percent}%</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl font-black text-green-400">{sector.fee_percent}%</span>
+                          <button
+                            onClick={() => {
+                              setEditingSector(sector);
+                              setSectorEditName(sector.name);
+                              setSectorEditEmail(sector.manager_email || '');
+                            }}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+                            title="섹터 편집"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </button>
+                        </div>
                       </div>
+                      {sector.manager_email && (
+                        <p className="text-xs text-slate-500 truncate" title={sector.manager_email}>{sector.manager_email}</p>
+                      )}
                       <div className="grid grid-cols-4 gap-1">
                         {[5, 10, 15, 20].map(fee => (
                           <button
@@ -1749,6 +1795,58 @@ export default function AdminDashboard() {
         </div>
         </div>
       </div>
+
+      {/* 섹터 편집 모달 */}
+      {editingSector && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setEditingSector(null)}>
+          <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-5" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-white">섹터 편집</h3>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-wider">섹터 이름</label>
+              <input
+                type="text"
+                value={sectorEditName}
+                onChange={e => setSectorEditName(e.target.value)}
+                maxLength={50}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                placeholder="섹터 이름 입력"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-wider">매니저 이메일</label>
+              {editingSector.manager_email ? (
+                <input
+                  type="email"
+                  value={sectorEditEmail}
+                  onChange={e => setSectorEditEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="매니저 이메일"
+                />
+              ) : (
+                <p className="text-xs text-slate-500 italic py-3">매니저가 배정되지 않았습니다</p>
+              )}
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setEditingSector(null)}
+                className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white text-sm font-black transition-all"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSectorUpdate}
+                disabled={sectorEditSaving || !sectorEditName.trim()}
+                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-black transition-all"
+              >
+                {sectorEditSaving ? '저장 중...' : '저장'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

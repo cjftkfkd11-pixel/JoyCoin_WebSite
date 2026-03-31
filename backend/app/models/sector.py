@@ -9,7 +9,7 @@ class Sector(Base):
     __tablename__ = "sectors"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(10), unique=True, nullable=False)  # A, B, C, D, E
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)  # A, B, C, D, E (관리자가 변경 가능)
     fee_percent: Mapped[int] = mapped_column(Integer, default=5, nullable=False)  # 5, 10, 15, 20
 
     created_at: Mapped[datetime] = mapped_column(
