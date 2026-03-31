@@ -1323,8 +1323,8 @@ export default function AdminDashboard() {
                       {sector.manager_email && (
                         <p className="text-xs text-slate-500 truncate" title={sector.manager_email}>{sector.manager_email}</p>
                       )}
-                      <div className="grid grid-cols-4 gap-1">
-                        {[5, 10, 15, 20].map(fee => (
+                      <div className="grid grid-cols-6 gap-1">
+                        {[0, 10, 20, 30, 40, 50].map(fee => (
                           <button
                             key={fee}
                             onClick={() => handleFeeChange(sector.id, fee)}

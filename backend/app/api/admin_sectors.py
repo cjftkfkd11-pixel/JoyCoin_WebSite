@@ -64,8 +64,8 @@ def update_sector_fee(
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
 ):
-    if payload.fee_percent not in (5, 10, 15, 20):
-        raise HTTPException(400, "fee_percent는 5, 10, 15, 20 중 하나여야 합니다.")
+    if payload.fee_percent not in (0, 10, 20, 30, 40, 50):
+        raise HTTPException(400, "fee_percent는 0, 10, 20, 30, 40, 50 중 하나여야 합니다.")
 
     sector = db.query(Sector).filter(Sector.id == sector_id).first()
     if not sector:
