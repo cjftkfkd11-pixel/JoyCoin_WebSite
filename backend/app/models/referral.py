@@ -30,8 +30,8 @@ class Referral(Base):
         index=True
     )
     
-    # 추천 보상 포인트
-    reward_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    # 추천 보상 JOY
+    reward_joy: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

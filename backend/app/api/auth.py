@@ -87,7 +87,7 @@ def signup(data: SignupIn, request: Request, db: Session = Depends(get_db)):
         referral = Referral(
             referrer_id=referrer.id,
             referred_id=user.id,
-            reward_points=0
+            reward_joy=0
         )
         db.add(referral)
         referrer.referral_reward_remaining = int(referrer.referral_reward_remaining or 0) + 1
