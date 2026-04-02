@@ -114,6 +114,9 @@ def request_withdrawal(
     )
     db.add(point_record)
 
+    # user.total_points도 차감
+    user.total_points = max(0, int(user.total_points or 0) - data.amount)
+
     db.commit()
     db.refresh(withdrawal)
     return withdrawal
@@ -232,6 +235,7 @@ def admin_reject_withdrawal(
             description=f"전환 거절로 인한 환불: {w.amount} JOY 포인트",
         )
         db.add(refund_point)
+        user.total_points = int(user.total_points or 0) + w.amount
 
     w.status = "rejected"
     w.admin_id = admin.id
