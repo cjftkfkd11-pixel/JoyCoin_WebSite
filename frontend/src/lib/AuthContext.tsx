@@ -10,6 +10,7 @@ interface User {
   total_joy: number;
   total_points: number;
   referral_reward_remaining: number;
+  referral_bonus_percent: number;
   referral_code?: string;
   recovery_code?: string;
   role?: string;
