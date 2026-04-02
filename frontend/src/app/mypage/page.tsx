@@ -657,7 +657,7 @@ export default function MyPage() {
                   <span className="text-[10px] text-green-400 uppercase tracking-wider">{t("referralRewardRemaining")}</span>
                   <span className="text-sm font-black text-green-400">{user?.referral_reward_remaining}{locale === 'ko' ? '회' : 'x'}</span>
                 </div>
-                <p className="text-[9px] text-green-600 mt-1">{t("referralRewardDesc")}</p>
+                <p className="text-[9px] text-green-600 mt-1">{t("referralRewardDesc").replace("{pct}", String(user?.referral_bonus_percent ?? 10))}</p>
               </div>
             )}
 

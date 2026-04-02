@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import SignupIn, LoginIn, Tokens
-from app.models import User, Center, Referral, Sector, LegalConsent
+from app.models import User, Center, Referral, Sector, LegalConsent, ExchangeRate
 from app.core.config import settings
 from jose import jwt, JWTError
 
@@ -145,7 +145,7 @@ def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
 # 3. 내 정보 조회 (/auth/me)
 # ---------------------------------------------------------
 @router.get("/me")
-async def get_me(current_user: User = Depends(get_current_user)):
+async def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     center_data = None
     if current_user.center:
         center_data = {
@@ -153,6 +153,9 @@ async def get_me(current_user: User = Depends(get_current_user)):
             "name": current_user.center.name,
             "region": current_user.center.region,
         }
+
+    rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
+    bonus_pct = rate.referral_bonus_percent if rate else 10
 
     return {
         "id": current_user.id,
@@ -162,6 +165,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "total_joy": int(current_user.total_joy or 0),
         "total_points": int(current_user.total_points or 0),
         "referral_reward_remaining": int(current_user.referral_reward_remaining or 0),
+        "referral_bonus_percent": bonus_pct,
         "role": current_user.role,
         "referral_code": current_user.referral_code,
         "recovery_code": current_user.recovery_code,
