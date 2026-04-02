@@ -55,9 +55,6 @@ def signup(data: SignupIn, request: Request, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="유효하지 않은 추천인 코드입니다")
         if referrer.email == data.email:
             raise HTTPException(status_code=400, detail="자신을 추천인으로 지정할 수 없습니다")
-        # 1단계 추천만 허용: 추천인이 이미 누군가에 의해 추천받은 사람이면 거절
-        if referrer.referred_by is not None:
-            raise HTTPException(status_code=400, detail="해당 추천인은 추천 권한이 없습니다 (1단계 추천만 허용)")
 
     if data.center_id:
         center = db.query(Center).filter(Center.id == data.center_id).first()
