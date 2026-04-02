@@ -92,30 +92,28 @@ def approve_deposit(
     if not already_credited:
         user.total_joy = int(user.total_joy or 0) + int(dr.joy_amount or 0)
 
-    # 6. 추천 보상: 남은 횟수가 있으면 결제 USDT의 N%를 포인트로 적립
-    remaining = int(user.referral_reward_remaining or 0)
-    if remaining > 0:
-        # DB에서 추천 보너스 퍼센트 조회 (관리자 설정)
-        rate = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
-        bonus_pct = rate.referral_bonus_percent if rate else 10
-        usdt_amount = float(dr.actual_amount or dr.expected_amount or 0)
-        bonus_points = int(usdt_amount * bonus_pct / 100)
-        if bonus_points > 0:
-            # 현재 포인트 잔액 조회
-            current_balance = db.query(
-                sqlfunc.coalesce(sqlfunc.sum(Point.amount), 0)
-            ).filter(Point.user_id == user.id).scalar()
+    # 6. 추천 보상: 구매자의 추천인(referred_by)에게 포인트 지급 (횟수 제한 없음)
+    if user.referred_by:
+        referrer = db.query(User).filter(User.id == user.referred_by).first()
+        if referrer:
+            rate_obj = db.query(ExchangeRate).filter(ExchangeRate.is_active == True).first()
+            bonus_pct = rate_obj.referral_bonus_percent if rate_obj else 10
+            usdt_amount = float(dr.actual_amount or dr.expected_amount or 0)
+            bonus_points = int(usdt_amount * bonus_pct / 100)
+            if bonus_points > 0:
+                current_balance = db.query(
+                    sqlfunc.coalesce(sqlfunc.sum(Point.amount), 0)
+                ).filter(Point.user_id == referrer.id).scalar()
 
-            point_record = Point(
-                user_id=user.id,
-                amount=bonus_points,
-                balance_after=int(current_balance) + bonus_points,
-                type="referral_bonus",
-                description=f"추천 보상 ({usdt_amount} USDT의 {bonus_pct}%)"
-            )
-            db.add(point_record)
-            user.total_points = int(user.total_points or 0) + bonus_points
-            user.referral_reward_remaining = remaining - 1
+                point_record = Point(
+                    user_id=referrer.id,
+                    amount=bonus_points,
+                    balance_after=int(current_balance) + bonus_points,
+                    type="referral_bonus",
+                    description=f"추천 보상: {user.email} 구매 ({usdt_amount} USDT의 {bonus_pct}%)"
+                )
+                db.add(point_record)
+                referrer.total_points = int(referrer.total_points or 0) + bonus_points
 
     # 사용자 알림 생성 (승인)
     import json

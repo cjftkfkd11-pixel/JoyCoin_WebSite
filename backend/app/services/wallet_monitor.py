@@ -175,29 +175,28 @@ def _match_deposit_to_request(amount: float, sender: str, tx_hash: str, chain: s
                 )
                 db.add(notif)
 
-        # 추천 보상: 남은 횟수가 있으면 결제 USDT의 N%를 포인트로 적립
-        if user:
+        # 추천 보상: 구매자의 추천인(referred_by)에게 포인트 지급 (횟수 제한 없음)
+        if user and user.referred_by:
             from sqlalchemy import func as sqlfunc
-            remaining = int(user.referral_reward_remaining or 0)
-            if remaining > 0:
+            referrer = db.query(User).filter(User.id == user.referred_by).first()
+            if referrer:
                 bonus_pct = rate.referral_bonus_percent if rate else 10
                 usdt_amount = float(matched.actual_amount or matched.expected_amount or 0)
                 bonus_points = int(usdt_amount * bonus_pct / 100)
                 if bonus_points > 0:
                     current_balance = db.query(
                         sqlfunc.coalesce(sqlfunc.sum(Point.amount), 0)
-                    ).filter(Point.user_id == user.id).scalar()
+                    ).filter(Point.user_id == referrer.id).scalar()
                     point_record = Point(
-                        user_id=user.id,
+                        user_id=referrer.id,
                         amount=bonus_points,
                         balance_after=int(current_balance) + bonus_points,
                         type="referral_bonus",
-                        description=f"추천 보상 ({usdt_amount} USDT의 {bonus_pct}%)",
+                        description=f"추천 보상: {user.email} 구매 ({usdt_amount} USDT의 {bonus_pct}%)",
                     )
                     db.add(point_record)
-                    user.total_points = int(user.total_points or 0) + bonus_points
-                    user.referral_reward_remaining = remaining - 1
-                    logger.info(f"Referral bonus: user #{user.id} +{bonus_points}pts ({bonus_pct}%)")
+                    referrer.total_points = int(referrer.total_points or 0) + bonus_points
+                    logger.info(f"Referral bonus: referrer #{referrer.id} +{bonus_points}pts from buyer #{user.id} ({bonus_pct}%)")
 
         db.commit()
 

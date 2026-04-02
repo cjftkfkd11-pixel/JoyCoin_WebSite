@@ -82,8 +82,8 @@ export const translations = {
     myReferralCode: "My Referral Code",
     totalJoy: "My JOY",
     totalPoints: "JOY Points",
-    referralRewardRemaining: "Referral Rewards Left",
-    referralRewardDesc: "{pct}% bonus JOY points on your next participation",
+    referralCount: "Referred Members",
+    referralRewardDesc: "{pct}% bonus JOY points when your referral purchases",
     quickMenu: "Quick Menu",
 
     // Notifications
@@ -328,8 +328,8 @@ export const translations = {
     myReferralCode: "내 추천인 코드",
     totalJoy: "보유 JOY",
     totalPoints: "JOY 포인트",
-    referralRewardRemaining: "남은 추천 보상",
-    referralRewardDesc: "다음 참여 시 결제금액의 {pct}% JOY 포인트 적립",
+    referralCount: "추천한 회원",
+    referralRewardDesc: "추천 회원 구매 시 결제금액의 {pct}% JOY 포인트 적립",
     quickMenu: "빠른 메뉴",
 
     // Notifications

@@ -650,16 +650,14 @@ export default function MyPage() {
               </div>
             </div>
 
-            {/* 남은 추천 보상 횟수 */}
-            {(user?.referral_reward_remaining ?? 0) > 0 && (
-              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-green-400 uppercase tracking-wider">{t("referralRewardRemaining")}</span>
-                  <span className="text-sm font-black text-green-400">{user?.referral_reward_remaining}{locale === 'ko' ? '회' : 'x'}</span>
-                </div>
-                <p className="text-[9px] text-green-600 mt-1">{t("referralRewardDesc").replace("{pct}", String(user?.referral_bonus_percent ?? 10))}</p>
+            {/* 추천한 회원 수 */}
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-green-400 uppercase tracking-wider">{t("referralCount")}</span>
+                <span className="text-sm font-black text-green-400">{user?.referral_count ?? 0}{locale === 'ko' ? '명' : ''}</span>
               </div>
-            )}
+              <p className="text-[9px] text-green-600 mt-1">{t("referralRewardDesc").replace("{pct}", String(user?.referral_bonus_percent ?? 10))}</p>
+            </div>
 
             <div className="grid grid-cols-2 gap-3 mt-2">
               <button

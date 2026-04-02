@@ -115,7 +115,7 @@ export async function getMe() {
     wallet_address: string | null;
     total_joy: number;
     total_points: number;
-    referral_reward_remaining: number;
+    referral_count: number;
   }>("/auth/me");
 }
 

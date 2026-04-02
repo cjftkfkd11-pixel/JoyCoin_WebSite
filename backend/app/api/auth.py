@@ -87,7 +87,6 @@ def signup(data: SignupIn, request: Request, db: Session = Depends(get_db)):
             reward_joy=0
         )
         db.add(referral)
-        referrer.referral_reward_remaining = int(referrer.referral_reward_remaining or 0) + 1
 
     consent = LegalConsent(
         user_id=user.id,
@@ -164,7 +163,7 @@ async def get_me(current_user: User = Depends(get_current_user), db: Session = D
         "wallet_address": current_user.wallet_address,
         "total_joy": int(current_user.total_joy or 0),
         "total_points": int(current_user.total_points or 0),
-        "referral_reward_remaining": int(current_user.referral_reward_remaining or 0),
+        "referral_count": db.query(User).filter(User.referred_by == current_user.id).count(),
         "referral_bonus_percent": bonus_pct,
         "role": current_user.role,
         "referral_code": current_user.referral_code,

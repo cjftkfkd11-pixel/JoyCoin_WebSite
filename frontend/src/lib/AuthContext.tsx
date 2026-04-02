@@ -9,7 +9,7 @@ interface User {
   username: string;
   total_joy: number;
   total_points: number;
-  referral_reward_remaining: number;
+  referral_count: number;
   referral_bonus_percent: number;
   referral_code?: string;
   recovery_code?: string;
